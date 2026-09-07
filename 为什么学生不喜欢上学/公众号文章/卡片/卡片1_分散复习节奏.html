@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>分散复习节奏卡片</title>
+<style>
+  body { margin:0; padding:24px; background:#f5f4f0; font-family:"PingFang SC","Microsoft YaHei",sans-serif; display:flex; justify-content:center; }
+  .card { width:700px; background:#ffffff; border-radius:18px; padding:40px 44px; box-sizing:border-box; border:1px solid #e7e4dc; }
+  .tag { display:inline-block; font-size:13px; color:#b4730f; background:#fdf3e0; border-radius:999px; padding:4px 14px; font-weight:500; }
+  h1 { font-size:27px; color:#2c2c2a; margin:16px 0 6px; line-height:1.35; }
+  .sub { font-size:15px; color:#7a7a72; margin:0 0 26px; line-height:1.6; }
+  .timeline { display:flex; flex-wrap:wrap; gap:10px; margin:10px 0 26px; }
+  .step { flex:1 1 20%; min-width:130px; background:#faf4e6; border:1px solid #f0e0bd; border-radius:12px; padding:14px 10px; text-align:center; }
+  .step .n { font-size:20px; font-weight:700; color:#b4730f; }
+  .step .t { font-size:14px; color:#5f5e5a; margin-top:4px; }
+  .compare { display:flex; gap:14px; margin-bottom:24px; }
+  .box { flex:1; border-radius:12px; padding:16px 18px; font-size:14.5px; line-height:1.7; }
+  .bad { background:#fdeeee; border:1px solid #f4cccc; color:#8a2b2b; }
+  .good { background:#eaf6ef; border:1px solid #c5e6d2; color:#1d6b46; }
+  .box b { display:block; margin-bottom:6px; font-size:15px; }
+  .tip { font-size:15px; color:#2c2c2a; background:#f1efe8; border-radius:12px; padding:16px 18px; line-height:1.7; }
+  .tip b { color:#b4730f; }
+  .foot { margin-top:24px; text-align:center; font-size:13px; color:#9a9890; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <span class="tag">记忆力 · 科学方法</span>
+    <h1>一张图记住"分散复习"节奏</h1>
+    <p class="sub">同样花 2 小时，一次背完很快就忘；拆成 8 次、按遗忘曲线复习，能牢几周。关键不是背得久，是<b>隔多久再想起它一次</b>。</p>
+
+    <div class="timeline">
+      <div class="step"><div class="n">①</div><div class="t">学完 5 分钟<br>回想一遍</div></div>
+      <div class="step"><div class="n">②</div><div class="t">30 分钟后<br>快速过一遍</div></div>
+      <div class="step"><div class="n">③</div><div class="t">12 小时后<br>睡前回顾</div></div>
+      <div class="step"><div class="n">④</div><div class="t">1 天后<br>再复习</div></div>
+    </div>
+    <div class="timeline">
+      <div class="step"><div class="n">⑤</div><div class="t">2 天后</div></div>
+      <div class="step"><div class="n">⑥</div><div class="t">4 天后</div></div>
+      <div class="step"><div class="n">⑦</div><div class="t">7 天后</div></div>
+      <div class="step"><div class="n">⑧</div><div class="t">15 天后</div></div>
+    </div>
+
+    <div class="compare">
+      <div class="box bad"><b>✗ 集中突击</b>考前一口气背 2 小时，能及格；考完第二天，几乎全忘。</div>
+      <div class="box good"><b>✓ 分散复习</b>总时间还是 2 小时，拆到 8 个时间点；记得久，还不枯燥。</div>
+    </div>
+
+    <div class="tip">💡 <b>最好用的一个动作：</b>读完书、学完新课，<b>先合上书</b>，让孩子用自己的话讲一遍"今天学了什么"。讲得出来，才是真进脑子了——记忆，是思考的残留物。</div>
+
+    <div style="text-align:center;font-size:16px;font-weight:bold;color:#c8612a;line-height:1.7;margin:18px 6px 0;word-break:keep-all;">记得牢不靠熬时间，<br>靠让孩子把它"想"起来。</div>
+    <div class="foot">归途有光和孩子一起重启 · 摘编自《为什么学生不喜欢上学》（威林厄姆）</div>
+  </div>
+</body>
+</html>

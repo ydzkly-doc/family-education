@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>知识复利示意图</title>
+<style>
+  body { margin:0; padding:24px; background:#f5f4f0; font-family:"PingFang SC","Microsoft YaHei",sans-serif; display:flex; justify-content:center; }
+  .card { width:700px; background:#fff; border-radius:18px; padding:40px 44px; box-sizing:border-box; border:1px solid #e7e4dc; }
+  .tag { display:inline-block; font-size:13px; color:#534AB7; background:#EEEDFE; border-radius:999px; padding:4px 14px; font-weight:500; }
+  h1 { font-size:26px; color:#2c2c2a; margin:16px 0 6px; line-height:1.35; }
+  .sub { font-size:15px; color:#7a7a72; margin:0 0 28px; line-height:1.6; }
+  .demo { display:flex; gap:16px; margin-bottom:24px; }
+  .col { flex:1; border-radius:14px; padding:18px; text-align:center; }
+  .col h3 { font-size:15px; margin:0 0 12px; }
+  .bad { background:#FCEBEB; border:1px solid #F7C1C1; color:#791F1F; }
+  .good { background:#EEEDFE; border:1px solid #CECBF6; color:#3C3489; }
+  .letters { font-size:17px; font-weight:700; letter-spacing:2px; line-height:2; font-family:monospace; }
+  .bad .letters { color:#A32D2D; }
+  .good .letters { color:#534AB7; }
+  .note { font-size:13px; color:inherit; margin-top:10px; line-height:1.5; }
+  .flow { display:flex; align-items:center; gap:10px; justify-content:center; margin:8px 0 24px; font-size:14px; color:#444; }
+  .chip { background:#f1efe8; border-radius:999px; padding:8px 16px; font-weight:500; color:#2c2c2a; }
+  .chip b { color:#534AB7; }
+  .arr { color:#9a9890; font-size:18px; }
+  .tip { font-size:15px; color:#2c2c2a; background:#f1efe8; border-radius:12px; padding:16px 18px; line-height:1.7; }
+  .tip b { color:#534AB7; }
+  .foot { margin-top:22px; text-align:center; font-size:13px; color:#9a9890; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <span class="tag">知识储备 · 复利效应</span>
+    <h1>为什么懂得多的孩子，学得更快</h1>
+    <p class="sub">新知识能不能记住，取决于能不能挂到"已有的知识"上。脑子里挂钩越多，新东西一挂就牢——这就是知识的"利滚利"。</p>
+
+    <div class="demo">
+      <div class="col bad">
+        <h3>没有背景知识：死记孤立字母</h3>
+        <div class="letters">X C A N D<br>F B I C A N<br>P H ……</div>
+        <div class="note">听一遍几乎记不住，<br>只能硬背，背了就忘</div>
+      </div>
+      <div class="col good">
+        <h3>有背景知识：打包成"已知块"</h3>
+        <div class="letters">FBI · PHD<br>RMB · NBA</div>
+        <div class="note">都是早就懂的东西，<br>听一遍就能记住</div>
+      </div>
+    </div>
+
+    <div class="flow">
+      <span class="chip">旧知识</span><span class="arr">→</span>
+      <span class="chip">挂住新知识</span><span class="arr">→</span>
+      <span class="chip">理解更快</span><span class="arr">→</span>
+      <span class="chip"><b>知识越滚越多</b></span>
+    </div>
+
+    <div class="tip">💡 <b>记住一句话：</b>想象力和创造力，都长在知识的地基上。脑子里一片空白，谈不上想象。<br><b>怎么做：</b>每天固定 20 分钟主动阅读；多逛博物馆/科技馆；孩子问"为什么"时，就是最好的上课铃。</div>
+
+    <div style="text-align:center;font-size:16px;font-weight:bold;color:#c8612a;line-height:1.7;margin:18px 6px 0;word-break:keep-all;">能搜到的是信息，<br>长在脑子里的才是本事。</div>
+    <div class="foot">归途有光和孩子一起重启 · 摘编自《为什么学生不喜欢上学》（威林厄姆）</div>
+  </div>
+</body>
+</html>

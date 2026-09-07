@@ -1,0 +1,12 @@
+# 系统垃圾文件
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+*~
+*.tmp
+*.bak
+
+# 临时/预览缓存
+~$*
+*.swp

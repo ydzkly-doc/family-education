@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>专家养成路径图</title>
+<style>
+  body { margin:0; padding:24px; background:#f5f4f0; font-family:"PingFang SC","Microsoft YaHei",sans-serif; display:flex; justify-content:center; }
+  .card { width:700px; background:#fff; border-radius:18px; padding:40px 44px; box-sizing:border-box; border:1px solid #e7e4dc; }
+  .tag { display:inline-block; font-size:13px; color:#993556; background:#FBEAF0; border-radius:999px; padding:4px 14px; font-weight:500; }
+  h1 { font-size:26px; color:#2c2c2a; margin:16px 0 6px; line-height:1.35; }
+  .sub { font-size:15px; color:#7a7a72; margin:0 0 28px; line-height:1.6; }
+  .path { display:flex; align-items:stretch; gap:0; margin-bottom:24px; }
+  .step { flex:1; background:#FBEAF0; border:1px solid #F4C0D1; border-radius:12px; padding:16px 12px; text-align:center; position:relative; }
+  .step .n { font-size:22px; font-weight:700; color:#D4537E; }
+  .step h3 { font-size:15px; color:#72243E; margin:6px 0 6px; }
+  .step p { font-size:12.5px; color:#993556; line-height:1.5; margin:0; }
+  .gap { display:flex; align-items:center; padding:0 6px; color:#c9a7b3; font-size:18px; }
+  .myth { background:#FCEBEB; border:1px solid #F7C1C1; border-radius:12px; padding:14px 18px; font-size:14.5px; color:#791F1F; line-height:1.6; margin-bottom:14px; }
+  .fact { background:#E1F5EE; border:1px solid #9FE1CB; border-radius:12px; padding:14px 18px; font-size:14.5px; color:#085041; line-height:1.6; margin-bottom:18px; }
+  .fact b, .myth b { display:block; margin-bottom:4px; font-size:15px; }
+  .quote { font-size:15px; color:#2c2c2a; background:#f1efe8; border-radius:12px; padding:16px 18px; line-height:1.7; text-align:center; }
+  .quote b { color:#993556; }
+  .foot { margin-top:22px; text-align:center; font-size:13px; color:#9a9890; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <span class="tag">专家思维 · 没有捷径</span>
+    <h1>专家的"第六感"，是这样练出来的</h1>
+    <p class="sub">专家不是想得快，是脑子里存得多、步骤自动化了。这套东西没法直接"教"给孩子——只能靠时间一步步走出来。</p>
+
+    <div class="path">
+      <div class="step"><div class="n">1</div><h3>积累背景知识</h3><p>建一个超大型"知识仓库"</p></div>
+      <div class="gap">→</div>
+      <div class="step"><div class="n">2</div><h3>大量刻意练习</h3><p>常规步骤练到自动化</p></div>
+      <div class="gap">→</div>
+      <div class="step"><div class="n">3</div><h3>腾出大脑空间</h3><p>工作记忆不再被占满</p></div>
+      <div class="gap">→</div>
+      <div class="step"><div class="n">4</div><h3>看到深层结构</h3><p>一眼抓关键、可跨领域迁移</p></div>
+    </div>
+
+    <div class="myth"><b>✗ 走不通的路</b>把专家"跳步后"的方法和结论直接教给初学者——孩子脑子里还没有那些工具，接不住。看梅西的录像，学不会梅西的盘带。</div>
+    <div class="fact"><b>✓ 真正起作用的</b>背景知识 + 大量练习，持续约十年（"一万小时"量级）的刻意投入。莫扎特也不例外——天才同样熬过了漫长的学徒期。</div>
+
+    <div class="quote">"每个艺术家，都是从学徒做起的。" —— 爱默生<br><b>专家不是神，他只是那个愿意老老实实下笨功夫、并且一直没停下的人。</b></div>
+
+    <div style="text-align:center;font-size:16px;font-weight:bold;color:#c8612a;line-height:1.7;margin:18px 6px 0;word-break:keep-all;">高手的直觉偷不走，<br>但每份手感都是笨功夫攒出来的。</div>
+    <div class="foot">归途有光和孩子一起重启 · 摘编自《为什么学生不喜欢上学》（威林厄姆）</div>
+  </div>
+</body>
+</html>
