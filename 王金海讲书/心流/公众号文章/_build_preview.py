@@ -1,82 +1,91 @@
 # -*- coding: utf-8 -*-
-"""构建《心流》系列「全部正文预览」单文件（仅本地校对用，不进发布包、不发布）。
-用法: python _build_preview.py
-扫描 发布包_第X篇_* 目录里的 正文_*.html，按篇号排序抽 <body> 合并。"""
-import os, re, glob, html
+"""把各发布包正文 body 抽成单页多 tab 预览，仅本地校对用。篇号自动读取，增删篇后重跑即可。
+
+防污染（2026-09-06 铁律）：
+  ① 读取源正文时先正则剥掉任何 data-*（双保险）
+  ② 合并页输出到独立 _预览/ 子目录（纯派生副本），present_files 只开这份副本
+  ③ --fix：就地剥掉所有发布包源正文里的 data-*
+用法：python _build_preview.py [--fix]
+"""
+import re, glob, os, html, sys
 
 BASE = os.path.dirname(os.path.abspath(__file__))
-dirs = []
-for d in glob.glob(os.path.join(BASE, "发布包_第*篇_*")):
-    m = re.search(r"第(\d+)篇", os.path.basename(d))
-    if m and os.path.isdir(d):
-        dirs.append((int(m.group(1)), d))
-dirs.sort()
+DATA_RE = re.compile(r'\s*data-[a-zA-Z0-9_-]+="[^"]*"')
+SERIES = os.path.basename(os.path.dirname(BASE))  # 上一级目录名 = 系列名
 
-arts = []
-nav = []
-for num, d in dirs:
-    files = glob.glob(os.path.join(d, "正文_*.html"))
-    if not files:
-        continue
-    raw = open(files[0], encoding="utf-8").read()
-    body = re.search(r"<body[^>]*>(.*?)</body>", raw, re.S | re.I)
-    inner = body.group(1) if body else raw
-    # 取主题名
-    tm = re.search(r"共\s*6\s*篇\s*｜\s*(.*?)</p>", inner)
-    topic = tm.group(1) if tm else ""
-    title_m = re.search(r"发布包_第\d+篇_(.*)$", os.path.basename(d))
-    short = title_m.group(1) if title_m else f"第{num}篇"
-    nav.append((num, short, topic))
-    arts.append(f'<section class="art" id="art{num}" style="display:none;">{inner}</section>')
 
-nav_btns = "".join(
-    f'<button class="navbtn" data-n="{n}" onclick="go({n})">{n}·{html.escape(s)}</button>'
-    for n, s, t in nav
-)
-total = len(nav)
-sections = "\n".join(arts)
+def scan_items():
+    """扫描 发布包_第N篇_主题/ 目录，返回 [(篇号, 短主题), ...] 按篇号排序。"""
+    items = []
+    for d in glob.glob(os.path.join(BASE, "发布包_*")):
+        m = re.search(r"第(\d+)篇[_-](.+)$", os.path.basename(d))
+        if not m:
+            continue
+        items.append((int(m.group(1)), m.group(2).replace("_", "·")))
+    return sorted(items)
+
+
+def body_of(n):
+    ds = glob.glob(os.path.join(BASE, f"发布包_第{n}篇_*"))
+    if not ds:
+        return ""
+    fs = glob.glob(os.path.join(ds[0], "正文_*.html"))
+    if not fs:
+        return ""
+    t = DATA_RE.sub("", open(fs[0], encoding="utf-8").read())
+    m = re.search(r"<body[^>]*>(.*?)</body>", t, re.S)
+    return m.group(1) if m else ""
+
+
+if "--fix" in sys.argv:
+    n = 0
+    for f in sorted(glob.glob(os.path.join(BASE, "发布包_*", "正文_*.html"))):
+        t = open(f, encoding="utf-8").read()
+        t2 = DATA_RE.sub("", t)
+        if t2 != t:
+            open(f, "w", encoding="utf-8").write(t2)
+            n += 1
+            print("  fixed:", os.path.basename(f))
+    print(f"--fix 完成：清洗 {n} 个文件")
+
+ITEMS = scan_items()
+nav = "".join(
+    f'<button class="tab{" on" if i == 0 else ""}" onclick="go({i})">{n} · {html.escape(t)}</button>'
+    for i, (n, t) in enumerate(ITEMS))
+secs = []
+for i, (n, t) in enumerate(ITEMS):
+    secs.append(f'<section class="art{" show" if i == 0 else ""}" id="art{i}">{body_of(n)}</section>')
 
 page = f"""<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>心流系列 · 全部正文预览（{total}篇·本地校对用）</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{html.escape(SERIES)} · 全部正文预览（{len(ITEMS)}篇·校对用）</title>
 <style>
-body{{margin:0;background:#dfe6e5;font-family:-apple-system,"Microsoft YaHei",sans-serif;}}
-.topbar{{position:sticky;top:0;z-index:99;background:#234f4d;color:#fff;padding:12px 14px;box-shadow:0 2px 8px rgba(0,0,0,.15);}}
-.topbar h2{{margin:0 0 8px;font-size:16px;font-weight:600;}}
-.nav{{display:flex;flex-wrap:wrap;gap:8px;}}
-.navbtn{{border:1px solid #7fb0ad;background:transparent;color:#dfeeea;padding:6px 12px;border-radius:16px;font-size:13px;cursor:pointer;}}
-.navbtn.on{{background:#fff;color:#234f4d;font-weight:bold;border-color:#fff;}}
-.status{{margin-top:8px;font-size:13px;color:#bfe0dd;}}
-.pager{{max-width:680px;margin:14px auto;display:flex;justify-content:space-between;padding:0 12px;}}
-.pager button{{background:#2f6d6b;color:#fff;border:none;padding:9px 18px;border-radius:8px;font-size:14px;cursor:pointer;}}
-.art{{max-width:680px;margin:0 auto;}}
-.art.show{{display:block!important;}}
+body{{margin:0;background:#eceae6;font-family:'Microsoft YaHei',sans-serif;padding-top:60px}}
+#bar{{position:fixed;top:0;left:0;right:0;background:#4a4945;padding:10px 12px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;z-index:99;box-shadow:0 2px 8px rgba(0,0,0,.15)}}
+.tab{{border:1px solid #8c8a84;background:#5d5b56;color:#eeece8;padding:6px 14px;border-radius:20px;font-size:13px;cursor:pointer}}
+.tab.on{{background:#fff;color:#3a3833;font-weight:bold;border-color:#fff}}
+.art{{display:none;max-width:720px;margin:18px auto 40px}}
+.art.show{{display:block}}
+#pager{{max-width:720px;margin:0 auto 60px;display:flex;justify-content:space-between;padding:0 8px}}
+#pager button{{background:#5d5b56;color:#fff;border:none;padding:10px 22px;border-radius:8px;font-size:15px;cursor:pointer}}
+#pos{{text-align:center;color:#6b6963;font-size:14px;margin:6px 0 0}}
 </style></head><body>
-<div class="topbar"><h2>读懂《心流》· 全部正文预览（{total}篇，仅本地校对，勿发布）</h2>
-<div class="nav">{nav_btns}</div>
-<div class="status" id="st"></div></div>
-<div class="pager"><button onclick="prev()">◀ 上一篇</button><button onclick="next()">下一篇 ▶</button></div>
-{sections}
-<div class="pager"><button onclick="prev()">◀ 上一篇</button><button onclick="next()">下一篇 ▶</button></div>
+<div id="bar">{nav}</div>
+{''.join(secs)}
+<p id="pos"></p>
+<div id="pager"><button onclick="step(-1)">◀ 上一篇</button><button onclick="step(1)">下一篇 ▶</button></div>
 <script>
-const total={total};
-function show(n){{
-  n=Math.max(1,Math.min(total,n));
-  document.querySelectorAll('.art').forEach(a=>{{a.classList.remove('show');a.style.display='none';}});
-  const el=document.getElementById('art'+n);
-  if(el){{el.classList.add('show');el.style.display='block';}}
-  document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('on',b.dataset.n==String(n)));
-  const btn=document.querySelector('.navbtn[data-n="'+n+'"]');
-  document.getElementById('st').textContent='第 '+n+' 篇 / 共 {total} 篇'+(btn?' · '+btn.textContent.replace(/^\\d+·/,''):'');
-  window.scrollTo({{top:0,behavior:'smooth'}});
-}}
-function prev(){{show(cur()-1);}}
-function next(){{show(cur()+1);}}
-function cur(){{const on=document.querySelector('.navbtn.on');return on?parseInt(on.dataset.n):0;}}
-document.addEventListener('keydown',e=>{{if(e.key==='ArrowLeft')prev();if(e.key==='ArrowRight')next();}});
-show(1);
+var N={len(ITEMS)},cur=0;
+function show(i){{cur=(i+N)%N;document.querySelectorAll('.art').forEach((a,k)=>a.classList.toggle('show',k===cur));
+document.querySelectorAll('.tab').forEach((b,k)=>b.classList.toggle('on',k===cur));
+document.getElementById('pos').textContent='第 '+(cur+1)+' 篇 / 共 '+N+' 篇';window.scrollTo(0,0);}}
+function go(i){{show(i);}}function step(d){{show(cur+d);}}
+document.addEventListener('keydown',e=>{{if(e.key==='ArrowLeft')step(-1);if(e.key==='ArrowRight')step(1);}});
+show(0);
 </script></body></html>"""
 
-out = os.path.join(BASE, f"心流系列_全部正文预览_{total}篇.html")
+outdir = os.path.join(BASE, "_预览")
+os.makedirs(outdir, exist_ok=True)
+out = os.path.join(outdir, f"{SERIES}_全部正文预览_{len(ITEMS)}篇.html")
 open(out, "w", encoding="utf-8").write(page)
-print("生成:", out, "篇数:", total)
+print("written:", out)

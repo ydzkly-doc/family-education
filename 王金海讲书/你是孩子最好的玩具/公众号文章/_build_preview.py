@@ -1,78 +1,91 @@
 # -*- coding: utf-8 -*-
-"""把各发布包正文 <body> 内合并为单一预览页（仅本地校对，不发布）。"""
-import re, os, sys
+"""把各发布包正文 body 抽成单页多 tab 预览，仅本地校对用。篇号自动读取，增删篇后重跑即可。
+
+防污染（2026-09-06 铁律）：
+  ① 读取源正文时先正则剥掉任何 data-*（双保险）
+  ② 合并页输出到独立 _预览/ 子目录（纯派生副本），present_files 只开这份副本
+  ③ --fix：就地剥掉所有发布包源正文里的 data-*
+用法：python _build_preview.py [--fix]
+"""
+import re, glob, os, html, sys
 
 BASE = os.path.dirname(os.path.abspath(__file__))
+DATA_RE = re.compile(r'\s*data-[a-zA-Z0-9_-]+="[^"]*"')
+SERIES = os.path.basename(os.path.dirname(BASE))  # 上一级目录名 = 系列名
 
-# (篇号, 短主题, 正文文件相对路径)
-ARTS = [
-    (1, "总纲·四个误区", os.path.join("发布包_第1篇_爱的四个误区", "正文_第1篇_爱的四个误区.html")),
-    (2, "控制型父母",     os.path.join("发布包_第2篇_为你好为什么伤人", "正文_第2篇_为你好为什么伤人.html")),
-    (3, "接纳感受",       os.path.join("发布包_第3篇_别哭关上心门", "正文_第3篇_别哭关上心门.html")),
-    (4, "奖励与内动力",   os.path.join("发布包_第4篇_奖励偷走内动力", "正文_第4篇_奖励偷走内动力.html")),
-    (5, "惩罚与直接后果", os.path.join("发布包_第5篇_让后果说话", "正文_第5篇_让后果说话.html")),
-    (6, "五步法",         os.path.join("发布包_第6篇_情感引导五步法", "正文_第6篇_情感引导五步法.html")),
-    (7, "回望与速览",     os.path.join("发布包_第7篇_多希望小时候读过", "正文_第7篇_多希望小时候读过.html")),
-]
 
-def extract_body(path):
-    html = open(path, encoding="utf-8").read()
-    m = re.search(r"<body[^>]*>(.*?)</body>", html, re.S)
-    return m.group(1).strip() if m else html
+def scan_items():
+    """扫描 发布包_第N篇_主题/ 目录，返回 [(篇号, 短主题), ...] 按篇号排序。"""
+    items = []
+    for d in glob.glob(os.path.join(BASE, "发布包_*")):
+        m = re.search(r"第(\d+)篇[_-](.+)$", os.path.basename(d))
+        if not m:
+            continue
+        items.append((int(m.group(1)), m.group(2).replace("_", "·")))
+    return sorted(items)
 
-sections = []
-navs = []
-for n, topic, rel in ARTS:
-    body = extract_body(os.path.join(BASE, rel))
-    sections.append(f'<section class="art" id="art{n}">\n<div class="arttag">第 {n} 篇 / 共 {len(ARTS)} 篇 · {topic}</div>\n{body}\n</section>')
-    navs.append(f'<button class="nav" data-n="{n}" onclick="go({n})">{n}<span class="nt">{topic}</span></button>')
 
-page = """<!DOCTYPE html>
-<html lang="zh-CN"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>你就是孩子最好的玩具 · 全部正文预览（7 篇）</title>
+def body_of(n):
+    ds = glob.glob(os.path.join(BASE, f"发布包_第{n}篇_*"))
+    if not ds:
+        return ""
+    fs = glob.glob(os.path.join(ds[0], "正文_*.html"))
+    if not fs:
+        return ""
+    t = DATA_RE.sub("", open(fs[0], encoding="utf-8").read())
+    m = re.search(r"<body[^>]*>(.*?)</body>", t, re.S)
+    return m.group(1) if m else ""
+
+
+if "--fix" in sys.argv:
+    n = 0
+    for f in sorted(glob.glob(os.path.join(BASE, "发布包_*", "正文_*.html"))):
+        t = open(f, encoding="utf-8").read()
+        t2 = DATA_RE.sub("", t)
+        if t2 != t:
+            open(f, "w", encoding="utf-8").write(t2)
+            n += 1
+            print("  fixed:", os.path.basename(f))
+    print(f"--fix 完成：清洗 {n} 个文件")
+
+ITEMS = scan_items()
+nav = "".join(
+    f'<button class="tab{" on" if i == 0 else ""}" onclick="go({i})">{n} · {html.escape(t)}</button>'
+    for i, (n, t) in enumerate(ITEMS))
+secs = []
+for i, (n, t) in enumerate(ITEMS):
+    secs.append(f'<section class="art{" show" if i == 0 else ""}" id="art{i}">{body_of(n)}</section>')
+
+page = f"""<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{html.escape(SERIES)} · 全部正文预览（{len(ITEMS)}篇·校对用）</title>
 <style>
- body{margin:0;background:#ece7df;font-family:-apple-system,"Microsoft YaHei",sans-serif;}
- .topbar{position:sticky;top:0;z-index:9;background:#b06a48;padding:12px 14px;box-shadow:0 2px 8px rgba(0,0,0,.15);}
- .topbar h1{margin:0 0 10px;color:#fff;font-size:16px;text-align:center;font-weight:600;}
- .navs{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;}
- .nav{border:1px solid rgba(255,255,255,.5);background:transparent;color:#f3e2d4;border-radius:20px;padding:5px 14px;font-size:14px;cursor:pointer;line-height:1.4;}
- .nav .nt{font-size:11px;margin-left:5px;opacity:.85;}
- .nav.on{background:#fff;color:#93553a;font-weight:700;border-color:#fff;}
- .wrap{max-width:720px;margin:18px auto;}
- .art{display:none;background:transparent;}
- .art.show{display:block;}
- .arttag{max-width:680px;margin:0 auto 10px;text-align:center;color:#93553a;font-size:13px;font-weight:600;background:#faf3ec;border:1px solid #ecd9c6;border-radius:16px;padding:6px 10px;}
- .pager{max-width:680px;margin:16px auto 40px;display:flex;justify-content:space-between;gap:10px;}
- .pager button{flex:1;border:none;background:#b06a48;color:#fff;padding:12px;border-radius:8px;font-size:15px;cursor:pointer;}
- .pager button:disabled{opacity:.35;cursor:default;}
+body{{margin:0;background:#eceae6;font-family:'Microsoft YaHei',sans-serif;padding-top:60px}}
+#bar{{position:fixed;top:0;left:0;right:0;background:#4a4945;padding:10px 12px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;z-index:99;box-shadow:0 2px 8px rgba(0,0,0,.15)}}
+.tab{{border:1px solid #8c8a84;background:#5d5b56;color:#eeece8;padding:6px 14px;border-radius:20px;font-size:13px;cursor:pointer}}
+.tab.on{{background:#fff;color:#3a3833;font-weight:bold;border-color:#fff}}
+.art{{display:none;max-width:720px;margin:18px auto 40px}}
+.art.show{{display:block}}
+#pager{{max-width:720px;margin:0 auto 60px;display:flex;justify-content:space-between;padding:0 8px}}
+#pager button{{background:#5d5b56;color:#fff;border:none;padding:10px 22px;border-radius:8px;font-size:15px;cursor:pointer}}
+#pos{{text-align:center;color:#6b6963;font-size:14px;margin:6px 0 0}}
 </style></head><body>
-<div class="topbar">
- <h1>《你就是孩子最好的玩具》读书笔记 · 全部正文预览（共 __N__ 篇）</h1>
- <div class="navs">__NAVS__</div>
-</div>
-<div class="wrap">
-__SECTIONS__
-<div class="pager">
- <button id="prev" onclick="step(-1)">◀ 上一篇</button>
- <button id="next" onclick="step(1)">下一篇 ▶</button>
-</div>
-</div>
+<div id="bar">{nav}</div>
+{''.join(secs)}
+<p id="pos"></p>
+<div id="pager"><button onclick="step(-1)">◀ 上一篇</button><button onclick="step(1)">下一篇 ▶</button></div>
 <script>
- const total=__N__;let cur=1;
- function show(n){cur=Math.max(1,Math.min(total,n));
-  document.querySelectorAll('.art').forEach(a=>a.classList.toggle('show',a.id==='art'+cur));
-  document.querySelectorAll('.nav').forEach(b=>b.classList.toggle('on',+b.dataset.n===cur));
-  document.getElementById('prev').disabled=cur===1;
-  document.getElementById('next').disabled=cur===total;
-  window.scrollTo({top:0,behavior:'smooth'});}
- function go(n){show(n);} function step(d){show(cur+d);}
- document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')step(-1);if(e.key==='ArrowRight')step(1);});
- show(1);
-</script>
-</body></html>"""
+var N={len(ITEMS)},cur=0;
+function show(i){{cur=(i+N)%N;document.querySelectorAll('.art').forEach((a,k)=>a.classList.toggle('show',k===cur));
+document.querySelectorAll('.tab').forEach((b,k)=>b.classList.toggle('on',k===cur));
+document.getElementById('pos').textContent='第 '+(cur+1)+' 篇 / 共 '+N+' 篇';window.scrollTo(0,0);}}
+function go(i){{show(i);}}function step(d){{show(cur+d);}}
+document.addEventListener('keydown',e=>{{if(e.key==='ArrowLeft')step(-1);if(e.key==='ArrowRight')step(1);}});
+show(0);
+</script></body></html>"""
 
-page = page.replace("__N__", str(len(ARTS))).replace("__NAVS__", "".join(navs)).replace("__SECTIONS__", "\n".join(sections))
-out = os.path.join(BASE, "你是孩子最好的玩具_全部正文预览_7篇.html")
+outdir = os.path.join(BASE, "_预览")
+os.makedirs(outdir, exist_ok=True)
+out = os.path.join(outdir, f"{SERIES}_全部正文预览_{len(ITEMS)}篇.html")
 open(out, "w", encoding="utf-8").write(page)
 print("written:", out)
