@@ -26,13 +26,17 @@ import datetime
 import os
 import sys
 
-# ---- 过期策略：类别 -> (默认保留天数, 说明) ----
+# ---- 过期策略：类别 -> (默认保留天数, 说明, 具体目录名模式) ----
 # 判定原则：越"可重建"保留越短；越含"素材/提示词资产"保留越长。
 POLICY = {
-    "A": (7,    "完全可重建（预览页等，脚本随时重建）"),
-    "B": (14,   "一次性快照（修复前备份，验证通过后即失效）"),
-    "C": (90,   "素材类（候选图/原图/过程文件，含可复用提示词与参数）"),
-    "D": (None, "长期归档（报告、长期资产，不自动过期）"),
+    "A": (7,    "完全可重建（预览页等，脚本随时重建）",
+           ["_预览/"]),
+    "B": (14,   "一次性快照（修复前备份，验证通过后即失效）",
+           ["_backup*/", "_备份/"]),
+    "C": (90,   "素材类（含可复用提示词与参数）",
+           ["_封面候选*/", "_过程文件/", "_未采用*/", "_原始*/", "_归档*/"]),
+    "D": (None, "长期归档（报告、长期资产，不自动过期）",
+           ["_档案/", "_资产/"]),
 }
 
 # 目录名前缀 -> 类别
@@ -93,6 +97,8 @@ def main():
     ap.add_argument("--out", default="", help="输出 markdown 报告到该路径")
     ap.add_argument("--list", default="", help="列出指定类别(A/B/C/D)的完整路径")
     ap.add_argument("--quiet", action="store_true", help="只输出汇总")
+    ap.add_argument("--brief", action="store_true",
+                    help="简报模式：只列具体文件夹名 + 建议动作（供定期扫描用）")
     args = ap.parse_args()
 
     # 解析覆盖
@@ -126,6 +132,30 @@ def main():
             "expired": expired,
         })
 
+    # --brief 模式：只列具体文件夹名 + 建议动作
+    if args.brief:
+        total = sum(r["size"] for r in rows)
+        exp = [r for r in rows if r["expired"]]
+        print(f"过程类目录共 {len(rows)} 个 / {total/1024/1024:.1f} MB；"
+              f"超期 {len(exp)} 个 / {sum(r['size'] for r in exp)/1024/1024:.1f} MB")
+        print()
+        print("【超期 · 建议清理】" if exp else "【超期 · 无】目前没有超期文件夹，本周无需清理。")
+        for r in sorted(exp, key=lambda x: -x["size"]):
+            print(f"  - {r['path']}    [{r['cat']}] {r['size']/1024/1024:.2f}M · {r['age']}天")
+        print()
+        print("【各类占用（未超期也列出，便于掌握体量）】")
+        for cat in sorted(policy):
+            sub = [r for r in rows if r["cat"] == cat]
+            if not sub:
+                continue
+            kd, pats = policy[cat][0], policy[cat][2]
+            kd_txt = f"{kd}天" if kd is not None else "不过期"
+            late = [r for r in sub if r["expired"]]
+            print(f"  {cat} 类（{'、'.join(pats)}，保留{kd_txt}）：{len(sub)} 个 / "
+                  f"{sum(r['size'] for r in sub)/1024/1024:.1f}M"
+                  + (f"，其中超期 {len(late)} 个" if late else ""))
+        return
+
     # --list 模式
     if args.list:
         cat = args.list.strip().upper()
@@ -136,37 +166,52 @@ def main():
         return
 
     # 汇总
+    total_size = sum(r["size"] for r in rows)
+    exp = [r for r in rows if r["expired"]]
+    exp_size = sum(r["size"] for r in exp)
+
     lines = []
     lines.append("# 工作区过程文件扫描报告（只读）")
     lines.append("")
     lines.append(f"> 扫描时间：{now.strftime('%Y-%m-%d %H:%M')}　根目录：`{base}`")
     lines.append("> **本报告只读生成，未删除或移动任何文件。**")
     lines.append("")
-    lines.append("## 过期策略")
+
+    # ---- 最前面：直接给出「该清哪些文件夹」 ----
+    lines.append("## 结论（先看这里）")
     lines.append("")
-    lines.append("| 类 | 含义 | 建议保留 |")
-    lines.append("|---|---|---|")
-    for k, (kd, desc) in sorted(policy.items()):
+    lines.append(f"过程类目录共 **{len(rows)}** 个、合计 **{total_size/1024/1024:.1f} MB**；"
+                 f"其中**已超期 {len(exp)} 个（{exp_size/1024/1024:.1f} MB）**。")
+    lines.append("")
+    if exp:
+        lines.append("### 建议清理的文件夹（已超期）")
+        lines.append("")
+        lines.append("| 具体文件夹 | 类别 | 体积 | 已放置 |")
+        lines.append("|---|---|---|---|")
+        for r in sorted(exp, key=lambda x: -x["size"]):
+            lines.append(f"| `{r['path']}` | {r['cat']} | {r['size']/1024/1024:.2f}M | {r['age']} 天 |")
+        lines.append("")
+    else:
+        lines.append("**目前没有任何超期文件夹，本周无需清理。**")
+        lines.append("")
+
+    # ---- 各目录名模式 → 类别对照（解决"不知道 A 类是什么"） ----
+    lines.append("## 类别对照（各目录名模式及其保留期）")
+    lines.append("")
+    lines.append("| 类 | 对应目录名 | 含义 | 建议保留 |")
+    lines.append("|---|---|---|---|")
+    for k, v in sorted(policy.items()):
+        kd, desc, pats = v[0], v[1], v[2]
         kd_txt = f"{kd} 天" if kd is not None else "不过期"
-        lines.append(f"| {k} | {desc} | {kd_txt} |")
-    lines.append("")
-
-    total_size = sum(r["size"] for r in rows)
-    exp = [r for r in rows if r["expired"]]
-    exp_size = sum(r["size"] for r in exp)
-
-    lines.append("## 汇总")
-    lines.append("")
-    lines.append(f"- 过程类目录共 **{len(rows)}** 个，合计 **{total_size/1024/1024:.1f} MB**")
-    lines.append(f"- 其中 **已超期 {len(exp)} 个，可回收 {exp_size/1024/1024:.1f} MB**")
+        lines.append(f"| {k} | {'、'.join('`'+p+'`' for p in pats)} | {desc} | {kd_txt} |")
     lines.append("")
 
     for cat in sorted(policy):
         sub = [r for r in rows if r["cat"] == cat]
         if not sub:
             continue
-        kd, desc = policy[cat]
-        lines.append(f"## {cat} 类 · {desc}　（{len(sub)} 个 / {sum(r['size'] for r in sub)/1024/1024:.1f} MB）")
+        kd, desc = policy[cat][0], policy[cat][1]
+        lines.append(f"## {cat} 类明细 · {desc}　（{len(sub)} 个 / {sum(r['size'] for r in sub)/1024/1024:.1f} MB）")
         lines.append("")
         lines.append("| 状态 | 体积 | 文件 | 最后修改 | 路径 |")
         lines.append("|---|---|---|---|---|")
