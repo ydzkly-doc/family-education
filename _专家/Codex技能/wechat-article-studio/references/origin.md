@@ -7,7 +7,7 @@
 - 保留课程／读书笔记／原创经历分型、父亲叙事、三道确认、预览隔离、严格／legacy 检查及清理机制。发布包件数以标准版为准：**2026-09-10 起为三件套**（正文 + 01 字段表 + 封面），02 操作指南停止生成新篇、存量保留。
 - 消除源文件内部旧 table／680px 骨架与新 section 规范冲突；以较新的带篇号命名、txt 指南、独立 _预览 目录为准。
 - 不移植 displayName/profession/maxTurns 等 CodeBuddy 专用元数据、present_files、注册命令和私有 Python 路径。
-- 用户明确授权优先且跨阶段有效；不保留“每次必须重新授权”与源文允许预授权相矛盾的表述。
+- 三道人工关卡按标准版执行：只认上一阶段成果出现后、用户当次明确点名下一步的确认；不承认概括式跨阶段授权。减少预览与交付不等于减少确认。
 - 不将源文关于微信账号 API 权限、积分收费、平台条款或特定客户端机理的历史判断写成当前确定事实。需要回答这些问题时重新核验。
 - 不复用固定去水印坐标；图像生成和编辑服从当前工具规则。
 - 课程个案与半虚构叙事不得宣称为用户真实经历；来源声明不是事实校验的替代。
@@ -27,7 +27,7 @@ WorkBuddy 专家版（`_专家/wechat-article-studio.zip` / `agents/wechat-artic
 | 去模板化、结构轮换、语言指纹、相邻篇轮换 | `references/quality.md` §二、`references/editorial.md` |
 | 标题三类轮换、备选标题须有据 | `references/quality.md` §三、`references/editorial.md` |
 | 事实核验分级、适用与风险边界 | `references/quality.md` §四 |
-| 系列规模与跨系列去重 | `references/editorial.md` |
+| 系列规模与跨系列处理 | `references/editorial.md` |
 | 发布包件数与卫生、微信正文规范、封面比例与安全区 | `references/publishing.md` |
 | 巡检分类、清理安全流程 | `references/maintenance.md` |
 | 工具脚本的参数与用途 | `references/publishing.md` |
