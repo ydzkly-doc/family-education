@@ -34,7 +34,7 @@ def body_of(n):
         return ""
     t = DATA_RE.sub("", open(fs[0], encoding="utf-8").read())
     m = re.search(r"<body[^>]*>(.*?)</body>", t, re.S)
-    return m.group(1) if m else ""
+    return m.group(1) if m else t
 
 
 if "--fix" in sys.argv:

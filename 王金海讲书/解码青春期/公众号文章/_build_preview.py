@@ -34,7 +34,9 @@ def body_of(n):
         return ""
     t = DATA_RE.sub("", open(fs[0], encoding="utf-8").read())
     m = re.search(r"<body[^>]*>(.*?)</body>", t, re.S)
-    return m.group(1) if m else ""
+    # 历史正文有两种形态：完整 HTML 文档，或可直接粘贴到微信的 section 片段。
+    # 片段没有 body 标签，预览时应直接使用全文，不能生成空白页。
+    return m.group(1) if m else t
 
 
 if "--fix" in sys.argv:
