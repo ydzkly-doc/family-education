@@ -24,7 +24,8 @@ WorkBuddy 专家版（`_专家/wechat-article-studio.zip` / `agents/wechat-artic
 | --- | --- |
 | 叙事真实性三分法与人物连续性 | `references/quality.md` §一 |
 | 五层完整性、30% 降幅复核线、篇幅区间 | `references/quality.md` §七 |
-| 去模板化、结构轮换、语言指纹、相邻篇轮换 | `references/quality.md` §二、`references/editorial.md` |
+| 文章类型分轨、叙事文替代验收标准 | `references/quality.md` §七、`references/editorial.md` |
+| 去模板化、结构轮换、并列项核心动作、小标题与旁观视角 | `references/quality.md` §二、`references/editorial.md` |
 | 标题三类轮换、备选标题须有据 | `references/quality.md` §三、`references/editorial.md` |
 | 事实核验分级、适用与风险边界 | `references/quality.md` §四 |
 | 系列规模与跨系列处理 | `references/editorial.md` |
@@ -40,3 +41,9 @@ WorkBuddy 专家版（`_专家/wechat-article-studio.zip` / `agents/wechat-artic
 - `agents/openai.yaml` 等 Codex 格式文件。
 
 **冲突时**：以标准版为准，并在本文件记录差异原因（例如本版曾把发布包写成四件套、把水印写成"不自动去除"，均已按标准版修正）。
+
+## 2026-09-14 内容标准同步
+
+已同步 WorkBuddy“公众号学习工坊”首次反哺确认后的内容规则：文章类型分轨、叙事文三项替代验收、并列分论点核心动作检查、进程式／场景锚定式小标题、旁观者开头、具体事项罗列、承认不确定与“他人提问—自己回答”收尾，以及三类正文禁例。Codex 版只迁移平台无关的编辑标准，不复制 WorkBuddy 私有运行路径和注册流程；HTML 仍以 `section` 流式规范为准。
+
+同日，WorkBuddy 又清理了主文件、README、规划、写作和发布细则中残留的 6 处旧 `table` 正向表述。Codex 版此前已统一采用 `section`，本次复核未改变正文排版规则；新增“架构级规则变更后跨文件扫描”的维护要求。现存 `table` 字样只允许用于禁用说明、历史迁移记录或 `table转section` 工具名。
