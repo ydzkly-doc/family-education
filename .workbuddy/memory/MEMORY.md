@@ -70,6 +70,8 @@
 ## 三、排版与 HTML 规范
 
 **结构铁律**：布局一律 `<section>` 流式，**禁 `<table>` 做布局**（微信安卓 X5 会把 table 宽度固化、窄屏右裁）。
+- **⭐ 改架构级规则时，清扫范围必须含「顺带提及的描述句」**（2026-09-14 踩坑）：9-05 改 section 流式时只改了规范条文主体，**agent 骨架第 101 行、README、3 个细则里的 table 描述句全部漏改**，长期自相矛盾。同批还发现 `工具脚本/微信公众号排版HTML规范.md` **顶部声明禁用 table、下面四节却仍按 table 写**（白名单甚至写着"允许 table/tr/td"）。→ **架构级改动要全库 grep 旧关键词，覆盖 README / 配套工具文档 / "顺带提及"句，不能只改主规则。**
+- **⚠️ 纯词替换有陷阱**：`05-publish-kit.md` 生图提示词里的 `hands/table` 是英文**"桌子"**（提示模型别裁掉手/桌），**不是 HTML 标签**，全局替换会毁掉提示词。改前必须逐条看上下文。
 - 标签白名单：`section/p/span/b/strong/br`；**禁 div/h1-4/ul/li/img/data-*/class/`<style>` 块**。文字颜色写在 `p/span/b/strong` 自身，`section` 只放 background/padding/width/border。
 - **白字大标题**：一行一个独立 `<p style="color:#fff;text-align:center;display:block;">`，**禁 `<br>` 拆行**。
 - 标准骨架：标题色块 → 改编声明（第一屏）→ 开场叙事 → 台词卡 → 竖条小标题×N → 正文 → 方法卡 → 金句居中块 → 边界 → 陪伴卡（无动作指令）→ 来源声明（米白 `#faf9f6`+灰字 `#9a9890`）。
