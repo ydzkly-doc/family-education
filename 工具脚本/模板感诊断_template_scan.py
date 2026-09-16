@@ -91,7 +91,10 @@ def main():
 
     rows = []
     for d in pkgs:
-        hfs = glob.glob(os.path.join(d, "正文_*.html"))
+        _cdir = os.path.join(d, "长图文发布包")
+        if not os.path.isdir(_cdir):
+            _cdir = d
+        hfs = glob.glob(os.path.join(_cdir, "正文_*.html"))
         if not hfs:
             continue
         html = open(hfs[0], encoding="utf-8").read()
@@ -164,7 +167,10 @@ def main():
             extra = ""
             if baseline:
                 # 尝试按篇号匹配基线正文，做 30% 降幅复核
-                cands = glob.glob(os.path.join(baseline, "正文_*.html"))
+                _bdir = os.path.join(baseline, "长图文发布包")
+                if not os.path.isdir(_bdir):
+                    _bdir = baseline
+                cands = glob.glob(os.path.join(_bdir, "正文_*.html"))
                 hit = [f for f in cands if re.search(r"第0*%d篇" % r["n"], os.path.basename(f))]
                 if hit:
                     old = len(re.sub(r"\s", "", visible_text(open(hit[0], encoding="utf-8").read())))

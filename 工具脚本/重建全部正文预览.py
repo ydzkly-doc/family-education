@@ -39,7 +39,11 @@ def collect_articles(sdir):
         num = int(mnum.group(1))
         topic = mnum.group(2) or bn
         # 找正文 html（取 正文_第X篇*.html，排除说教版/安卓测试）
-        cands = [f for f in glob.glob(os.path.join(folder, "正文_*.html"))
+        # 兼容新结构：优先查「长图文发布包/」，否则回退包根
+        _cdir = os.path.join(folder, "长图文发布包")
+        if not os.path.isdir(_cdir):
+            _cdir = folder
+        cands = [f for f in glob.glob(os.path.join(_cdir, "正文_*.html"))
                  if "说教版" not in f and "安卓测试" not in os.path.basename(f)]
         if not cands:
             continue

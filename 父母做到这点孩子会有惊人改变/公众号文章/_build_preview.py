@@ -25,11 +25,22 @@ def scan_items():
     return sorted(items)
 
 
+def content_dir(pkg):
+    """返回该发布包「长文正文」所在的目录。
+
+    ⚠️ 双结构兼容（2026-09-16 加）：新结构把长文三件套放在 `长图文发布包/`，
+    旧结构直接放包根。**子目录存在则用之，否则回退包根**——
+    否则目录迁移后本脚本会找不到正文（SOP 3.1 明确要求改造）。
+    """
+    sub = os.path.join(pkg, "长图文发布包")
+    return sub if os.path.isdir(sub) else pkg
+
+
 def body_of(n):
     ds = glob.glob(os.path.join(BASE, f"发布包_第{n}篇_*"))
     if not ds:
         return ""
-    fs = glob.glob(os.path.join(ds[0], "正文_*.html"))
+    fs = glob.glob(os.path.join(content_dir(ds[0]), "正文_*.html"))
     if not fs:
         return ""
     t = DATA_RE.sub("", open(fs[0], encoding="utf-8").read())
@@ -39,7 +50,9 @@ def body_of(n):
 
 if "--fix" in sys.argv:
     n = 0
-    for f in sorted(glob.glob(os.path.join(BASE, "发布包_*", "正文_*.html"))):
+    pats = [os.path.join(BASE, "发布包_*", "正文_*.html"),
+            os.path.join(BASE, "发布包_*", "长图文发布包", "正文_*.html")]
+    for f in sorted([p for pat in pats for p in glob.glob(pat)]):
         t = open(f, encoding="utf-8").read()
         t2 = DATA_RE.sub("", t)
         if t2 != t:

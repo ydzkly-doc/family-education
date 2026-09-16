@@ -50,6 +50,7 @@ ABS_EXEMPT = [
     "父母改变百分之一、孩子可能改变百分之百",  # 方法论表述，非对读者的绝对化承诺
     "改变百分之一", "改变百分之百",
     "百分之九十九",
+    "不是四步话术的必然保证",  # 否定绝对效果，属于风险限定而非效果承诺
 ]
 # 长词优先排序，避免短词先替换破坏长词边界
 ACT_EXEMPT = sorted(ACT_EXEMPT, key=len, reverse=True)
@@ -119,6 +120,21 @@ nums = sorted(int(m.group(1)) for d in pkgs if (m := re.search(r"第(\d+)篇", o
 N = len(pkgs)
 series = os.path.basename(os.path.dirname(BASE)) or BASE
 
+
+# ── 内容目录解析（兼容新旧两种发布包结构）────────────────────────────
+# 新结构（2026-09-15 起）:  发布包_第X篇/长图文发布包/{正文,01,封面}
+#                          发布包_第X篇/卡片发布包/{01,02,第XX篇_卡片_NN}
+# 旧结构（历史）:          发布包_第X篇/{正文,01,封面}
+def content_dir(pkg_dir, kind="长图文发布包"):
+    """若存在对应子目录则用之，否则回退包根。kind 可为 '长图文发布包' / '卡片发布包'。"""
+    sub = os.path.join(pkg_dir, kind)
+    return sub if os.path.isdir(sub) else pkg_dir
+
+
+def has_card_kit(pkg_dir):
+    """是否含卡片发布包（含即需检查卡片交付物）"""
+    return os.path.isdir(os.path.join(pkg_dir, "卡片发布包"))
+
 print("=" * 62)
 print(f"《{series}》发布前全套自检 · 共 {N} 个发布包")
 print("=" * 62)
@@ -132,7 +148,8 @@ print("\n【2】三件套齐全（正文.html + 01字段.txt + 封面.jpg）")
 #   严格模式：02 若意外出现只提示（不算失败），因为新规范已取消。
 #   既有系列：历史带的 02_*.txt / .md 属历史产物，放行不报错。
 for d in pkgs:
-    fs = os.listdir(d)
+    cd = content_dir(d)
+    fs = os.listdir(cd)
     h = [f for f in fs if f.startswith("正文_") and f.endswith(".html")]
     a = [f for f in fs if f.startswith("01_")]
     b = [f for f in fs if f.startswith("02_")]
@@ -156,10 +173,58 @@ for d in pkgs:
             msg += "  ← 提示：02 指南已停生成新篇（存量保留，不影响通过）"
     p(ok, msg)
 
+print("\n【2c】目录结构状态（提示项，不计失败）")
+# 策略「逐篇随做」：做某篇卡片时顺手迁为新结构；未迁移的旧结构照常可用。
+_new = [d for d in pkgs if os.path.isdir(os.path.join(d, "长图文发布包"))]
+_old = [d for d in pkgs if not os.path.isdir(os.path.join(d, "长图文发布包"))]
+print(f"  ℹ️  新结构 {len(_new)} 篇 / 旧结构 {len(_old)} 篇")
+if _old:
+    print(f"      旧结构（做卡片时顺手迁移即可，不影响自检）：{'、'.join(os.path.basename(d) for d in _old[:8])}"
+          + ("…" if len(_old) > 8 else ""))
+# 异常：有卡片发布包却没迁长图文（说明迁移漏了）
+_bad_mig = [d for d in pkgs if has_card_kit(d) and not os.path.isdir(os.path.join(d, "长图文发布包"))]
+for d in _bad_mig:
+    p(False, f"{os.path.basename(d)}：有卡片发布包但未建长图文发布包 ← 迁移不完整")
+
+print("\n【2b】卡片发布包（存在则检查；三件套：01字段 + 02正文 + 第XX篇_卡片_NN.jpg）")
+_cards = [d for d in pkgs if has_card_kit(d)]
+if not _cards:
+    print("  ℹ️  本系列暂无卡片发布包（卡片文章为可选增量）")
+for d in _cards:
+    ck = os.path.join(d, "卡片发布包")
+    fs = os.listdir(ck)
+    _m = re.search(r"第(\d+)篇", os.path.basename(d))
+    tag_pfxes = (("第%d篇_" % int(_m.group(1))), ("第%02d篇_" % int(_m.group(1)))) if _m else ()
+    a2 = [f for f in fs if f.startswith("01_")]
+    t2 = [f for f in fs if f.startswith("02_") and f.endswith(".txt")]
+    # 兼容新旧命名：新=「第XX篇_卡片_NN_xxx.jpg」，旧=「卡片_NN_xxx.jpg」
+    import re as _re
+    g2 = sorted(f for f in fs
+                if f.endswith(".jpg") and _re.search(r"(^|_)卡片_\d\d_", f))
+    # 体积与比例检查
+    oversize = []
+    for f in g2:
+        fp = os.path.join(ck, f)
+        kb = os.path.getsize(fp) / 1024
+        if kb > 100:
+            oversize.append(f"{f} {kb:.1f}KB")
+    msg = (f"{os.path.basename(d)}：01字段{len(a2)} / 02正文{len(t2)} / 卡片{len(g2)}"
+           + (f" ← 超100KB：{'、'.join(oversize)}" if oversize else ""))
+    ok = len(a2) == 1 and len(t2) == 1 and 1 <= len(g2) <= 5 and not oversize
+    if not LEGACY and len(g2) > 5:
+        msg += " ← 卡片数超 5 张上限"
+    # ⭐ 命名规范：不带篇号前缀会在公众号图库里跨篇覆盖（2026-09-15 修）
+    nonpref = [f for f in g2 if not any(f.startswith(pfx) for pfx in tag_pfxes)]
+    if nonpref:
+        ok = False
+        msg += " ← 文件名缺篇号前缀（上传图库会跨篇覆盖）：" + "、".join(nonpref[:3])
+    p(ok, msg)
+
 print("\n【3】标题三处逐字一致（正文大标题 = 01字段表【标题】）")
 for d in pkgs:
-    hfs = glob.glob(os.path.join(d, "正文_*.html"))
-    tfs = glob.glob(os.path.join(d, "01_*.txt"))
+    cd = content_dir(d)
+    hfs = glob.glob(os.path.join(cd, "正文_*.html"))
+    tfs = glob.glob(os.path.join(cd, "01_*.txt"))
     if not hfs:
         p(False, f"{os.path.basename(d)}：缺正文")
         continue
@@ -188,7 +253,7 @@ for d in pkgs:
 print("\n【4】文末来源声明在位")
 src_norm = norm(args.source)
 for d in pkgs:
-    hf = glob.glob(os.path.join(d, "正文_*.html"))[0]
+    hf = glob.glob(os.path.join(content_dir(d), "正文_*.html"))[0]
     t = open(hf, encoding="utf-8").read()
     has_src = src_norm in norm(t)
     if LEGACY:
@@ -200,11 +265,12 @@ for d in pkgs:
         has_decl = any(k in t for k in ("版权", "非原文", "非课程", "非原著", "模糊化", "真实经历", "注明出处"))
         p(has_origin and has_decl, f"{os.path.basename(d)}｜含来源声明块")
     else:
-        p(has_src and "非原文摘录" in t, f"{os.path.basename(d)}｜{args.source}")
+        has_non_excerpt = any(k in t for k in ("非原文摘录", "非课程原文摘录", "非原著摘录"))
+        p(has_src and has_non_excerpt, f"{os.path.basename(d)}｜{args.source}")
 
 print("\n【5】无动作指令 / 无绝对化承诺")
 for d in pkgs:
-    t = open(glob.glob(os.path.join(d, "正文_*.html"))[0], encoding="utf-8").read()
+    t = open(glob.glob(os.path.join(content_dir(d), "正文_*.html"))[0], encoding="utf-8").read()
     # 只扫正文可见文字，排除 <script>/<style> 块，避免把导航脚本里的词当正文
     body = re.sub(r"<(script|style)\b.*?</\1>", "", t, flags=re.S | re.I)
     visible = re.sub(r"<[^>]+>", "", body)
@@ -217,7 +283,7 @@ for d in pkgs:
 
 print("\n【6】结构规范（零 table/div/img/data-*，section 配平）")
 for d in pkgs:
-    t = open(glob.glob(os.path.join(d, "正文_*.html"))[0], encoding="utf-8").read()
+    t = open(glob.glob(os.path.join(content_dir(d), "正文_*.html"))[0], encoding="utf-8").read()
     so, sc = len(re.findall(r"<section[ >]", t)), len(re.findall(r"</section>", t))
     po, pc = len(re.findall(r"<p[ >]", t)), len(re.findall(r"</p>", t))
     bad = []
@@ -241,7 +307,8 @@ print("\n【7】规则化校验脚本（wx_html_fix --check）")
 if TOOLS:
     sc_path = os.path.join(TOOLS, "微信HTML规范校验修复_wx_html_fix.py")
     r = subprocess.run([sys.executable, sc_path, "--check"] +
-                       sorted(glob.glob(os.path.join(BASE, "发布包_*", "正文_*.html"))),
+                       sorted(glob.glob(os.path.join(BASE, "发布包_*", "长图文发布包", "正文_*.html")))
+                       + sorted(glob.glob(os.path.join(BASE, "发布包_*", "正文_*.html"))),
                        capture_output=True, text=True, encoding="utf-8", errors="replace")
     tail = [l for l in r.stdout.strip().splitlines() if l.strip()]
     p(bool(tail) and f"合格 {N} / {N}" in tail[-1], tail[-1] if tail else "脚本无输出")
