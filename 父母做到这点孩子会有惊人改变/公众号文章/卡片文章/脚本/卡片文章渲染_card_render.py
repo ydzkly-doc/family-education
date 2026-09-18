@@ -151,17 +151,17 @@ def wrap(draw, text, f, max_w):
     return lines
 
 
-def para_h(draw, paras, f, max_w, lh=1.78):
+def para_h(draw, paras, f, max_w, lh=1.66):
     tot = 0
     for i, p in enumerate(paras):
         n = len(wrap(draw, p, f, max_w))
         tot += int(f.size * lh) * n
         if i < len(paras) - 1:
-            tot += int(f.size * 0.62)
+            tot += int(f.size * 0.58)
     return tot
 
 
-def draw_paras(draw, paras, x, y, f, color, max_w, lh=1.78):
+def draw_paras(draw, paras, x, y, f, color, max_w, lh=1.66):
     step = int(f.size * lh)
     for i, p in enumerate(paras):
         for ln in wrap(draw, p, f, max_w):
@@ -169,7 +169,7 @@ def draw_paras(draw, paras, x, y, f, color, max_w, lh=1.78):
             BOXES.append((x, y, x + draw.textlength(ln, font=f), y + f.size))
             y += step
         if i < len(paras) - 1:
-            y += int(f.size * 0.62)
+            y += int(f.size * 0.58)
     return y
 
 
@@ -250,8 +250,8 @@ def draw_center_lines(draw, lines):
 # ⭐ 逐张标注：卡内出现"改编"字样时用暖金，纯身份/来源标注用中性色
 def _note_color(text, light=False):
     if '改编' in text or '虚构' in text:
-        return '#e9dcc6' if light else '#c8a878'
-    return '#ded0b8' if light else '#b8ac9c'
+        return '#e6d2a8' if light else '#8a6b3a'
+    return '#d8d2c2' if light else '#5f6152'
 
 
 def top_labels(draw, light=False):
@@ -262,7 +262,7 @@ def top_labels(draw, light=False):
     t = NOTES[1] if len(NOTES) > 1 else NOTES[0]
     y = 34
     tw = draw.textlength(t, font=f)
-    draw.text(((W - tw) / 2, y), t, font=f, fill='#e9dcc6' if light else '#b8ac9c')
+    draw.text(((W - tw) / 2, y), t, font=f, fill='#d8cdb0' if light else '#6f7161')
     BOXES.append(((W - tw) / 2, y, (W + tw) / 2, y + f.size))
     f2 = font(25)
     note = CUR_NOTE if CUR_NOTE else NOTES[0]
@@ -356,8 +356,8 @@ def compare_card(topic, rows):
     heights = []
     for _, title, body in rows:
         n = len(wrap(d, body, f_b, W - pad * 2 - PADIN * 2))
-        heights.append(PADIN * 2 + f_h.size + 30 + int(f_b.size * 1.78) * n)
-    gap = 44
+        heights.append(PADIN * 2 + f_h.size + 30 + int(f_b.size * 1.66) * n)
+    gap = 56      # ⭐ 2026-09-18：44 → 56，配合行距 1.66 让对照卡落进 62–68% 目标带
     total = f_topic.size + 28 + sum(heights) + gap * (len(rows) - 1)
 
     AREA_TOP, AREA_BOT = 132, H - MARGIN - 26
@@ -379,7 +379,7 @@ def compare_card(topic, rows):
             d.text((pad + PADIN, by), ln, font=f_b, fill=col)
             BOXES.append((pad + PADIN, by,
                           pad + PADIN + d.textlength(ln, font=f_b), by + f_b.size))
-            by += int(f_b.size * 1.78)
+            by += int(f_b.size * 1.66)
         y += bh + gap
 
     sig(d)
@@ -406,7 +406,7 @@ def timeline_card(topic, head, nodes):
     # 先量总高（用于垂直居中）
     _h = f_topic.size + 24 + int(f_head.size * 1.34) * len(head_lines) + 50
     for _t, _body in nodes:
-        _h += f_t.size + 20 + int(f_b.size * 1.76) * len(wrap(d, _body, f_b, MW)) + 52
+        _h += f_t.size + 20 + int(f_b.size * 1.64) * len(wrap(d, _body, f_b, MW)) + 52
     total = _h - 52
 
     AREA_TOP, AREA_BOT = 132, H - MARGIN - 26
@@ -431,7 +431,7 @@ def timeline_card(topic, head, nodes):
         for ln in wrap(d, body, f_b, MW):
             d.text((X, yy), ln, font=f_b, fill=BROWN)
             BOXES.append((X, yy, X + d.textlength(ln, font=f_b), yy + f_b.size))
-            yy += int(f_b.size * 1.76)
+            yy += int(f_b.size * 1.64)
         y = yy + 52
     d.rounded_rectangle([MARGIN + 17, line_top, MARGIN + 24, y - 52 - 8], radius=3, fill=BAND)
     sig(d)
@@ -458,15 +458,15 @@ def quad_card(topic, head, quads):
     head_lines = wrap(d, head, f_head, MW)
 
     # 版式参数
-    gap = 34                      # 格间距
+    gap = 48                      # 格间距（⭐ 2026-09-18：34→48，配合行距 1.66 落进 62–68%）
     card_w = (MW - gap) // 2
-    pad_in = 34                   # 格内边距
+    pad_in = 52                   # 格内边距（⭐ 2026-09-18：34→52，同上）
     inner_w = card_w - pad_in * 2
 
     # 量每格高度（取最高的那格，保证两行对齐）
     cell_h = 0
     for q in quads[:4]:
-        hh = f_q.size + 22 + int(f_b.size * 1.72) * len(wrap(d, q['d'], f_b, inner_w))
+        hh = f_q.size + 22 + int(f_b.size * 1.60) * len(wrap(d, q['d'], f_b, inner_w))
         cell_h = max(cell_h, hh)
     cell_h += pad_in * 2
 
@@ -502,7 +502,7 @@ def quad_card(topic, head, quads):
         for ln in wrap(d, q['d'], f_b, inner_w):
             d.text((tx, ty), ln, font=f_b, fill=BROWN)
             BOXES.append((tx, ty, tx + d.textlength(ln, font=f_b), ty + f_b.size))
-            ty += int(f_b.size * 1.72)
+            ty += int(f_b.size * 1.60)
 
     sig(d)
     return im
@@ -626,7 +626,7 @@ def closing_card():
     f_b = font(fsize)
     y = int(cfg.get('y0', 158))
     if scene:
-        y = draw_paras(d, scene, X, y, f_b, CREAM, MW, 1.74) + 52
+        y = draw_paras(d, scene, X, y, f_b, CREAM, MW, 1.62) + 52
 
     f_j = font(qsize, True)
     items = [{'t': q['t'], 'f': f_j,
