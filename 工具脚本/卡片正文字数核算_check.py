@@ -9,8 +9,12 @@
 ⛔ 历史踩坑：先前用「去掉所有空白」口径核算，**少算了 46 个换行符**，
    报出 983 而真实为 1035（用户后台看到的数字），导致超出限制而不自知。
 
+项目现行正文目标：600 字符 ±10%，即 540–660。
+原文特别短且已获用户确认时，可用 --min/--max 传入当次批准的例外区间；
+工具只执行计数，不代替该确认。
+
 用法：
-  python 卡片正文字数核算_check.py <正文txt> --title "标题" [--limit 1064] [--target 950]
+  python 卡片正文字数核算_check.py <正文txt> --title "标题" [--limit 1064] [--min 540] [--max 660]
 """
 import sys, os, io, argparse
 
@@ -26,7 +30,10 @@ def main():
     ap.add_argument('path')
     ap.add_argument('--title', required=True)
     ap.add_argument('--limit', type=int, default=1064, help='标题+正文 合计上限')
-    ap.add_argument('--target', type=int, default=950, help='正文单独建议上限')
+    ap.add_argument('--min', dest='min_chars', type=int, default=540,
+                    help='正文目标下限；默认 540，短原文例外须先获用户确认')
+    ap.add_argument('--max', dest='max_chars', type=int, default=660,
+                    help='正文目标上限；默认 660')
     a = ap.parse_args()
 
     raw = open(a.path, 'rb').read()
@@ -46,12 +53,18 @@ def main():
     print('  ─────────────────────────')
     print('  合计        %4d / %d   余量 %d   %s'
           % (total, a.limit, a.limit - total, '✅' if total <= a.limit else '❌超限'))
-    print('  正文单独    %4d / %d   %s'
-          % (n, a.target, '✅' if n <= a.target else '❌ 需再压 %d' % (n - a.target)))
+    if n < a.min_chars:
+        range_result = '❌ 少 %d；原文特别短时先确认例外' % (a.min_chars - n)
+    elif n > a.max_chars:
+        range_result = '❌ 超 %d' % (n - a.max_chars)
+    else:
+        range_result = '✅'
+    print('  正文目标    %4d / %d–%d   %s'
+          % (n, a.min_chars, a.max_chars, range_result))
     print()
     print('  （参考）去空白纯字 %d ｜ 段落 %d ｜ 标签 %d 个'
           % (pure, len(body), tags[0].count('#') if tags else 0))
-    ok = total <= a.limit and n <= a.target
+    ok = total <= a.limit and a.min_chars <= n <= a.max_chars
     print()
     print('判定：%s' % ('✅ 合规' if ok else '❌ 不合规'))
     return 0 if ok else 1

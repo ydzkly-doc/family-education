@@ -46,8 +46,9 @@ F_REG   = r'C:\Windows\Fonts\msyh.ttc'
 BASE = r'D:\个人资料\家庭教育\青春期30讲\公众号文章\卡片文章'
 OUT = os.path.join(BASE, '..', '发布包_第16篇_眼神形象', '卡片发布包')
 BG_DIR = os.path.join(BASE, '_过程文件', '底图成品')
-os.makedirs(OUT, exist_ok=True)
-
+# ⚠️ 2026-09-19：建目录移出模块顶层（原写法让"任何 import"都凭空建目录，
+#   且 OUT 是第1篇的硬编码默认值 → 跑后续篇目时可能错写进第1篇）。
+#   统一交给 main() 读配置之后执行（文件末尾已有 os.makedirs(OUT, exist_ok=True)）。
 _fc = {}
 def font(size, bold=False):
     k = (size, bold)

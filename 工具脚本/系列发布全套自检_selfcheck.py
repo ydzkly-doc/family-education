@@ -123,7 +123,7 @@ series = os.path.basename(os.path.dirname(BASE)) or BASE
 
 # ── 内容目录解析（兼容新旧两种发布包结构）────────────────────────────
 # 新结构（2026-09-15 起）:  发布包_第X篇/长图文发布包/{正文,01,封面}
-#                          发布包_第X篇/卡片发布包/{01,02,第XX篇_卡片_NN}
+#                          发布包_第X篇/卡片发布包/{01,02,系列码_短名_第XX篇_卡片_NN_角色_vNN}
 # 旧结构（历史）:          发布包_第X篇/{正文,01,封面}
 def content_dir(pkg_dir, kind="长图文发布包"):
     """若存在对应子目录则用之，否则回退包根。kind 可为 '长图文发布包' / '卡片发布包'。"""
@@ -186,21 +186,26 @@ _bad_mig = [d for d in pkgs if has_card_kit(d) and not os.path.isdir(os.path.joi
 for d in _bad_mig:
     p(False, f"{os.path.basename(d)}：有卡片发布包但未建长图文发布包 ← 迁移不完整")
 
-print("\n【2b】卡片发布包（存在则检查；三件套：01字段 + 02正文 + 第XX篇_卡片_NN.jpg）")
+print("\n【2b】卡片发布包（存在则检查；01字段 + 02正文 + 素材库全局唯一命名卡图）")
 _cards = [d for d in pkgs if has_card_kit(d)]
 if not _cards:
     print("  ℹ️  本系列暂无卡片发布包（卡片文章为可选增量）")
+_asset_codes = set()
+_all_card_names = []
+_new_card_name_re = re.compile(
+    r"^(?P<code>[A-Z][A-Z0-9]{3,11})_(?P<short>[^_]{2,16})_第(?P<part>\d{2})篇_"
+    r"卡片_(?P<card>\d{2})_(?P<role>封面|内容|收尾)_v(?P<version>\d{2})\.jpg$"
+)
 for d in _cards:
     ck = os.path.join(d, "卡片发布包")
     fs = os.listdir(ck)
     _m = re.search(r"第(\d+)篇", os.path.basename(d))
-    tag_pfxes = (("第%d篇_" % int(_m.group(1))), ("第%02d篇_" % int(_m.group(1)))) if _m else ()
+    expected_part = int(_m.group(1)) if _m else None
     a2 = [f for f in fs if f.startswith("01_")]
     t2 = [f for f in fs if f.startswith("02_") and f.endswith(".txt")]
-    # 兼容新旧命名：新=「第XX篇_卡片_NN_xxx.jpg」，旧=「卡片_NN_xxx.jpg」
-    import re as _re
+    # 先收集所有可能的卡图；旧命名仅在 --legacy 模式放行。
     g2 = sorted(f for f in fs
-                if f.endswith(".jpg") and _re.search(r"(^|_)卡片_\d\d_", f))
+                if f.endswith(".jpg") and re.search(r"(^|_)卡片_\d\d_", f))
     # 体积与比例检查
     oversize = []
     for f in g2:
@@ -213,12 +218,39 @@ for d in _cards:
     ok = len(a2) == 1 and len(t2) == 1 and 1 <= len(g2) <= 5 and not oversize
     if not LEGACY and len(g2) > 5:
         msg += " ← 卡片数超 5 张上限"
-    # ⭐ 命名规范：不带篇号前缀会在公众号图库里跨篇覆盖（2026-09-15 修）
-    nonpref = [f for f in g2 if not any(f.startswith(pfx) for pfx in tag_pfxes)]
-    if nonpref:
+    # 新命名不能依赖本地目录：系列资产码 + 中文短名 + 篇号 + 卡序 + 角色 + 版本。
+    parsed = []
+    bad_names = []
+    for f in g2:
+        m2 = _new_card_name_re.match(f)
+        if not m2:
+            bad_names.append(f)
+            continue
+        parsed.append((f, m2))
+        _asset_codes.add(m2.group("code"))
+        _all_card_names.append(f)
+        if expected_part is not None and int(m2.group("part")) != expected_part:
+            ok = False
+            msg += f" ← 文件篇号与发布包不一致：{f}"
+    if bad_names and not LEGACY:
         ok = False
-        msg += " ← 文件名缺篇号前缀（上传图库会跨篇覆盖）：" + "、".join(nonpref[:3])
+        msg += " ← 未采用素材库全局唯一命名：" + "、".join(bad_names[:3])
+    if parsed:
+        seq = [int(m.group("card")) for _, m in parsed]
+        roles = [m.group("role") for _, m in parsed]
+        if seq != list(range(1, len(seq) + 1)):
+            ok = False
+            msg += f" ← 卡序不连续：{seq}"
+        if roles[0] != "封面" or roles[-1] != "收尾" or any(r != "内容" for r in roles[1:-1]):
+            ok = False
+            msg += " ← 卡位角色应为封面/内容…/收尾"
     p(ok, msg)
+
+if not LEGACY and len(_asset_codes) > 1:
+    p(False, f"同一系列出现多个素材资产码：{sorted(_asset_codes)}")
+if not LEGACY and len(_all_card_names) != len(set(_all_card_names)):
+    dup = sorted({n for n in _all_card_names if _all_card_names.count(n) > 1})
+    p(False, "全系列卡图 basename 重复：" + "、".join(dup[:5]))
 
 print("\n【3】标题三处逐字一致（正文大标题 = 01字段表【标题】）")
 for d in pkgs:
@@ -265,8 +297,17 @@ for d in pkgs:
         has_decl = any(k in t for k in ("版权", "非原文", "非课程", "非原著", "模糊化", "真实经历", "注明出处"))
         p(has_origin and has_decl, f"{os.path.basename(d)}｜含来源声明块")
     else:
+        # ⭐ 2026-09-19 修正：严格分支原先只认"非原文摘录"三类，
+        #   导致**「原创真实经历」类系列**（如《手机危机处理》，声明为
+        #   "本文为作者真实经历原创分享…模糊化处理"）**永远无法通过自检**——
+        #   因为这类文章本就不是"整理自他人原文"，不存在"非原文摘录"的说法。
+        #   → 按内容类型分三支，任一成立即通过（与 LEGACY 分支的分类口径一致）。
         has_non_excerpt = any(k in t for k in ("非原文摘录", "非课程原文摘录", "非原著摘录"))
-        p(has_src and has_non_excerpt, f"{os.path.basename(d)}｜{args.source}")
+        # 原创真实经历类：须同时有"真实经历"与"模糊化/授权/不构成专业建议"之类的责任声明
+        has_original_real = ("真实经历" in t) and any(
+            k in t for k in ("模糊化", "转载请联系授权", "不构成专业建议", "注明出处"))
+        p(has_non_excerpt or has_original_real,
+          f"{os.path.basename(d)}｜{args.source}")
 
 print("\n【5】无动作指令 / 无绝对化承诺")
 for d in pkgs:

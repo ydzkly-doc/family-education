@@ -46,8 +46,9 @@ F_REG   = r'C:\Windows\Fonts\msyh.ttc'
 BASE = r'D:\个人资料\家庭教育\为什么学生不喜欢上学\公众号文章\卡片文章'
 OUT = os.path.join(BASE, '发布包_第1篇_5个学习真相', '卡片发布包')
 BG_DIR = os.path.join(BASE, '_过程文件', '底图成品')
-os.makedirs(OUT, exist_ok=True)
-
+# ⚠️ 2026-09-19：建目录移出模块顶层（原写法让"任何 import"都凭空建目录，
+#   且 OUT 是第1篇的硬编码默认值 → 跑后续篇目时可能错写进第1篇）。
+#   统一交给 main() 读配置之后执行（文件末尾已有 os.makedirs(OUT, exist_ok=True)）。
 _fc = {}
 def font(size, bold=False):
     k = (size, bold)
@@ -153,17 +154,17 @@ def wrap(draw, text, f, max_w):
     return lines
 
 
-def para_h(draw, paras, f, max_w, lh=1.78):
+def para_h(draw, paras, f, max_w, lh=1.66):
     tot = 0
     for i, p in enumerate(paras):
         n = len(wrap(draw, p, f, max_w))
         tot += int(f.size * lh) * n
         if i < len(paras) - 1:
-            tot += int(f.size * 0.62)
+            tot += int(f.size * 0.58)
     return tot
 
 
-def draw_paras(draw, paras, x, y, f, color, max_w, lh=1.78):
+def draw_paras(draw, paras, x, y, f, color, max_w, lh=1.66):
     step = int(f.size * lh)
     for i, p in enumerate(paras):
         for ln in wrap(draw, p, f, max_w):
@@ -171,7 +172,7 @@ def draw_paras(draw, paras, x, y, f, color, max_w, lh=1.78):
             BOXES.append((x, y, x + draw.textlength(ln, font=f), y + f.size))
             y += step
         if i < len(paras) - 1:
-            y += int(f.size * 0.62)
+            y += int(f.size * 0.58)
     return y
 
 
@@ -361,8 +362,8 @@ def compare_card(topic, rows):
     heights = []
     for _, title, body in rows:
         n = len(wrap(d, body, f_b, W - pad * 2 - PADIN * 2))
-        heights.append(PADIN * 2 + f_h.size + 30 + int(f_b.size * 1.78) * n)
-    gap = 44
+        heights.append(PADIN * 2 + f_h.size + 30 + int(f_b.size * 1.66) * n)
+    gap = 56
     total = f_topic.size + 28 + sum(heights) + gap * (len(rows) - 1)
 
     AREA_TOP, AREA_BOT = 132, H - MARGIN - 26
@@ -384,7 +385,7 @@ def compare_card(topic, rows):
             d.text((pad + PADIN, by), ln, font=f_b, fill=col)
             BOXES.append((pad + PADIN, by,
                           pad + PADIN + d.textlength(ln, font=f_b), by + f_b.size))
-            by += int(f_b.size * 1.78)
+            by += int(f_b.size * 1.66)
         y += bh + gap
 
     sig(d)
@@ -408,11 +409,15 @@ def timeline_card(topic, head, nodes):
 
     head_lines = wrap(d, head, f_head, MW)
 
+    # ⭐ 2026-09-19：节点间距可由配置覆盖（tl_gap）——
+    #    实测 5 节点卡在固定 52 时密度偏高、4 节点卡偏低，需要按卡微调。
+    _GAP = CFG.get('tl_gap', 52)
+
     # 先量总高（用于垂直居中）
     _h = f_topic.size + 24 + int(f_head.size * 1.34) * len(head_lines) + 50
     for _t, _body in nodes:
-        _h += f_t.size + 20 + int(f_b.size * 1.76) * len(wrap(d, _body, f_b, MW)) + 52
-    total = _h - 52
+        _h += f_t.size + 20 + int(f_b.size * 1.64) * len(wrap(d, _body, f_b, MW)) + _GAP
+    total = _h - _GAP
 
     AREA_TOP, AREA_BOT = 132, H - MARGIN - 26
     y = AREA_TOP + max(0, (AREA_BOT - AREA_TOP - total) * 0.50)
@@ -436,9 +441,9 @@ def timeline_card(topic, head, nodes):
         for ln in wrap(d, body, f_b, MW):
             d.text((X, yy), ln, font=f_b, fill=BROWN)
             BOXES.append((X, yy, X + d.textlength(ln, font=f_b), yy + f_b.size))
-            yy += int(f_b.size * 1.76)
-        y = yy + 52
-    d.rounded_rectangle([MARGIN + 17, line_top, MARGIN + 24, y - 52 - 8], radius=3, fill=BAND)
+            yy += int(f_b.size * 1.64)
+        y = yy + _GAP
+    d.rounded_rectangle([MARGIN + 17, line_top, MARGIN + 24, y - _GAP - 8], radius=3, fill=BAND)
     sig(d)
     return im
 
@@ -463,15 +468,15 @@ def quad_card(topic, head, quads):
     head_lines = wrap(d, head, f_head, MW)
 
     # 版式参数
-    gap = 34                      # 格间距
+    gap = 48                      # 格间距
     card_w = (MW - gap) // 2
-    pad_in = 34                   # 格内边距
+    pad_in = 52                   # 格内边距
     inner_w = card_w - pad_in * 2
 
     # 量每格高度（取最高的那格，保证两行对齐）
     cell_h = 0
     for q in quads[:4]:
-        hh = f_q.size + 22 + int(f_b.size * 1.72) * len(wrap(d, q['d'], f_b, inner_w))
+        hh = f_q.size + 22 + int(f_b.size * 1.60) * len(wrap(d, q['d'], f_b, inner_w))
         cell_h = max(cell_h, hh)
     cell_h += pad_in * 2
 
@@ -507,7 +512,7 @@ def quad_card(topic, head, quads):
         for ln in wrap(d, q['d'], f_b, inner_w):
             d.text((tx, ty), ln, font=f_b, fill=BROWN)
             BOXES.append((tx, ty, tx + d.textlength(ln, font=f_b), ty + f_b.size))
-            ty += int(f_b.size * 1.72)
+            ty += int(f_b.size * 1.60)
 
     sig(d)
     return im

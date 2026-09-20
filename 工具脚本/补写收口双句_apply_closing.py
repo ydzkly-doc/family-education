@@ -74,7 +74,17 @@ def find_insert_pos(s, series):
 
 
 def already_done(s):
-    return ('还在重启的爸爸' in s) or ('还在学着' in s and '爸爸' in s)
+    """⚠️ 2026-09-19 修正：原判据过松——只要出现"还在重启的爸爸"就判完成，
+    导致"有自述但缺认知转折"的篇目（如「改善你的亲子关系」第1、2篇）被永久跳过。
+    → 改为**两项分别检查**：自述在位 **且** 转折句在位，才算完成。"""
+    has_id = ('还在重启的爸爸' in s) or ('还在学着' in s and '爸爸' in s) \
+             or ('还在练' in s and '爸爸' in s)
+    # 转折句：与 收口双句巡检_check_closing.py 的 COG_MARK 同源（取主干）
+    cog_marks = ['我后来', '后来才', '我这才', '我渐渐', '我越来越', '我慢慢才',
+                 '我总算', '我算是', '我才明白', '我才信', '后来我才',
+                 '我才发现', '我花了很久', '我如今', '这些年我才']
+    has_cog = any(m in s for m in cog_marks)
+    return has_id and has_cog
 
 
 def process(series, root, apply=False):

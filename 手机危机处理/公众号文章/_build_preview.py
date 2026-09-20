@@ -25,11 +25,21 @@ def scan_items():
     return sorted(items)
 
 
+def content_dir(pack):
+    """解析发布包内的内容目录：⭐ 优先 `长图文发布包/`，不存在则回退包根。
+
+    2026-09-19：目录迁移后长文三件套移入子目录，本函数做兼容，
+    保证迁移前后脚本都能跑（SOP《目录迁移前必做》三项之一）。
+    """
+    sub = os.path.join(pack, "长图文发布包")
+    return sub if os.path.isdir(sub) else pack
+
+
 def body_of(n):
     ds = glob.glob(os.path.join(BASE, f"发布包_第{n}篇_*"))
     if not ds:
         return ""
-    fs = glob.glob(os.path.join(ds[0], "正文_*.html"))
+    fs = glob.glob(os.path.join(content_dir(ds[0]), "正文_*.html"))
     if not fs:
         return ""
     t = DATA_RE.sub("", open(fs[0], encoding="utf-8").read())
@@ -39,12 +49,13 @@ def body_of(n):
 
 if "--fix" in sys.argv:
     n = 0
-    for f in sorted(glob.glob(os.path.join(BASE, "发布包_*", "正文_*.html"))):
-        t = open(f, encoding="utf-8").read()
-        t2 = DATA_RE.sub("", t)
-        if t2 != t:
-            open(f, "w", encoding="utf-8").write(t2)
-            n += 1
+    for pack in sorted(glob.glob(os.path.join(BASE, "发布包_*"))):
+        for f in glob.glob(os.path.join(content_dir(pack), "正文_*.html")):
+            t = open(f, encoding="utf-8").read()
+            t2 = DATA_RE.sub("", t)
+            if t2 != t:
+                open(f, "w", encoding="utf-8").write(t2)
+                n += 1
             print("  fixed:", os.path.basename(f))
     print(f"--fix 完成：清洗 {n} 个文件")
 
