@@ -23,7 +23,7 @@ description: 公众号爆款工坊：把课程逐字稿、读书资料和家庭�
 1. 读取 [references/editorial.md](references/editorial.md) 和 [references/quality.md](references/quality.md)，判断课程改写、读书笔记或真实经历，并判定每篇属于方法／概念文还是叙事文；提出篇数、选题、来源、叙事轴和色系，检查素材真实性、人物连续性、跨系列处理和表达模板化。**Gate 1：新系列规划尚未确认时只交付规划，不写正文、不建发布包、不生图。**
 2. 规划获得明确确认后，先制作 1–2 篇样板（正文 HTML + `01_标题作者摘要.txt`；此时不生封面，也不新建逐篇操作指南），展示可评审的文字和排版。样板目录只是 Gate 2 的临时评审区，不是正式成果；正式发布包组装并校验一致后，必须按 `publishing.md` 把预览来源切到正式正文并收口样板目录。**Gate 2：样板未确认，不批量生产其余正文；样板确认也不自动等于批量授权，须等用户明确点名“继续做剩余篇目”等下一步。**
 3. 其余正文完成后，读 [references/publishing.md](references/publishing.md)，先制作一组封面样板。**Gate 3：风格未确认，不批量生成封面。**同一系列已经完成 Gate 3、且用户只是延续已批准风格时，不重复确认同一道关卡。
-4. 完成对应范围的发布包、手册、转发文案及独立预览，执行检查后交付。这里只制作发布材料；外部发布、发送或上传须有明确授权。
+4. 完成对应范围的发布包、手册、各篇字段表内的转发文案及独立预览，执行检查后交付。这里只制作发布材料；外部发布、发送或上传须有明确授权。
 5. 用户明确要求制作卡片文章（贴图）时，读取 [references/card-article.md](references/card-article.md)。先基于已定稿长文制作独立设计文档，列明素材回溯、拆卡、取舍、描述、字段、逐卡来源类型和数字一致性；**Gate A：确认前不生底图、不渲染卡片、不建卡片发布包、不迁移目录。**Gate A 拆卡表是渲染施工图，后续节点数、段落数、字量与密度必须机械比对，不能执行时擅自扩写。确认后只做首张封面卡样板；**Gate B：风格未确认不渲染其余卡、不组装正式包。**Gate B 通过后也先渲染到 `_过程文件/卡片文章/卡片成品_待验收/`，完成原尺寸、逐篇预览、全系列总览和哈希核对后，才复制组装正式包；迭代期不得直接覆盖正式卡图。
 
 若因以上关卡停下，必须展示已完成的规划或样板，并说明是哪份技能的哪条规则要求确认；用户应批准具体结果。
@@ -53,7 +53,7 @@ description: 公众号爆款工坊：把课程逐字稿、读书资料和家庭�
 
 ## 检查、修改与维护
 
-制作和修改后的技术检查按 [references/publishing.md](references/publishing.md) 执行；内容质量复核按 [references/quality.md](references/quality.md) 执行；制作后台派生卡片文章另读 [references/card-article.md](references/card-article.md)。存量巡检或清理另读 [references/maintenance.md](references/maintenance.md)，不将清理流程附加到普通写作任务。
+制作和修改后的技术检查按 [references/publishing.md](references/publishing.md) 执行；**每篇新生成或点名返工的公众号正文 HTML 在交付前都要跑一次官方结构检测，修改后复检**，不能只跑本地启发式检查。内容质量复核按 [references/quality.md](references/quality.md) 执行；制作后台派生卡片文章另读 [references/card-article.md](references/card-article.md)。存量巡检或清理另读 [references/maintenance.md](references/maintenance.md)，不将清理流程附加到普通写作任务。
 
 现有工具位于项目根目录 `工具脚本/`。它们是可复用的本地依赖，不是自动执行指令；调用前确认路径、参数和只读／写入模式。工具缺失时说明具体检查缺口，不能宣布全部通过。
 

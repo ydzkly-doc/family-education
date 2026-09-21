@@ -14,6 +14,14 @@
 
 此文件用于追溯迁移选择，执行流程以 SKILL.md 及其专题参考文件为准。
 
+## 2026-09-21 HTML 规则同步
+
+核对 WorkBuddy 实际缓存与 `_专家/wechat-article-studio.zip` 的主文件、`04-html.md`、`05-publish-kit.md`、`08-selfcheck.md`，四份文件 SHA256 一致。把新增的 HTML 生成规则同步至 Codex `references/publishing.md`：块内裸文本与内联元素不混排、精简无意义 section 嵌套、不设置 `font-family`、相邻同背景段共用容器，以及官方检测器补充验证。旧“给 b 补字号”修法不再采用；本地 `wx_html_fix.py` 仅作启发式筛查，官方检测也不覆盖文档中的全部要求。
+
+官方检测的本地封装 `工具脚本/wechat_official_verify.py` 在缓存缺失时会自动联网获取仓库、安装 npm 和浏览器依赖；Codex 版执行前须检查并按当前权限取得批准，不能把 WorkBuddy 的自动安装步骤当作默认授权。此次也同步较早遗漏的转发文案落位：新篇写入逐篇 `01_标题作者摘要.txt` 第 7 项，不再新建系列级 `04_转发文案.md`；既有文件不追溯改动。
+
+用户进一步确认：今后**每篇新生成的公众号正文 HTML** 都做一次官方结构检测。Codex 版扩展为新生成／点名返工单篇交付前逐篇检测、修改后复检、系列正式交付前汇总检测；旧稿不自动追溯。Windows 运行设置 `PYTHONUTF8=1`，报告须同时显示零违规、零执行异常，不能仅凭脚本退出码判断通过；Chromium 检测不冒充 Android／iOS 微信真机预览。
+
 ## 两版同步规则（2026-09-10 用户确立）
 
 WorkBuddy 专家版（`_专家/wechat-article-studio.zip` / `agents/wechat-article-studio.md`）是**标准版**；本 Codex 版是**派生版**。改动标准版时按以下规则同步，避免两版越走越远：
