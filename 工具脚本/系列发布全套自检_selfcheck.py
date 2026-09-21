@@ -293,7 +293,7 @@ for d in pkgs:
         #   ① 课程类     → "扶鹰教育·王金海…非课程原文/非原文摘录"
         #   ② 读书笔记类 → "本文为读书笔记，观点整理自《书名》…非原文摘录"
         #   ③ 原创真实经历类 → "本文为作者真实经历原创分享…模糊化处理/转载请联系授权"
-        has_origin = any(k in t for k in ("扶鹰", "整理自", "观点整理自", "读书笔记", "参考", "真实经历"))
+        has_origin = any(k in t for k in ("扶鹰", "整理自", "观点整理自", "观点整理", "读书笔记", "参考", "真实经历"))
         has_decl = any(k in t for k in ("版权", "非原文", "非课程", "非原著", "模糊化", "真实经历", "注明出处"))
         p(has_origin and has_decl, f"{os.path.basename(d)}｜含来源声明块")
     else:
@@ -342,6 +342,15 @@ for d in pkgs:
         bad.append(f"p {po}/{pc}")
     if "class=" in t:
         bad.append("class=")
+    # ⭐ 2026-09-21 新增：正文**顶部**不得有"上一站／下一站"视觉导航。
+    #   理由：粘贴到公众号后不可点击，且与公众号合集的自动导航重复，白占首屏。
+    #   ⚠️ 只判"顶部导航块"，不误伤**结尾的自然预告**（如"下一站，聊最具体的一关：…"是合法承接）。
+    #   顶部判定：出现在正文前 30% 且形如导航标签（"◀ 上一站：" / "下一站：" 后接标题）。
+    if not LEGACY:
+        top = t[: int(len(t) * 0.3)]
+        nav_hits = re.findall(r"◀\s*上一站|上一站：|下一站：|▶", top)
+        if len(nav_hits) >= 2:
+            bad.append(f"顶部前后篇导航={len(nav_hits)}")
     p(not bad, f"{os.path.basename(d)}" + (f" ← {bad}" if bad else ""))
 
 print("\n【7】规则化校验脚本（wx_html_fix --check）")

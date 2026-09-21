@@ -4,8 +4,20 @@ import base64
 from html import escape
 
 ROOT=Path(__file__).resolve().parent
+def collect_paths():
+    """兼容两种发布包结构：新结构「长图文发布包/正文_*.html」优先，回退包根。"""
+    found=[]
+    for folder in sorted(ROOT.glob('发布包_第*篇_*')):
+        cands=list((folder/'长图文发布包').glob('正文_*.html')) or list(folder.glob('正文_*.html'))
+        if not cands:
+            continue
+        num=int(re.search(r'第(\d+)篇',folder.name)[1])
+        found.append((num,cands[0]))
+    found.sort(key=lambda x:x[0])
+    return [p for _,p in found]
+
 def main():
-    paths=sorted(ROOT.glob('发布包_第*篇_*/正文_*.html'),key=lambda p:int(re.search(r'第(\d+)篇',p.name)[1]))
+    paths=collect_paths()
     bodies=[];buttons=[]
     for j,p in enumerate(paths):
         s=p.read_text(encoding='utf-8')

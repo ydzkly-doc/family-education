@@ -114,7 +114,11 @@ function step(d){{var i=order.indexOf(cur);var j=i+d;if(j>=0&&j<order.length)sho
 document.addEventListener('keydown',function(e){{if(e.key==='ArrowLeft')step(-1);if(e.key==='ArrowRight')step(1);}});
 show(order[0]);
 </script></body></html>"""
-    outpath = os.path.join(sdir, f"{name}_全部正文预览_{n}篇.html")
+    # ⛔ 必须输出到本系列 `_预览/` 子目录 —— 与各系列自带 `_build_preview.py` 保持一致。
+    #   曾误写系列根目录 → ① 逃出 `.gitignore` 与保留期管理；② 被误当正式产物入库。
+    outdir = os.path.join(sdir, "_预览")
+    os.makedirs(outdir, exist_ok=True)
+    outpath = os.path.join(outdir, f"{name}_全部正文预览_{n}篇.html")
     open(outpath, "w", encoding="utf-8").write(out)
     return outpath, n
 
