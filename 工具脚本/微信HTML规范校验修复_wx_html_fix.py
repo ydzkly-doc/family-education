@@ -177,9 +177,21 @@ def _is_open_tag(seg):
 
 # 官方 line-height 检测的「块级判定范围」（含 section！）
 # ⚠️ 只处理 <p> 会漏掉 <section> 直接含裸文本的情况（2026-09-21 实证）。
+#
+# ⚠️⚠️ 本项（D 规则）是**启发式筛查**，不是官方判定的精确复现：
+#   官方用 puppeteer 真机测量（range.getClientRects 计行框数 + contentHeight），
+#   判定阈值 avg(contentHeight/lineCount) < fontSize × 0.95；
+#   而行框数受「内联元素是否跨行」影响，Python 无法复现布局。
+#   因此本项**无法精确预测官方结果**，但不做长度启发式——而是采用
+#   「全量修复 + 严格检查」策略：
+#     · 修复：凡「块内有内联元素 + 直接子级有裸文本」一律包 <span>（视觉零变化）
+#     · 检查：混合块数须为 0
+#   这样既消除上下文依赖（父容器 padding 会改变折行，从而使同一块时好时坏），
+#   又让检查项无需猜阈值。**权威判据始终是官方检测工具**
+#   （wechatjs/verify-article-structure-spec，见 SOP 08-selfcheck）。
 MIX_BLOCK_TAGS = ("p", "section")
 
-# 会参与混排判定的内联元素
+# 会参与混排判定的内联元素（⚠️ 判定时须按「标签名」精确比较，见下）
 INLINE_TAGS = ("span", "strong", "b", "em", "i", "u", "a", "code", "sup", "sub", "font")
 
 
@@ -234,7 +246,9 @@ def _iter_mixed_blocks(h):
             body = h[start:end]
             if "<" not in body:
                 continue
-            if not any(("<" + t) in body for t in INLINE_TAGS):
+            # ⚠️ 必须用「解析出的标签名集合」判断，不能用 "<b" 子串匹配——
+            #    后者会误匹配 "<br>"，把只含 <br> 的块判成"含内联元素"→ 假阳性。
+            if not any(k == "o" and n in INLINE_TAGS for k, n, _r in _tokenize(body)):
                 continue
             toks = _tokenize(body)
             depth2 = 0
