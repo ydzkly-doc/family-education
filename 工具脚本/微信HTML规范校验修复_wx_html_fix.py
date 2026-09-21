@@ -139,6 +139,179 @@ def sink_colors(h):
     p=ColorSinker();p.feed(h);p.close()
     return "".join(p.out)
 
+# ---------- D: <p> 内「裸文本 + 内联元素」混排（微信 line-height 告警，2026-09-21） ----------
+# 官方规范：https://developers.weixin.qq.com/doc/service/guide/product/plugin_spec.html
+#           §1.3 line-height（参考 #2.3.2 line-height-overlapping）
+# 官方实现：https://github.com/wechatjs/verify-article-structure-spec
+#           cli/engine/layout.ts -> detectLineHeightOverlap()
+#
+# 真实触发条件（用官方 puppeteer 工具做变量隔离实测得出）：
+#   <p> 内出现「裸文本 + 内联元素（b/strong/span）」混排时，浏览器测量出多个行框
+#   -> 平均行高被算成小于 字号x0.95 -> 误判"文字重叠"。
+#   **与 font-size / line-height 的值无关**：删掉 <p> 的 line-height、给 <b> 补
+#   font-size、把行高调大，都照样报。
+#
+# 修法（视觉零变化）：把该 <p> 直接子级的**裸文本也用 <span> 包起来**，
+#   使 <p> 内不再有裸文本 -> 通过检测。span 不带样式，渲染完全一致。
+#
+# 曾经走错的路（勿重蹈）：以为是「<b> 缺 font-size」，给 <b> 补 font-size 并把
+#   line-height 换算成 px —— 实测无效，告警依旧。
+
+# HTML void 元素（无闭合标签）——不可计入嵌套深度。
+# ⚠️ 曾因把 <br> 当开标签，导致 <br> 之后的裸文本被漏检/漏包（2026-09-21 实证）。
+VOID_TAGS = frozenset((
+    "area", "base", "br", "col", "embed", "hr", "img",
+    "input", "link", "meta", "param", "source", "track", "wbr",
+))
+
+
+def _is_open_tag(seg):
+    """判断标签片段是否为「需要闭合的开标签」（void 元素与自闭合都不算）。"""
+    if seg.startswith("</"):
+        return False
+    if seg.rstrip().endswith("/>"):
+        return False
+    m = re.match(r"<([a-zA-Z0-9]+)", seg)
+    return bool(m) and m.group(1).lower() not in VOID_TAGS
+
+
+# 官方 line-height 检测的「块级判定范围」（含 section！）
+# ⚠️ 只处理 <p> 会漏掉 <section> 直接含裸文本的情况（2026-09-21 实证）。
+MIX_BLOCK_TAGS = ("p", "section")
+
+# 会参与混排判定的内联元素
+INLINE_TAGS = ("span", "strong", "b", "em", "i", "u", "a", "code", "sup", "sub", "font")
+
+
+def _tokenize(body):
+    """把 HTML 片段切成 [('t', 文本) | ('o', 开标签名, 原文) | ('c', 闭标签名, 原文)]。
+
+    用标签栈替代正则嵌套匹配，彻底避免「嵌套标签被非贪婪吞块」的问题。
+    """
+    toks = []
+    for seg in re.split(r"(<[^>]+>)", body):
+        if not seg:
+            continue
+        if seg.startswith("<"):
+            m = re.match(r"</\s*([a-zA-Z0-9]+)", seg)
+            if m:
+                toks.append(("c", m.group(1).lower(), seg))
+                continue
+            m = re.match(r"<\s*([a-zA-Z0-9]+)", seg)
+            name = m.group(1).lower() if m else ""
+            if name in VOID_TAGS or seg.rstrip().endswith("/>"):
+                toks.append(("v", name, seg))
+            else:
+                toks.append(("o", name, seg))
+        else:
+            toks.append(("t", "", seg))
+    return toks
+
+
+def _iter_mixed_blocks(h):
+    """遍历所有「直接子级有裸文本 且 块内含内联元素」的 p/section 块。
+
+    产出 (open_tag, body, close_tag)。嵌套安全：同一层只取最内层块，
+    外层若本身也有裸文本，会在遍历到它时一并处理。
+    """
+    for tag in MIX_BLOCK_TAGS:
+        for m in re.finditer(r"<%s\b[^>]*>" % tag, h, re.I):
+            start = m.end()
+            # 用标签栈找到配对的 </tag>
+            depth = 1
+            pos = start
+            end = None
+            for mm in re.finditer(r"</?%s\b[^>]*>" % tag, h[start:], re.I):
+                if mm.group(0).startswith("</"):
+                    depth -= 1
+                else:
+                    depth += 1
+                if depth == 0:
+                    end = start + mm.start()
+                    break
+            if end is None:
+                continue
+            body = h[start:end]
+            if "<" not in body:
+                continue
+            if not any(("<" + t) in body for t in INLINE_TAGS):
+                continue
+            toks = _tokenize(body)
+            depth2 = 0
+            n_bare = 0
+            for kind, name, raw in toks:
+                if kind == "o":
+                    depth2 += 1
+                elif kind == "c":
+                    depth2 -= 1
+                elif kind == "t" and depth2 == 0 and raw.strip():
+                    n_bare += 1
+            if n_bare:
+                yield m.group(0), body, "</%s>" % tag
+
+
+def find_p_mixed_text(h):
+    """找出「含内联子元素、且直接子级存在裸文本」的 p/section。"""
+    hits = []
+    for open_tag, body, close in _iter_mixed_blocks(h):
+        st = h.find(open_tag + body + close)
+        toks = _tokenize(body)
+        depth = 0
+        n = 0
+        for kind, name, raw in toks:
+            if kind == "o":
+                depth += 1
+            elif kind == "c":
+                depth -= 1
+            elif kind == "t" and depth == 0 and raw.strip():
+                n += 1
+        hits.append((st, st + len(open_tag) + len(body) + len(close), n))
+    return hits
+
+
+def _fix_block(open_tag, body, close):
+    """给块内「直接子级裸文本」包 <span>。返回 (新块, 包裹处数)。"""
+    out = []
+    depth = 0
+    n = 0
+    for kind, name, raw in _tokenize(body):
+        if kind in ("o", "v"):
+            out.append(raw)
+            if kind == "o":
+                depth += 1
+        elif kind == "c":
+            out.append(raw)
+            depth -= 1
+        else:
+            if depth == 0 and raw.strip():
+                out.append("<span>%s</span>" % raw)
+                n += 1
+            else:
+                out.append(raw)
+    return open_tag + "".join(out) + close, n
+
+
+def fix_p_mixed_text(h):
+    """把所有 p/section 的「直接子级裸文本」包 <span>，消除混排。视觉零变化。
+
+    嵌套安全实现：先定位块，再从后往前替换，避免位移错乱。
+    """
+    edits = []
+    for open_tag, body, close in _iter_mixed_blocks(h):
+        new_block, n = _fix_block(open_tag, body, close)
+        if n == 0:
+            continue
+        st = h.find(open_tag + body + close)
+        if st < 0:
+            continue
+        edits.append((st, st + len(open_tag) + len(body) + len(close), new_block))
+    edits.sort(key=lambda x: -x[0])
+    out = h
+    for st, en, blk in edits:
+        out = out[:st] + blk + out[en:]
+    return out
+
+
 # ---------- 体检 ----------
 def audit(h):
     iss=[]
@@ -152,6 +325,9 @@ def audit(h):
     if tdc: iss.append(f"B:td/sec/th色 {tdc}")
     dup=len(re.findall(r'style="[^"]*"\s+style="',h))
     if dup: iss.append(f"重复style {dup}")
+    # D: <p> 内「裸文本 + 内联元素」混排 → 微信会报"行高小于字体大小"
+    pm = len(find_p_mixed_text(h))
+    if pm: iss.append(f"D:p内混排 {pm}")
     bad=[]
     for tag,pat in [("img",r'<img'),("class",r'class='),("style块",r'<style'),("ul/li",r'<[uo]l|<li'),("h1-4",r'<h[1-4]')]:
         n=len(re.findall(pat,h))
@@ -168,6 +344,7 @@ def process(f, do_fix):
     before=audit(h)
     if do_fix and before:
         h=strip_data(h); h=div_to_p(h); h=split_white_br(h); h=sink_colors(h)
+        h=fix_p_mixed_text(h)
         open(f,"w",encoding="utf-8").write(h)
     after=audit(h)
     return before,after
