@@ -6,12 +6,12 @@
       放在仓库根目录，双击或命令行运行即可。
 
 用法：
-  python git提交推送.py                    # 交互式：自动生成提交信息，可修改确认
-  python git提交推送.py -m "提交说明"       # 直接指定提交信息
-  python git提交推送.py -y                 # 跳过所有确认（谨慎使用）
-  python git提交推送.py --dry-run          # 只看会提交什么，不做任何改动
-  python git提交推送.py --push-only        # 跳过 add/commit，只推送已有提交
-  python git提交推送.py --no-verify-save   # 跳过"过程文件入库"检查（不推荐）
+  python git_sync.py                    # 交互式：自动生成提交信息，可修改确认
+  python git_sync.py -m "提交说明"       # 直接指定提交信息
+  python git_sync.py -y                 # 跳过所有确认（谨慎使用）
+  python git_sync.py --dry-run          # 只看会提交什么，不做任何改动
+  python git_sync.py --push-only        # 跳过 add/commit，只推送已有提交
+  python git_sync.py --no-verify-save   # 跳过"过程文件入库"检查（不推荐）
 
 安全设计（针对本仓库的已知坑）：
   1. 提交前扫描待提交清单，若含【过程目录 / 缓存 / 大文件】会明确警告并可中止。
@@ -247,7 +247,7 @@ def do_push(branch, remote):
         print("❌ git push 返回非零：")
         print(blob or "(无输出)")
         print("\n  常见原因：网络问题、需要登录、远程有新提交需先 pull。")
-        print("  可重试：python git提交推送.py --push-only")
+        print("  可重试：python git_sync.py --push-only")
         sys.exit(1)
 
     if blob:
@@ -279,7 +279,7 @@ def verify_push(branch, remote):
         return True
 
     print("\n  ❌ 远程与本地不一致，推送可能未生效。")
-    print("     可重试：python git提交推送.py --push-only")
+    print("     可重试：python git_sync.py --push-only")
     return False
 
 
