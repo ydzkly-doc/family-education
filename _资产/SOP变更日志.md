@@ -14,6 +14,66 @@
 
 ---
 
+## 2026-09-22 官方三条命令全部接入（补 `dedupe`/`probe`）+ 更正「不查规则仅 1 条」的错误说法
+
+### 背景
+用户指出官方 README 的「快速开始」除 `check` 外还有 **`dedupe`**（清理冗余嵌套）与 **`probe`**（环境探针），
+而上一版只封装了 `check`。同时复核发现上一条日志里
+「**`font-family` 是唯一文档有、检测器不查的**」**说法不准确**。
+
+### ① 更正：检测器不查的不是 1 条，而是 **7 条**
+复核方式（逐函数统计 `engine/collect.ts` 的调用次数）：
+- `import` 了 9 个 `check*`，**其中 `checkFontFamilyViolation` 调用 0 次**，其余 8 个各调用 1 次。
+- 判定口径修正：上一版脚本用 `fn.replace("check","") in calls` 做二次匹配 → 未接入的也被判成已接入（**脚本 bug**）。
+  本版**只用调用次数**判定。
+- 规范 22 个章节 ↔ 检测器对照结论：
+  - **15 个已覆盖**（9 条 collect 规则 + `height-nodisplay`/`nestNodes`/`span-leaf`/`node-leaf`/`darkmode-*` 等实现于 `layout.ts`/`nest.ts`）
+  - **7 个完全不查**：
+    1. `3 字体使用规范` → `font-family`：**唯一「函数已实现但未接入」**（调用 0 次）
+    2. `4.2.1 背景容器` → 无实现
+    3. `4.2.2 嵌套关系` → 无独立实现（部分并入 `nestNodes`）
+    4. `4.3.1 / 4.4.1 图片承载纯文本` → 无实现
+    5. `4.3.2 透明底图` → 无实现
+    6. `4.3.3 补色机制` → 无实现
+    7. `4.5.2 !important` → 无实现
+      （注：`engine/layout.ts` 里出现的 4 处 `!important` 是**检测器自己注入沙箱的 CSS**，非检查用户 HTML）
+
+### ② `dedupe` 实测与封装要点
+- 官方 `dedupe` = `check` 的姊妹命令：**真删冗余嵌套层**并输出清理后 HTML。
+  机制：`jsdom` 解析 → `domToAst` 可变 AST → `deleteNestNode({isNeedDelete:true})` 真删 → 序列化。
+  关键纠偏（官方注释）：`check` 在**真实 DOM** 上跑真删是 no-op（`parentNode` 只读、`children` 是 live 集合），
+  必须转**可变 AST** 才能让那 4 处赋值生效。
+- **⛔ 实测发现的坑：`dedupe` 输出的是「正文片段」，会丢掉 `<html>/<head>/<title>/<body>`。**
+  → 工具改为**自动回填外壳并保留 `<title>`**（用 `<body>` 切分出前壳/正文/后壳，清理后重新拼接）。
+- 已知格式归一（HTML 等价、不影响显示）：`<br>`→`<br/>`、属性引号统一双引号、缩进重排。
+- 实测（《你是孩子最好的玩具·第1篇》，21,012 → 20,712 字节）：
+  `nestNodes 4 → 0`，`isValid False → True`，**可见文本逐字未变**，section 75 → 71（删掉的 4 层全是
+  `box-sizing;width:100%;display:block` 纯包裹层，无实际样式）。
+- **安全判据定为「剔除标签后的可见文本逐字一致」**（而非嵌套数——嵌套数需 puppeteer 复测且受上下文影响）。
+- 写回前自动备份到 `_备份/dedupe前_<时间戳>/`；`--dry-run` 可只预览。
+
+### ③ `probe` 实测
+`probe` 用**故意违规的探针 HTML**（透明 `caret-color` + `height-nodisplay` 溢出）验证
+「puppeteer launch + 注入 bundle + 全规则（含布局类）」是否跑通。实测通过（4/4）。已接到 `--setup`。
+
+### ④ 另一更正：官方 README 里的 URL 抓取是**规划项**
+README 的目录树写了 `fetch-article.ts`（抓线上文章 `#js_content`），但**全仓无此文件、源码无引用**。
+→ 官方**真实可用命令只有三条**：`check` / `dedupe` / `probe`。
+
+### ⑤ 落点
+| 文件 | 改动 |
+|---|---|
+| `工具脚本/wechat_official_verify.py` | 新增 `--dedupe`（含外壳回填 + 备份 + `--dry-run`）；`--setup` 接官方 `probe`；`--list-rules` 增列 7 条不查章节与 3 条命令；常量新增 `SPEC_ONLY_RULES`/`OFFICIAL_CMDS` |
+| 标准版 `04-html.md` R5 后 | 补「为什么不查 7 条」的实证说明 |
+| 标准版 `08-selfcheck.md` 3c | 三条命令用法 + dedupe 纪律 + 7 条不查清单 |
+| 标准版 `10-ops.md` 三层防线 | 补 7 条不查清单 + 三条命令表 + dedupe 使用纪律 |
+| 派生版 `publishing.md` | 同步（生成阶段条款 + 命令清单 + 自检条款） |
+
+### ⑥ 未处理（用户明确：原文章暂不处理）
+`font-family` 91 篇、`nestNodes` 7 篇。
+
+---
+
 ## 2026-09-21（五）行高告警真根因修正 + 生成阶段规则前置化 + 官方检测工具接入
 
 ### 背景
@@ -43,6 +103,10 @@
 **存量未处理**：`你是孩子最好的玩具` 系列 7 篇（用户决定暂缓）。
 
 ### ④ ⭐ 新认知：官方文档有规则，检测器不一定实现
+> ⚠️ **2026-09-22 更正**：本条下方「`font-family` 是**唯一**」的说法**不准确**。
+> 逐函数复核后结论是：**7 个章节完全不查**，其中 `font-family` 是**唯一「函数已实现但未接入」**的，
+> 其余 6 条**连实现都没有**。详见 2026-09-22 条目①。
+
 官方文档共 **22 条**规则；官方检测器（`wechatjs/verify-article-structure-spec`）**只实现 17 条**。
 **`font-family` 是唯一「文档有、检测器不查」的**——源码有 `checkFontFamilyViolation()`，
 但 `collect.ts` **只 import、从未调用**。
