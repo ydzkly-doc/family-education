@@ -426,7 +426,7 @@ def run_dedupe(files, cli, dry_run=False):
             entries.append(e)
 
     for e in entries:
-        if not e["ok"] or dry_run:
+        if not e["ok"] or dry_run or not e["same_text"]:
             continue
         dst = e["file"]
         cur = io.open(dst, encoding="utf-8").read()
@@ -468,6 +468,63 @@ if (flag === '--verify') {
 """
 
 
+def report(result, args):
+    """汇总只读结构检测结果；与 dedupe 报告分开。"""
+    base = workspace_root()
+    if args.rule:
+        result = [dict(x, groups=[g for g in x.get("groups", [])
+                                  if g["key"] == args.rule]) for x in result]
+    if args.only_bad:
+        result = [x for x in result if x.get("groups") or x.get("error")]
+
+    n_bad = sum(1 for x in result if x.get("groups"))
+    n_err = sum(1 for x in result if x.get("error"))
+
+    print()
+    print("=" * 80)
+    print("  微信官方结构检测 · 共 %d 篇" % len(result))
+    print("=" * 80)
+
+    if not args.rule and not args.only_bad:
+        from collections import Counter
+        by_article = Counter()
+        by_item = Counter()
+        for x in result:
+            for g in x.get("groups", []):
+                by_article[g["key"]] += 1
+                by_item[g["key"]] += g["count"]
+        if by_article:
+            print("  %-28s %-10s %s" % ("规则", "篇数", "处数"))
+            print("  " + "-" * 56)
+            for key, n in by_article.most_common():
+                print("  %-28s %-10s %d" % (key, "%d 篇" % n, by_item[key]))
+        else:
+            print("  ✅ 无任何违规")
+        print()
+
+    print("  违规 %d 篇 ｜ 执行异常 %d 篇" % (n_bad, n_err))
+    print()
+    for x in result:
+        groups = x.get("groups", [])
+        if not groups and not x.get("error"):
+            continue
+        rel = os.path.relpath(x["file"], base)
+        if x.get("error"):
+            print("  ⚠️ %s" % rel)
+            print("      %s" % x["error"])
+            continue
+        tag = " ".join("%s:%d" % (g["key"], g["count"]) for g in groups)
+        print("  ❌ %-30s %s" % (tag, rel))
+        if args.detail:
+            for g in groups:
+                print("     ── %s ──" % g["key"])
+                print("        %s" % g.get("desc", "")[:160])
+                for sample in g.get("samples", [])[:3]:
+                    print("        [段%s] %s" %
+                          (sample.get("paragraphIndex"),
+                           sample["html"].replace("\n", " ")[:280]))
+
+
 def report_dedupe(res, dry_run, args):
     base = workspace_root()
     entries = res["entries"]
@@ -480,17 +537,19 @@ def report_dedupe(res, dry_run, args):
     print()
     print("  %-38s %-12s %-8s %s" % ("文件", "nestNodes", "文本一致", "结果"))
     print("  " + "-" * 74)
-    n_fixed = n_unsafe = 0
+    n_fixed = n_unsafe = n_error = 0
     for e in entries:
         name = e["rel"][-38:]
         if not e["ok"]:
+            n_error += 1
             print("  %-38s %-12s %-8s %s" % (name, "—", "—", "✗ " + e["err"][:50]))
             continue
         same = "✅" if e["same_text"] else "❌"
         if not e["same_text"]:
             n_unsafe += 1
         note = ("预览" if dry_run else
-                ("无变化" if e["written"] == "unchanged" else "已写回"))
+                ("未写回：文本变化" if not e["same_text"] else
+                 ("无变化" if e["written"] == "unchanged" else "已写回")))
         print("  %-38s %-12s %-8s %s" % (name, e["nest"], same, note))
         if e["nest"] not in ("(未知)",) and "→" in e["nest"]:
             try:
@@ -501,9 +560,11 @@ def report_dedupe(res, dry_run, args):
                 pass
     print()
     print("  nestNodes 减少：%d 篇" % n_fixed)
+    if n_error:
+        print("  ⚠️ 处理失败的篇数：%d（未写回；须排查）" % n_error)
     if n_unsafe:
         print("  ⛔ 可见文本有变化的篇数：%d（**不应写回**，请人工核查）" % n_unsafe)
-    else:
+    elif not n_error:
         print("  ✅ 全部篇目「可见文本逐字一致」——清理安全")
     if not dry_run and any(e.get("written") == "ok" for e in entries):
         print("  备份：%s" % os.path.relpath(res["backup"], base))
@@ -573,6 +634,7 @@ def main():
         else:
             print("  ⚠️ 探针未确认通过，输出尾部：")
             print("    " + out[-500:].replace("\n", "\n    "))
+            sys.exit(1)
         return
 
     if args.dedupe:

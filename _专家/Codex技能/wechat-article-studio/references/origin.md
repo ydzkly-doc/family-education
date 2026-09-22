@@ -22,6 +22,12 @@
 
 用户进一步确认：今后**每篇新生成的公众号正文 HTML** 都做一次官方结构检测。Codex 版扩展为新生成／点名返工单篇交付前逐篇检测、修改后复检、系列正式交付前汇总检测；旧稿不自动追溯。Windows 运行设置 `PYTHONUTF8=1`，报告须同时显示零违规、零执行异常，不能仅凭脚本退出码判断通过；Chromium 检测不冒充 Android／iOS 微信真机预览。
 
+## 2026-09-22 官方检测工具更新与本机验证
+
+WorkBuddy 生效缓存与最新 `_专家/wechat-article-studio.zip` 的主文件及 `04-html.md`、`05-publish-kit.md`、`08-selfcheck.md`、`10-ops.md` SHA256 一致；项目 Codex 派生版的 `publishing.md` 已纳入探针、`dedupe` 和检测器未覆盖的 7 类规范，本轮把它同步到安装版，并补上只读／写回边界。
+
+本机试跑发现共享脚本 `工具脚本/wechat_official_verify.py` 新版遗漏 `report()`，致浏览器检测后抛 `NameError`；已恢复报告函数，并阻止 `dedupe` 在可见文本不一致时写回。设置 `PYTHONUTF8=1` 后，`--setup` 探针通过；《手机方案》第 8 篇检测为违规 0、执行异常 0，`--dedupe --dry-run` 为 `nestNodes 0→0`、可见文本一致，正文试跑前后 SHA256 未变。实际写回模式未试跑，不能把 dry-run 结果视为写回验证。
+
 ## 两版同步规则（2026-09-10 用户确立）
 
 WorkBuddy 专家版（`_专家/wechat-article-studio.zip` / `agents/wechat-article-studio.md`）是**标准版**；本 Codex 版是**派生版**。改动标准版时按以下规则同步，避免两版越走越远：
