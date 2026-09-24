@@ -21,7 +21,10 @@ Add-Type Microsoft.VisualBasic / New-Object Shell.Application，
      但其实**已经成功**进回收站。→ 一律以"回收站是否出现该条目"为最终判据，
      ⛔ 不要因为异常就改走 os.remove() 直删（直删不可恢复）。
   3. 不加 pywin32，send2trash 会回退 legacy 实现对中文路径报 Errno 3。
-  4. 只兼容 Windows。
+  4. ⛔ **不要用 `Shell.Application.NameSpace(10).Items()` 枚举回收站**：
+     它**只暴露部分条目**（实测全盘 4336 条，刚删的 95 个一个都查不到），
+     会误判成"没进回收站 / 被永久删除"。→ 直接扫各盘 `$Recycle.Bin` 下的 `$I*` 元数据文件（本脚本已实现）。
+  5. 只兼容 Windows。
 """
 import argparse
 import datetime
