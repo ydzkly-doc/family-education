@@ -1,0 +1,129 @@
+{
+  "_说明": "多文件（分段拍）+ 锚点定位 + 字幕策略的完整示例。videos 可给 1~N 个文件，顺序即段序；卡片与字幕位置一律用 anchor（推荐）/ index / seg / at，不要写 start 秒数。subs 三选一：\"all\" 全程字幕 / [{anchor}] 只上关键句 / \"none\" 不要底部字幕；subs_emph 给指定几句加大加粗（全字幕版想突出金句就用它）。这里保留 lines 是为了跳过语音识别、快速复现；删掉 lines 并给出 script（或什么都不给）就会走真实识别。",
+  "videos": [
+    "第1段.mp4",
+    "第2段.mp4",
+    "第3段.mp4"
+  ],
+  "out": "成片.mp4",
+  "cut_silence": true,
+  "lines": [
+    {
+      "text": "那阵子我儿子老喊肚子疼。",
+      "start": 0.4,
+      "end": 2.6,
+      "matched": true
+    },
+    {
+      "text": "去医院查了几次，都说没事。",
+      "start": 2.7,
+      "end": 4.6,
+      "matched": true
+    },
+    {
+      "text": "我差点就以为，他是在装病逃学。",
+      "start": 4.8,
+      "end": 7.2,
+      "matched": true
+    },
+    {
+      "text": "后来我才发现，他是在害怕考试。",
+      "start": 7.4,
+      "end": 9.8,
+      "matched": true
+    },
+    {
+      "text": "身体的不舒服是真的，害怕也是真的。",
+      "start": 10.0,
+      "end": 12.6,
+      "matched": true
+    }
+  ],
+  "subs": "all",
+  "subs_emph": [
+    {
+      "anchor": "会不会是装的",
+      "style": "强调",
+      "marks": [
+        {
+          "word": "装的",
+          "color": "#C2703C",
+          "bold": true
+        }
+      ]
+    }
+  ],
+  "marks": [
+    {
+      "word": "装病",
+      "color": "#C2703C",
+      "bold": true
+    }
+  ],
+  "punch": [
+    {
+      "text": "检查没查出来，不等于孩子在装",
+      "marks": [
+        {
+          "word": "不等于孩子在装",
+          "color": "#B0552F",
+          "bold": true
+        }
+      ],
+      "anchor": "他是在装病逃学",
+      "hold": 4.0
+    },
+    {
+      "text": "害怕，也会让人觉得疼",
+      "anchor": "害怕考试",
+      "hold": 4.0,
+      "marks": [
+        {
+          "word": "害怕",
+          "color": "#B0552F",
+          "bold": true
+        }
+      ]
+    }
+  ],
+  "seq": [
+    {
+      "text": "①",
+      "seg": 1,
+      "hold": 1.8,
+      "offset": 0.3
+    },
+    {
+      "text": "②",
+      "seg": 2,
+      "hold": 1.8,
+      "offset": 0.3
+    },
+    {
+      "text": "③",
+      "seg": 3,
+      "hold": 1.8,
+      "offset": 0.3
+    }
+  ],
+  "cover": {
+    "text": "不等于孩子在装",
+    "anchor": "害怕考试"
+  },
+  "visual": {
+    "enabled": true,
+    "seg_gap": 1.2,
+    "noise_db": -35.0,
+    "trim_tail": 0.4,
+    "transition": "叠化",
+    "xfade": 0.3,
+    "color_match": true,
+    "denoise": "轻"
+  },
+  "audio": {
+    "enabled": true,
+    "preset": "标准"
+  },
+  "bgm": null,
+  "_说明_bgm": "BGM 默认关闭（null = 不垫背景音乐，这是刻意的默认值）。要垫就把 bgm 换成对象：{\"file\": \"轻音乐.mp3\"} 直接指定文件，或 {\"style\": \"安静的钢琴\"} 按风格从曲库筛（曲库位置：<项目>/_资产/bgm/ 或 <本篇>/_素材/bgm/，配 曲库.md 标注风格）。placement 是位置参数：\"头尾\"（默认，只垫没有口播的地方——开头到第一句话之间、最后一句话到片尾）/ \"全程\"（整片垫底，人声段自动压低）。gain 是相对口播的音量（默认 -24dB）；duck 是「全程」的人声段压低量（默认 12dB）；dips 做定点额外压低：[{\"anchor\": \"某句\", \"extra\": 6, \"hold\": 0.5}]。⛔ 找不到曲子、或头尾没有可垫的静音段 → 管道报错停下，绝不静默产出没有 BGM 的成片；也不联网下载音乐（版权）。"
+}
