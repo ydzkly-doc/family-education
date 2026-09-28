@@ -232,6 +232,38 @@ def merge_short_entries(entries, min_len: float = MIN_SEG):
     return out, merged
 
 
+_AUDIO_OFF_CACHE: dict = {}
+
+
+def audio_start_offset(path: str) -> float:
+    r"""
+    音频流的起始偏移（秒）——**必须补偿，否则音画不同步**。
+
+    ⭐ 为什么：iPhone（尤其前摄）录的 MOV，**音频流的时间戳不是从 0 开始**
+      （2026-09-25 实测四段都是 0.678~0.699s），而视频流从 0 开始。
+      也就是「画面先开始录、声音晚了约 0.7 秒」。
+      若不管它：`atrim=start=0` 对音频捞到的是**第一个可用样本**（PTS 0.699），
+      再 `asetpts=PTS-STARTPTS` 归零 → **音频整体前移 0.699 秒**
+      → 成片里**声音比口型早约 0.7 秒**（用户报「声音和口型对不上」）。
+    → 读出偏移，在音频链里用 `adelay` 补同量前导静音，两边就对齐了。
+    """
+    p = os.path.abspath(path)
+    if p in _AUDIO_OFF_CACHE:
+        return _AUDIO_OFF_CACHE[p]
+    off = 0.0
+    pr = subprocess.run([FFMPEG, "-hide_banner", "-i", p],
+                        capture_output=True, text=True,
+                        encoding="utf-8", errors="replace")
+    for line in (pr.stderr or "").splitlines():
+        if "Audio:" in line:
+            m = re.search(r"start\s+([0-9.]+)", line)
+            if m:
+                off = float(m.group(1))
+                break
+    _AUDIO_OFF_CACHE[p] = off
+    return off
+
+
 def build_timeline(entries, out_path: str, gains=None, xfade_d: float = 0.25,
                    transition: str = "fade", denoise: str | None = None,
                    color_match: bool = True, crf: int = 18, preset: str = "medium",
@@ -303,8 +335,12 @@ def build_timeline(entries, out_path: str, gains=None, xfade_d: float = 0.25,
                   f"settb=AVTB,{','.join(chain)}[v{i}]")
 
         if audios.get(os.path.abspath(e["file"]), True):
+            # ⭐ 音频若不从 0 起（iPhone 前摄常见 0.7s），补同量前导静音：
+            #    否则 asetpts 会把音频整体前移 → 声音比口型早（见 audio_start_offset）
+            pad_ms = int(round(max(0.0, audio_start_offset(e["file"]) - s) * 1000))
+            pad = f"adelay={pad_ms}|{pad_ms}," if pad_ms > 0 else ""
             fc.append(f"[{fi}:a]atrim=start={s:.3f}:end={t:.3f},"
-                      f"asetpts=PTS-STARTPTS,aformat=sample_fmts=fltp:"
+                      f"asetpts=PTS-STARTPTS,{pad}aformat=sample_fmts=fltp:"
                       f"sample_rates=48000:channel_layouts=stereo[a{i}]")
         else:
             # ⚠️ 素材可能整段没有音轨（纯 B-roll），必须补静音，

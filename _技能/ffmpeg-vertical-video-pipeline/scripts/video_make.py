@@ -366,8 +366,11 @@ def make_cover(spec: dict, ass_dir: str, out_png: str, at: float = 0.0):
     src = spec.get("video")
     # ⚠️ 封面是**静帧**，必须关掉淡入（anim=""）——
     #    否则渲染 t=0 时 \fad 还没开始，抓到的是**完全透明的空画面**（实测踩过，封面一直是白的）
+    # ⭐ 用「钩子」样式（不是「金句」）：封面同样要过**1:1 裁切**那一关，
+    #    而钩子样式的 margin_v 就是按裁切安全区定的（见 video_build_ass.COVER_SAFE）
     cspec = {"punch": [{"start": 0.0, "end": 2.0, "text": cover["text"],
-                        "marks": cover.get("marks"), "anim": ""}]}
+                        "marks": cover.get("marks"), "anim": "",
+                        "style": "钩子"}]}
     outs = []
 
     # ① 9:16 全屏
@@ -385,6 +388,9 @@ def make_cover(spec: dict, ass_dir: str, out_png: str, at: float = 0.0):
     sq_ass = os.path.join(ass_dir, "_cover_1x1.ass")
     sq_cspec = dict(cspec)
     sq_cspec["play_res"] = [1080, 1080]      # 画布就是方形，文字按方形折行
+    # ⭐ 方画布**不会再被平台裁**，所以字走「封面方」样式（顶部）——
+    #    用「钩子」的 440（那是为躲 9:16 的 1:1 裁切定的）会正好压在眼睛上（实测渲染确认）
+    sq_cspec["punch"] = [dict(sq_cspec["punch"][0], style="封面方")]
     build_ass(sq_cspec, sq_ass, wrap=True)
     run([FFMPEG, "-hide_banner", "-y", "-ss", f"{at:.2f}", "-i", os.path.abspath(src),
          "-vf", f"scale=1080:1080:force_original_aspect_ratio=increase,"
@@ -518,16 +524,19 @@ MIN_SUB_HOLD = 1.2      # 精选字幕的最短显示时长（太短看不清）
 
 
 def _span(ln, item, default_hold: float, follow_anchor: bool):
-    """由命中的字幕行算出显示区间（lead 在三种情形下都生效）"""
+    """由命中的字幕行算出显示区间（lead / **pad** 在三种情形下都生效）"""
     s0, e0 = float(ln["start"]), float(ln["end"])
     lead = float(item.get("lead", 0.0))
     s = max(0.0, s0 - lead)
+    # ⭐ pad（`多停 1.5 秒`）：**在原有时长上追加**，不是改成固定时长 ——
+    #    精选字幕（金句版）用它给"要让人照着念/照着做"的那几句多留一会儿（2026-09-27 立）。
+    pad = float(item.get("pad", 0.0))
     if item.get("hold") is not None:
-        return (s, s + float(item["hold"]))
+        return (s, s + float(item["hold"]) + pad)
     if follow_anchor:
         # 跟随那句话；太短的话补到 MIN_SUB_HOLD 以便看清
-        return (s, max(e0, s + MIN_SUB_HOLD))
-    return (s, s + default_hold)
+        return (s, max(e0, s + MIN_SUB_HOLD) + pad)
+    return (s, s + default_hold + pad)
 
 
 def resolve_overlaps(cards, kind: str = "卡片", min_dur: float = 1.2,
@@ -588,7 +597,7 @@ def place_cards(raw, lines, seg_bounds, kind: str, default_hold: float,
         if base_marks is not None and not p.get("marks"):
             p["marks"] = base_marks
         for k in ("seg", "offset", "anchor", "index", "hold", "lead", "tail",
-                  "at", "to_end"):
+                  "at", "to_end", "pad"):
             p.pop(k, None)
         if not p.get("text"):
             failed.append(("(空文本)", "既没给 text，锚点也没命中"))
@@ -623,6 +632,8 @@ def build_subs(spec, lines, seg_bounds, total_dur):
       {"anchor": "...", "text": "显示文本"}     ← 想改写上屏文字时给 text
       {"index": 3}                             ← 按第 3 行
       {"anchor": "...", "hold": 3.0}            ← 固定显示 3 秒（默认跟随那句话）
+      {"anchor": "...", "pad": 1.5}             ← **在"跟随原句"的时长上再多停 1.5 秒**
+                                                  （MD 里写 `多停 1.5 秒`；不改变起点、不与 hold 冲突）
       {"anchor": "...", "marks": [...]}         ← 单条自定义标色（覆盖全片 marks）
 
     ⭐ 另外 `spec["subs_emph"]` 可给**指定的几句**叠加样式（与上面哪种模式都兼容），
@@ -694,12 +705,113 @@ def apply_subs_emph(subs, spec, lines, seg_bounds):
         for k in _EMPH_KEYS:
             if it.get(k) is not None:
                 hit[k] = it[k]
+        # ⭐ `多停 N 秒`（pad）：**在原时长上追加**。
+        #    ⚠️ **只在"全程字幕"模式下加** —— 精选/金句版下 `subs` 是从 `subs_emph` **派生**出来的、
+        #    `pad` 已经在 `place_cards → _span` 里生效过一次了；这里再加就**翻倍**
+        #    （2026-09-27 实测踩过：本该 5.22s，结果算出 6.72s）。
+        #    ⚠️ 全程模式下每句挨得近，所以要 **clamp 到下一句开始前**，否则会叠字。
+        if it.get("pad") and not isinstance(spec.get("subs"), list):
+            i = subs.index(hit)
+            want = round(float(hit["end"]) + float(it["pad"]), 3)
+            if i + 1 < len(subs):
+                limit = round(float(subs[i + 1]["start"]) - 0.05, 3)
+                if limit <= float(hit["end"]):
+                    print(f"    ⚠️ 强调句「{src['text'][:14]}」的「多停」被下一句挡住，没能延长")
+                hit["end"] = min(want, max(limit, float(hit["end"])))
+            else:
+                hit["end"] = want
         n += 1
     if n:
         print(f"    → 已给 {n} 句字幕叠加强调样式")
     for txt, err in missed:
         print(f"    ⚠️ 强调句「{str(txt)[:16]}」未生效：{err}")
     return subs
+
+
+# ---------------- 卡片合并：钩子 / 金句卡 / 浅底卡 走同一条通道 ----------------
+def build_card_list(spec: dict) -> list:
+    r"""
+    把 **开头钩子（hook）／金句大字卡（punch）／浅底文字卡（cards）** 合并成一个列表，
+    交给 place_cards 统一定位 —— 它们都落在画面中下部，互相压住就是"文字叠字"，
+    因此必须共用同一套重叠保护。
+
+    ⭐ **正式流程与 `--preview` 共用本函数**，不许各写一遍。
+       （曾因两处各写一遍，`--preview` 只并入了 `punch`，
+        于是钩子与浅底卡在预览表里完全看不到 → 很容易误判成"写了没生效"。）
+
+    每项会打上 `_kind` 标记（hook / punch / card），供分类计数与打印；
+    `strip_kind()` 在交给 build_ass 前把它清掉。
+    """
+    raw = []
+
+    hook = spec.get("hook")
+    if hook:
+        h = dict(hook) if isinstance(hook, dict) else {"text": str(hook)}
+        h.setdefault("start", 0.0)
+        if h.get("end") is None:
+            h["end"] = float(h.get("start", 0.0)) + float(h.get("hold", 2.5))
+        # ⭐ 钩子走**独立样式**「钩子」（视觉同金句卡，但位置落在**封面 1:1 裁切安全区**内）——
+        #    它是要当封面的那句，不能和金句卡共用"顶部 200"（会被封面裁掉一部分，2026-09-26 实测）
+        h.setdefault("style", "钩子")
+        # ⭐ 钩子**不加淡入**：视频号封面默认取视频第一帧，
+        #    带 \fad 的话第一帧完全透明 → 封面会变成"纯画面无文字"
+        h.setdefault("anim", "")
+        h["_kind"] = "hook"
+        raw.append(h)
+
+    if spec.get("punch"):
+        _p = spec["punch"]
+        for _it in (_p if isinstance(_p, list) else [_p]):
+            if isinstance(_it, dict):
+                _it = dict(_it)
+                _it["_kind"] = "punch"
+                raw.append(_it)
+
+    # 浅底文字卡（台词小卡 / 话术卡 / 小字卡 / 祝愿卡）
+    for _c in (spec.get("cards") or []):
+        if isinstance(_c, dict):
+            _c = dict(_c)
+            _c.setdefault("style", "小卡")
+            _c.setdefault("hold", 3.0)      # MD 里常写"停 3 秒"
+            _c["_kind"] = "card"
+            raw.append(_c)
+
+    return raw
+
+
+def strip_kind(placed: list) -> list:
+    """清掉 `_kind` 标记（交给 build_ass 前调用，别把内部键混进字幕 spec）"""
+    for x in placed:
+        x.pop("_kind", None)
+    return placed
+
+
+def count_cards(placed: list) -> dict:
+    """
+    分类计数 —— hook / 金句卡 / 浅底卡 都走 punch 通道，
+    但打印时要能分开核对（否则日志上"金句卡 3"会让人以为多出两张金句）。
+    """
+    d = {"hook": 0, "punch": 0, "small": 0}
+    for x in placed:
+        k = x.get("_kind")
+        d["hook" if k == "hook" else ("small" if k == "card" else "punch")] += 1
+    return d
+
+
+def describe_cards(spec: dict, placed: list, n_subs: int | None = None) -> str:
+    """
+    统一的「上屏元素摘要」一行 —— 正式流程与 `--preview` 共用，
+    避免两处各写一遍后口径漂移（钩子/浅底卡曾被预览表整个漏掉）。
+    """
+    n = count_cards(placed)
+    parts = []
+    if n_subs is not None:
+        parts.append(f"字幕 {n_subs} 行")
+    parts += [f"开头钩子 {n['hook']}", f"金句卡 {n['punch']}",
+              f"浅底卡 {n['small']}"]
+    if spec.get("zoom"):
+        parts.append(f"画面推近 {float(spec['zoom']):.2f}")
+    return " / ".join(parts)
 
 
 # ---------------- 主流程 ----------------
@@ -877,44 +989,22 @@ def make(spec: dict, workdir: str):
     subs = build_subs(spec, lines, seg_bounds, _total)
     seq = place_cards(spec.get("seq"), lines, seg_bounds, "序号条", 2.5, _total)
 
-    # 开头大字钩子（静音场景靠它抓人）+ 金句卡，一起走重叠保护
-    punch_raw = []
-    hook = spec.get("hook")
-    if hook:
-        h = dict(hook) if isinstance(hook, dict) else {"text": str(hook)}
-        h.setdefault("start", 0.0)
-        if h.get("end") is None:
-            h["end"] = float(h.get("start", 0.0)) + float(h.get("hold", 2.5))
-        h.setdefault("style", "金句")
-        # ⭐ 钩子**不加淡入**：视频号封面默认取视频第一帧，
-        #    带 \fad 的话第一帧是完全透明的 → 封面会变成"纯画面无文字"
-        h.setdefault("anim", "")
-        punch_raw.append(h)
-        print(f"    开头钩子：「{str(h['text'])[:18]}」"
-              f"{h['start']:.1f}~{h['end']:.1f}s（无淡入，保证第一帧可做封面）")
-    if spec.get("punch"):
-        _p = spec["punch"]
-        punch_raw += (_p if isinstance(_p, list) else [_p])
-    # 浅底文字卡（台词小卡 / 话术卡 / 小字卡 / 祝愿卡）—— 与金句卡走**同一套重叠保护**：
-    # 它们都落在画面中下部，互相压住同样是"文字叠字"。这里统一交给 place_cards。
-    for _c in (spec.get("cards") or []):
-        if isinstance(_c, dict):
-            _c = dict(_c)
-            _c.setdefault("style", "小卡")
-            _c.setdefault("hold", 3.0)      # MD 里常写"停 3 秒"
-            punch_raw.append(_c)
-    punch = place_cards(punch_raw, lines, seg_bounds, "金句卡", 4.5, _total)
+    # 开头钩子 + 金句卡 + 浅底卡：合并成一条通道，共用重叠保护
+    # ⭐ 并入逻辑在 build_card_list 里，**与 --preview 共用**（不许各写一遍）
+    punch = place_cards(build_card_list(spec), lines, seg_bounds, "金句卡", 4.5, _total)
+    if spec.get("hook"):
+        _h = next((c for c in punch if c.get("_kind") == "hook"), None)
+        if _h:
+            print(f"    开头钩子：「{str(_h['text'])[:18]}」"
+                  f"{float(_h['start']):.1f}~{float(_h['end']):.1f}s"
+                  f"（无淡入，保证第一帧可做封面）")
 
+    # ⚠️ 摘要必须在 strip_kind 之前算 —— strip_kind 会原地清掉 _kind 标记，
+    #    之后再计数就分不出 hook / 浅底卡了（全部会算成金句卡）
+    summary = describe_cards(spec, punch, len(subs))
     ass_path = os.path.join(workdir, "subs.ass")
-    build_ass({"subs": subs, "seq": seq, "punch": punch}, ass_path)
-    # 细分计数：hook / 金句卡 / 浅底卡 都走 punch 通道，但打印时要能分开核对
-    _n_hook = 1 if spec.get("hook") else 0
-    _n_small = sum(1 for x in punch if (x.get("style") or "") in ("小卡", "引用"))
-    _n_punch = len(punch) - _n_hook - _n_small
-    print(f"    → 字幕 {len(subs)} 行 / 序号条 {len(seq)}"
-          f" / 开头钩子 {_n_hook} / 金句卡 {_n_punch} / 浅底卡 {_n_small}"
-          + (f" / 画面推近 {float(spec.get('zoom') or 0):.2f}"
-             if spec.get("zoom") else ""))
+    build_ass({"subs": subs, "seq": seq, "punch": strip_kind(punch)}, ass_path)
+    print(f"    → {summary} / 序号条 {len(seq)}")
     for _i in safe_check({"subs": subs, "seq": seq, "punch": punch}):
         print(f"    ⚠️ 安全区：{_i}")
     if seg_bounds:
@@ -1356,12 +1446,22 @@ def preview_plan(spec, workdir) -> str | None:
           "这里看的是位置关系")
 
     subs = build_subs(spec, lines, [], total)
-    punch = place_cards(spec.get("punch"), lines, [], "金句卡", 4.5, total)
     seq = place_cards(spec.get("seq"), lines, [], "序号条", 2.5, total)
+    # ⭐ 钩子 / 金句卡 / 浅底卡 走**同一个** build_card_list —— 与正式流程共用，
+    #    否则钩子与浅底卡会漏出预览表，看起来像"写了没生效"（实测踩过）
+    punch = place_cards(build_card_list(spec), lines, [], "金句卡", 4.5, total)
+    if spec.get("hook"):
+        _h = next((c for c in punch if c.get("_kind") == "hook"), None)
+        if _h:
+            print(f"  开头钩子：「{str(_h['text'])[:18]}」"
+                  f"{float(_h['start']):.1f}~{float(_h['end']):.1f}s"
+                  f"（无淡入，保证第一帧可做封面）")
 
     os.makedirs(workdir, exist_ok=True)
     ass = os.path.join(workdir, "preview.ass")
-    build_ass({"subs": subs, "seq": seq, "punch": punch}, ass)
+    # ⚠️ 摘要必须在 strip_kind 之前算（否则 _kind 已清、分类计数全塌成"金句卡"）
+    summary = describe_cards(spec, punch, len(subs))
+    build_ass({"subs": subs, "seq": seq, "punch": strip_kind(punch)}, ass)
 
     # ⭐ 安全区检查（会不会被视频号 UI 压住）
     issues = safe_check({"subs": subs, "seq": seq, "punch": punch})
@@ -1376,7 +1476,10 @@ def preview_plan(spec, workdir) -> str | None:
     dlg = [ln for ln in open(ass, encoding="utf-8-sig").read().splitlines()
            if ln.startswith("Dialogue:")]
     print()
-    for style in ("字幕", "强调", "序号条", "金句"):
+    print(f"  ▸ {summary} / 序号条 {len(seq)}")
+    # ⚠️ 样式名必须与 video_build_ass.ELEMENT_KEYS / STYLE_DEF 一致，
+    #    新增样式时这里也要加，否则预览表会"静默漏掉"那类元素
+    for style in ("字幕", "强调", "序号条", "钩子", "金句", "小卡", "引用"):
         rows = [ln for ln in dlg if ln.split(",", 9)[3] == style]
         if not rows:
             continue

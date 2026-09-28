@@ -57,6 +57,15 @@ SAFE = {
     "left": 60,
 }
 
+# ⭐ **封面裁切安全区**（2026-09-26 立）：平台/朋友圈会把 9:16 封面**按 1:1 中心裁切**。
+#    对 1080×1920 来说，1:1 中心方形 = y ∈ [420, 1500] —— 其余上下两块**在封面里根本看不见**。
+#    ⚠️ 只有「钩子」需要满足它：**平台默认取第一帧当封面**，而第一帧上的字就是钩子。
+#    （金句卡、浅底卡、序号条都不进封面，不受这条约束。）
+COVER_SAFE = {
+    "top": 420,      # 1:1 裁切起点：(1920 − 1080) / 2
+    "bottom": 1500,  # 1:1 裁切终点：1080 + 420
+}
+
 # 样式参数集中定义，方便整体系调
 #   margin_lr: 左右安全边距 —— 底部字幕要留够，避免行尾伸进右侧按钮区
 #   anim: ASS 覆盖标签，写在每条 Dialogue 开头。零额外渲染成本（libass 内建）
@@ -77,25 +86,57 @@ STYLE_DEF = {
     "序号条": dict(size=76,  color=WHITE,     align=8, margin_v=260, margin_lr=70, bold=True,
                    outline=4, shadow=1,
                    anim=r"\fad(140,140)"),
-    # 金句卡：画面正中（也在朋友圈 1:1 裁切的安全区内）；
+    # 金句大字卡／封面图：**顶部居中**（2026-09-26 改，原来是 align=5 画面正中）
+    # ⛔ 原来在正中的原因："朋友圈 1:1 裁切的安全区" —— 但那只考虑了裁切，
+    #    **没考虑人**：这类口播是**自拍竖屏、人脸就在画面正中**，
+    #    居中的大字卡**直接糊在脸上**（用户实拍反馈：两个视频都盖住脸）。
+    #    → 改到**顶部安全区之下**（SAFE.top=180）：躲开人脸。
+    # ⚠️ 序号条也在顶部（margin_v=260）——所以**金句卡不要和序号条挂在同一段**（会叠在一起）。
     # 淡入 + 极轻微推近（1.00→1.06，500ms），比硬切显得"有设计"
-    "金句":   dict(size=100, color=WHITE,     align=5, margin_v=0,   margin_lr=70, bold=True,
+    "金句":   dict(size=100, color=WHITE,     align=8, margin_v=200, margin_lr=70, bold=True,
                    outline=5, shadow=2,
                    anim=r"\fad(260,260)\t(0,500,\fscx106\fscy106)"),
+
+    # ⭐ 开头钩子：**单独一套样式**（2026-09-26 立）——视觉与金句卡完全一致，**只有位置不同**。
+    # 为什么必须拆开：**钩子＝封面**（平台默认取视频第一帧当封面），金句卡则不进封面。
+    #   · 金句卡待在顶部 200（它只出现在后文，不进封面）；
+    #   · 钩子必须落进**封面裁切安全区**：视频号/朋友圈会把 9:16 按 **1:1 中心裁切**，
+    #     1080×1920 的可见区间只有 y ∈ [420, 1500] → 顶部 200 的两行字**会被裁掉一部分**
+    #     （用户实拍反馈："用第一帧做封面时金句被裁掉了一部分"）。
+    # → 钩子下移到 margin_v=440（1:1 裁切起点 420 之下留 20px 余量）：
+    #   ① 常见裁切（1:1 / 3:4）都完整；② 它只出现在**前置静止帧 ＋ 正片头 0.1 秒**，
+    #      此时正文尚未开口（本系列素材约 0.4s 才开口）→ **压在额头/头顶也不遮口播**。
+    # ⚠️ 改这个数要同步看 `safe_check` 的封面裁切校验（mv < COVER_SAFE["top"] 会报警）。
+    "钩子":   dict(size=100, color=WHITE,     align=8, margin_v=440, margin_lr=70, bold=True,
+                   outline=5, shadow=2,
+                   anim=""),
+
+    # ⭐ 1:1 封面图**专用**（2026-09-26 立）：字回到画面顶部。
+    # 为什么不能共用「钩子」：「钩子」的 440 是为了在 **9:16 里躲开 1:1 裁切**；
+    #   而 1:1 封面图是**按 1080×1080 画布单独渲染**的（`make_cover` 的方版分支），
+    #   **本身不会再被裁** → 440 在方画布上正好**压在眼睛上**（实测渲染确认）。
+    # ⚠️ 它只在**静态封面图**里用，不参与视频字幕；因此不受 SAFE.top 约束
+    #   （封面是独立图片，平台不会在上面叠 UI）。
+    "封面方": dict(size=100, color=WHITE,     align=8, margin_v=80,  margin_lr=70, bold=True,
+                   outline=5, shadow=2,
+                   anim=""),
 
     # ---- 浅底文字卡（`BorderStyle=3` 用 Background 盒画底）----
     # 「台词小卡 / 话术卡 / 小字卡 / 祝愿卡」都用它：
     #   浅米底 + 深字、位置在**字幕上方**（不与字幕打架）、**不加动画**
     #   字号靠 item 级 `size` 微调（MD 常写"比字幕大一号 / 比金句卡小很多"）
     # ⚠️ BorderStyle=3 时，`outline` 的角色变成"底板内边距"（padding），不是描边粗细
-    "小卡":   dict(size=76,  color="#2B2B2B", align=2, margin_v=620, margin_lr=110,
+    # ⭐ 2026-09-26：**从"字幕上方"（margin_v=620）改到顶部**——620 那个位置在实拍里
+    #    正好**压在嘴上**（自拍竖屏人脸占满中段；用户实拍反馈"这段话同样盖住了脸"）。
+    "小卡":   dict(size=76,  color="#2B2B2B", align=8, margin_v=200, margin_lr=110,
                    bold=False, outline=18, shadow=0, border_style=3,
                    back_color="#F7F2E8", back_alpha=0x14,
                    anim=""),
 
     # 引用小字：**更小 + 半透明 + 无动画**（03 篇的「引用标记」）
     #   alpha=0x70 ≈ 70% 透明；暖棕、不加粗，是"轻轻提一下"的语气
-    "引用":   dict(size=58,  color=WARM_DEEP, align=2, margin_v=620, margin_lr=110,
+    #   ⭐ 同样挪到顶部（理由同「小卡」）
+    "引用":   dict(size=58,  color=WARM_DEEP, align=8, margin_v=200, margin_lr=110,
                    bold=False, outline=2, shadow=0, alpha=0x70,
                    anim=""),
 }
@@ -222,19 +263,35 @@ def render_line(text: str, marks: list[dict] | None = None) -> str:
     按 marks 插行内标签。
     marks: [{"word":"装的","color":"#C2703C","bold":True,"scale":1.1}]
     匹配不到的 mark 静默忽略（方便一套标色规则复用到多篇）
+
+    ⚠️ 调用前 `text` **已经折过行**（含 `\n`，`_esc` 会转成 `\N`）。
+    ⭐ 2026-09-27 修：**标色词跨行时以前会静默丢失着色**——
+       折行后 `text` 里插了 `\n`，`text.find(word)` 直接失败、又按"匹配不到就忽略"处理，
+       于是那一句**一点颜色都没有**，而**落点表和预览都看不出来**（只能逐行读 `.ass`）。
+       实测：`第四步，只商量一个能试的动作。` 折成 3 行后，
+       标色词 `一个能试的动作` 被切成 `只商量一个` / `能试的动作` → 整句全白。
+    → 解法：**先在"去掉换行符"的扁平文本上定位，再映射回原索引**；
+       插入的标签可以横跨 `\N`（ASS 语法上合法：`{\c&H..}a\Nb{\r}`）。
     """
     if not marks:
         return _esc(text)
+
+    # 扁平化：去掉 \n，同时记住每个字符在原文本里的下标
+    fmap: list[int] = []
+    for i, ch in enumerate(text):
+        if ch != "\n":
+            fmap.append(i)
+    flat = "".join(text[i] for i in fmap)
 
     spans = []
     for m in marks:
         w = m.get("word", "")
         if not w:
             continue
-        idx = text.find(w)
+        idx = flat.find(w)
         if idx < 0:
             continue
-        spans.append((idx, idx + len(w), m))
+        spans.append((fmap[idx], fmap[idx + len(w) - 1] + 1, m))
     if not spans:
         return _esc(text)
 
@@ -334,6 +391,19 @@ def safe_check(spec: dict) -> list[str]:
                 if mv < SAFE["top"]:
                     issues.append(f"{tag} 顶边 {mv:.0f}px 落在顶部遮挡区"
                                   f"（应 > {SAFE['top']}）")
+                # ⭐「钩子」还要过**封面裁切**这一关：它就是要当封面的那句，
+                #    而 1:1 中心裁切只保留 y ∈ [420, 1500]（见 COVER_SAFE）
+                if st == "钩子":
+                    nline = str(item.get("text", "")).count("\\N") + 1
+                    if mv < COVER_SAFE["top"]:
+                        issues.append(
+                            f"{tag} 顶边 {mv:.0f}px 在封面 1:1 裁切区之上"
+                            f"（应 ≥ {COVER_SAFE['top']}）"
+                            f"→ 用第一帧做封面时这句会被裁掉一部分")
+                    if mv + h * nline > COVER_SAFE["bottom"]:
+                        issues.append(
+                            f"{tag} 底边约 {mv + h * nline:.0f}px 超出封面 1:1 裁切区"
+                            f"（应 ≤ {COVER_SAFE['bottom']}）→ 下半句会被裁掉")
             # 居中类（4/5/6）：垂直方向安全；只需看行宽是否伸进右侧按钮区
             lr = sd.get("margin_lr", MARGIN_LR)
             if an in (2, 5, 8):                     # 水平居中
@@ -457,7 +527,10 @@ def _selftest():
     for k, v in (("字幕", f"底部对齐，底边 y={PLAY_RES_Y - STYLE_DEF['字幕']['margin_v']}"
                   f"（遮挡区从 y={PLAY_RES_Y - SAFE['bottom']} 开始）"),
                  ("序号条", f"顶部对齐，顶边 y={STYLE_DEF['序号条']['margin_v']}"),
-                 ("金句", "正中（也在朋友圈 1:1 裁切安全区内）")):
+                 ("金句", f"顶部对齐，顶边 y={STYLE_DEF['金句']['margin_v']}"
+                          f"（不进封面，不受裁切约束）"),
+                 ("钩子", f"顶部对齐，顶边 y={STYLE_DEF['钩子']['margin_v']}"
+                          f"（**当封面**，须 ≥ {COVER_SAFE['top']}、≤ {COVER_SAFE['bottom']}）")):
         print(f"  {k}：{v}")
     issues = safe_check(spec)
     if issues:
@@ -466,6 +539,21 @@ def _selftest():
             print(f"    · {i}")
     else:
         print("\n  ✅ 全部落在安全区内")
+    print()
+    print("=" * 70)
+    print("标色自检（⭐ 含**跨行**标色词——2026-09-27 修过的静默丢失）")
+    print("=" * 70)
+    for nm, txt, w in (("不跨行", "第四步，只商量一个能试的动作。", "能试的动作"),
+                       ("⭐ 横跨 \\N（标签要跨两行）", "第四步，\n只商量一个\n能试的动作。", "一个能试的动作"),
+                       ("跨行（末句）", "第一步，\n说出你观察到的状态，\n别说结论。", "别说结论"),
+                       ("跨行（首句）", "我接下来这句话，\n是为了了解孩子吗？", "是为了了解孩子"),
+                       ("确实不存在", "第四步，只商量一个动作。", "完全不在的句子")):
+        r = render_line(txt, [{"word": w, "color": WARM, "bold": True}])
+        hit = "\\c" in r
+        want = nm != "确实不存在"
+        flag = "✅" if hit == want else "⛔"
+        print(f"  {flag} {nm}：「{w}」 → {'已着色' if hit else '未着色（应如此）'}")
+        print(f"      {r!r}")
     print()
     print("=" * 70)
     print("ASS 文件内容")

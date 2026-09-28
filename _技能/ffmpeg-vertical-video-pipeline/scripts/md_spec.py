@@ -144,6 +144,19 @@ def _hold(s: str, default: float) -> float:
     return float(m.group(1)) if m else default
 
 
+def _pad(s: str, default: float = 0.0) -> float:
+    r"""抽「延长显示」的秒数：`多停 1.5 秒` / `延长 1.5 秒` / `再多留 2 秒` → 1.5
+
+    ⭐ 强调句（底部字幕）专用（2026-09-27 立）：
+      它和 `_hold` 的区别是**语义相反**——
+        · `_hold`  ＝ **改成固定时长**（"停约 3.5 秒"＝就显示 3.5 秒，与那句话多长无关）；
+        · `_pad`   ＝ **在"跟随原句"的基础上再多显示一会儿**（原句 2.8 秒 + 1.5 秒 = 4.3 秒）。
+      ⚠️ 正则要求带「多停／延长／再多留」这类前缀，**避免把 `_hold` 的"停 N 秒"误抓成 pad**。
+    """
+    m = re.search(r"(?:多停|多留|延长|再多|多显示|多给)\s*(?:约|留|顿)?\s*([\d.]+)\s*秒", s)
+    return float(m.group(1)) if m else default
+
+
 def _marks(desc: str, base_color: str, default_bold: bool = False):
     """从一句描述里抽标色规则：`"装的"标暖色加粗、轻微放大` → [{word,color,bold,scale}]
 
@@ -199,7 +212,7 @@ def _version_line(blk: str) -> str:
 
 
 def parse_emph(block: str):
-    """强调句列表 → [{anchor, style, marks}]"""
+    """强调句列表 → [{anchor, style, marks, pad?}]"""
     out = []
     for it in _items(block):
         head = it[0]
@@ -219,6 +232,10 @@ def parse_emph(block: str):
         mk = _marks(desc, WARM)
         if mk:
             item["marks"] = mk
+        # ⭐ `多停 1.5 秒` → pad：在"跟随原句"的基础上**延长**（不是改成固定时长）
+        pad = _pad(desc) or _pad(head)
+        if pad:
+            item["pad"] = pad
         out.append(item)
     return out
 
@@ -370,7 +387,12 @@ def parse_cards(block: str):
         txt = _anchors(head)
         if not txt:
             continue
-        subs = it[1:]
+        # ⚠️ **跳过 `>` 开头的子行**（markdown 引用＝说明文字）：
+        #    它们会被 `_marks()` 抽出引号词、**当成标色规则**（2026-09-27 实测：
+        #    浅底卡区块底部的说明行 → 最后一张卡平白多出 4 个标色词）。
+        #    与硬坑 41「说明文字被当成数据」同源 —— 这里做**代码侧兜底**；
+        #    文档侧仍要求"格式说明/示例/警告一律写到「五、怎么合成」"。
+        subs = [x for x in it[1:] if not x.startswith(">")]
         desc = _desc_of(head)
         if subs:
             desc += " " + " ".join(subs)
@@ -565,6 +587,10 @@ def parse_md(path: str) -> dict:
             row = {"anchor": e["anchor"]}
             if e.get("marks"):
                 row["marks"] = e["marks"]
+            # ⭐ `pad`（`多停 N 秒`）必须一起带过去 ——
+            #    subs 是从 emph **派生**的，漏了它 pad 就会被静默丢掉（2026-09-27 实测踩过）
+            if e.get("pad"):
+                row["pad"] = e["pad"]
             rows.append(row)
         out["subs"] = rows if rows else "none"
         # ⭐ 金句版这几句是**唯一的视觉文字**，默认用「强调」样式（更醒目）；
@@ -667,6 +693,7 @@ SAMPLE = """# 测试文案
 ### 浅底卡（画面下方浅底文字卡）
 1. 「我听到了，你现在很不想去」→ 停 3 秒；挂在「我听到了」
 2. 「今晚不用把所有原因说清」→ 比字幕大一点；挂在「我听到了」
+> ⭐ 回归用例：本行是**说明**，里面的引号词（"开口模板"、"记什么"）**不该**被当成标色规则。
 
 ### 画面
 - 轻微推近
@@ -712,6 +739,15 @@ def selftest() -> int:
     chk(e[0]["marks"][0].get("bold") is True, "识别「加粗」")
     chk(abs(e[0]["marks"][0].get("scale", 0) - ENLARGE_SCALE) < 1e-6, "识别「轻微放大」")
     chk(e[1]["marks"][0]["word"] == "帮孩子", "第二条标色词正确")
+
+    # ⭐ pad（`多停 1.5 秒`）—— 2026-09-27 立：给"要让人照着做/照着念"的那几句**延长显示**
+    _pe = parse_emph('1. 「第一步，说出你观察到的状态，别说结论。」 → "别说结论"标暖色加粗；**多停 1.5 秒**')
+    chk(_pe and abs(_pe[0].get("pad", 0) - 1.5) < 1e-6,
+        f"识别「多停 1.5 秒」→ pad（实际 {_pe[0].get('pad') if _pe else None}）")
+    _pe2 = parse_emph('1. 「共情不是赞成不上学」 → "不是赞成"标暖色加粗')
+    chk(_pe2 and "pad" not in _pe2[0], "没写延长 → 不带 pad（不误伤）")
+    chk(_pad("停约 3.5 秒") == 0 and _pad("多停 1.5 秒") == 1.5,
+        "`_pad` 只认「多停／延长」前缀 —— 「停约 3.5 秒」是固定时长、不是延长")
 
     print("【3】金句大字卡")
     sub = _subsections(_section(SAMPLE, "上屏方案"))
@@ -776,6 +812,12 @@ def selftest() -> int:
         "没提字号 → 用样式默认（不写死）")
     chk(parse_cards("- 「甲」") == [],
         "用 `-` 无序列表 → 解析不出（必须 1. 2. 有序列表）")
+    # ⭐ 回归锁（2026-09-27 立）：区块里的 `>` 说明行**不参与解析**
+    #    踩过的坑：说明行被拼进 desc → `_marks()` 抽走里面的引号词 → 最后一张卡平白多出标色词
+    chk("marks" not in (cd[1] if len(cd) > 1 else {}),
+        f'`>` 说明行不污染标色（实际 {cd[1].get("marks") if len(cd) > 1 else None}）')
+    _cd_q = parse_cards('1. 「甲」→ 挂在「乙」\n2. 「丙」\n> ⚠️ 说明里写"别挂引出语"这类引号词')
+    chk(_cd_q and "marks" not in _cd_q[-1], "说明行里的引号词不进 marks（单独用例）")
 
     sc = parse_screen(_pick(sub, "画面", "镜头", "运镜"))
     chk(abs(sc.get("zoom", 0) - DEFAULT_ZOOM) < 1e-6,

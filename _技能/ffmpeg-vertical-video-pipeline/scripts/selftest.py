@@ -2,11 +2,13 @@
 r"""
 技能自检 —— 不依赖外部素材，用 lavfi 现场合成测试片。
 
-覆盖本次新增的「1~N 段自适应」与「锚点定位」两块：
+覆盖三块核心逻辑，全部不需要外部素材：
     ① 锚点定位（anchor / seg / at / start，含未命中处理）
     ② 时间轴换算 map_time（剪停顿后的坐标映射）
-    ③ 多段拼接 build_timeline（1/2/5 段、分辨率/帧率混杂、无音轨）
-    ④ 过短段合并 merge_short_entries
+    ③ 过短段合并 merge_short_entries
+    ④ 卡片合并 build_card_list（hook / 金句卡 / 浅底卡 走同一通道）
+    ⑤ 预览表完整性 preview_plan（口径必须与正式流程一致）
+    ⑥ 多段拼接 build_timeline（1/2/5 段、分辨率/帧率混杂、无音轨）
 
 用法：python selftest.py
 """
@@ -29,6 +31,7 @@ except Exception:
 import paths                      # noqa: E402
 import video_make as vm           # noqa: E402
 import video_visual as vv         # noqa: E402
+import video_build_ass as vba     # noqa: E402
 
 FFMPEG = paths.ffmpeg_path()
 PASS, FAIL = [], []
@@ -213,7 +216,152 @@ def test_merge():
     check("单段不合并", merged == 0 and len(out) == 1)
 
 
-# ---------------- ④ 多段拼接（真跑 ffmpeg） ----------------
+# ---------------- ④ 卡片合并（hook / 金句卡 / 浅底卡 同一通道） ----------------
+def test_cards():
+    """
+    ⭐ 回归测试：`--preview` 曾与正式流程**各写一遍**并入逻辑，
+    于是预览表里看不到 hook 与浅底卡 → 极容易被误判成"写了没生效"。
+    现在两边共用 `vm.build_card_list()`，这里锁住它的行为。
+    """
+    print("\n④ 卡片合并（hook / 金句卡 / 浅底卡）")
+    lines = [{"start": 2.0, "end": 4.0, "text": "第一句话"},
+             {"start": 6.0, "end": 8.0, "text": "第二句话"},
+             {"start": 10.0, "end": 12.0, "text": "第三句话"}]
+
+    # ---- 默认值（单给 hook，不与其它元素相撞）----
+    h = vm.build_card_list({"hook": {"text": "钩子句"}})[0]
+    check("hook 起点默认 0.0", h.get("start") == 0.0)
+    check("hook 默认 hold 2.5", h.get("end") == 2.5, f'{h.get("end")}')
+    check("hook 无淡入（第一帧可做封面）", h.get("anim") == "")
+    # ⭐ 2026-09-26：钩子改用独立样式「钩子」——视觉同金句卡，但位置落在**封面 1:1 裁切安全区**内
+    #    （与金句卡共用时顶边 200 会被封面裁掉一部分；用户实拍反馈）
+    check("hook 用独立「钩子」样式", h.get("style") == "钩子")
+    c = vm.build_card_list({"cards": [{"text": "x"}]})[0]
+    check("浅底卡默认「小卡」样式且停 3 秒",
+          c.get("style") == "小卡" and c.get("hold") == 3.0)
+
+    # ---- 三类合并（显式 hold，避免互相重叠触发"自动错开"告警）----
+    spec = {
+        "hook": {"text": "钩子句", "hold": 1.0},
+        "punch": {"text": "金句卡", "anchor": "第二句话", "hold": 3.0},
+        "cards": [{"text": "浅底卡A", "anchor": "第一句话", "hold": 2.0},
+                  {"text": "浅底卡B", "anchor": "第三句话", "hold": 2.0}],
+    }
+    raw = vm.build_card_list(spec)
+    check("三类都并入", len(raw) == 4, f"n={len(raw)}")
+    check("顺序：hook 在最前", raw[0].get("_kind") == "hook")
+    check("顺序：金句卡在浅底卡之前", raw[1].get("_kind") == "punch")
+
+    placed = vm.place_cards(raw, lines, [], "金句卡", 4.5, 12.0)
+    n = vm.count_cards(placed)
+    check("分类计数正确",
+          n == {"hook": 1, "punch": 1, "small": 2}, str(n))
+    desc = vm.describe_cards(spec, placed, n_subs=3)
+    check("摘要含三类", all(k in desc for k in ("开头钩子 1", "金句卡 1", "浅底卡 2")),
+          desc)
+    vm.strip_kind(placed)
+    check("strip_kind 清掉内部标记",
+          all("_kind" not in x for x in placed))
+
+    s2 = {"punch": {"text": "原文"}}
+    vm.build_card_list(s2)[0]["_kind"] = "被篡改"
+    check("返回的是副本，不污染原 spec 的 dict",
+          "_kind" not in s2["punch"], str(s2["punch"]))
+
+    check("空 spec → 空列表", vm.build_card_list({}) == [])
+    check("cards 非 dict 项被忽略",
+          len(vm.build_card_list({"cards": ["字符串", {"text": "x"}]})) == 1)
+
+    # ---- ⭐ 封面 1:1 裁切：钩子必须落在安全区内（2026-09-26 立）----
+    #    平台默认取**第一帧**当封面，而 9:16 会按 **1:1 中心裁切** → 可见区间只有 y ∈ [420,1500]。
+    #    钩子原来和金句卡共用「金句」样式（顶边 200）→ 用第一帧做封面时**字被裁掉一部分**。
+    hook_item = {"punch": [{"text": "查不出毛病，就是装病？", "style": "钩子"}]}
+    check("钩子默认落在封面 1:1 裁切区内（不报警）",
+          not any("封面 1:1" in s for s in vba.safe_check(hook_item)),
+          str(vba.safe_check(hook_item)))
+    _mv = vba.STYLE_DEF["钩子"]["margin_v"]
+    try:
+        vba.STYLE_DEF["钩子"]["margin_v"] = 200      # 放回"顶部 200"——正是会被裁的位置
+        check("钩子回到顶部 200 → 报警（回归锁）",
+              any("封面 1:1 裁切区之上" in s for s in vba.safe_check(hook_item)))
+    finally:
+        vba.STYLE_DEF["钩子"]["margin_v"] = _mv
+    check("金句卡不受封面裁切约束（它不进封面）",
+          not any("封面 1:1" in s for s in vba.safe_check(
+              {"punch": [{"text": "查不出来，不等于他在装", "style": "金句"}]})))
+
+
+# ---------------- ⑤ 预览表完整性（不需要素材，真跑 preview_plan） ----------------
+def test_preview(tmp):
+    """
+    ⭐ 回归测试：`--preview` 的输出必须包含**所有**上屏元素。
+    正式流程与预览曾因两处各写一遍而漂移（漏 hook / 漏浅底卡）。
+    """
+    print("\n⑤ 预览表完整性（--preview 的输出口径）")
+    script = os.path.join(tmp, "_preview_script.txt")
+    with open(script, "w", encoding="utf-8") as f:
+        f.write("第一句话\n第二句话\n第三句话\n")
+
+    spec = {
+        "script": script,
+        "subs": [{"anchor": "第一句话"}],
+        "seq": [{"text": "① 一", "anchor": "第二句话"}],
+        "hook": {"text": "钩子句"},
+        "punch": {"text": "金句卡", "anchor": "第三句话"},
+        "cards": [{"text": "浅底卡A", "anchor": "第二句话"}],
+    }
+    import io
+    import contextlib
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        ass = vm.preview_plan(spec, os.path.join(tmp, "_prev"))
+    out = buf.getvalue()
+
+    for kw in ("开头钩子", "钩子句", "【小卡】", "浅底卡A", "【序号条】", "【钩子】", "【金句】"):
+        check(f"预览表含「{kw}」", kw in out)
+    check("摘要口径含三类",
+          all(k in out for k in ("开头钩子 1", "金句卡 1", "浅底卡 1")),
+          [l.strip() for l in out.splitlines() if "▸" in l])
+    text = open(ass, encoding="utf-8-sig").read()
+    check("内部键未漏进 ASS", "_kind" not in text)
+    _j = [l for l in text.splitlines()
+          if l.startswith("Dialogue:") and l.split(",", 9)[3] == "钩子"]
+    check("钩子是独立样式且无淡入（第一帧可做封面）",
+          bool(_j) and not _j[0].split(",", 9)[9].startswith("{\\fad"))
+
+    # ⭐ 2026-09-27：标色词**跨行**时曾静默丢失（折行后 find 失败 + "匹配不到就忽略"双杀）
+    _m = [{"word": "一个能试的动作", "color": vba.WARM, "bold": True}]
+    check("标色词不跨行 → 着色",
+          "\\c" in vba.render_line("第四步，只商量一个能试的动作。", _m))
+    check("标色词横跨 \\N → 仍着色（折行不该吃掉标色）",
+          "\\c" in vba.render_line("第四步，\n只商量一个\n能试的动作。", _m))
+    check("标色词确实不存在 → 不着色（不误伤）",
+          "\\c" not in vba.render_line("第四步，只商量一个动作。", _m))
+
+    # ⭐ pad（`多停 1.5 秒`）：在"跟随原句"的时长上**追加** ——
+    #    给"观众要照着念/照着做"的那几句多留时间（2026-09-27 立，发布第 4 条四步）
+    _ln = {"start": 10.0, "end": 12.5, "text": "第一步，说出你观察到的状态，别说结论。"}
+    _s, _e = vm._span(_ln, {}, 3.0, True)
+    check("精选字幕默认跟随原句（2.5s）", abs((_e - _s) - 2.5) < 1e-6, f"{_s}–{_e}")
+    _s, _e = vm._span(_ln, {"pad": 1.5}, 3.0, True)
+    check("pad 在原句时长上追加 1.5s（2.5 → 4.0）", abs((_e - _s) - 4.0) < 1e-6, f"{_s}–{_e}")
+    _s, _e = vm._span(_ln, {"hold": 3.0, "pad": 1.0}, 3.0, True)
+    check("hold + pad 同时给 → 固定 3s 再追加 1s", abs((_e - _s) - 4.0) < 1e-6, f"{_s}–{_e}")
+
+    # ⚠️ 回归：金句版下 `subs` 是**从 subs_emph 派生**的，pad 已在 _span 里生效过一次；
+    #    apply_subs_emph 若再加一次就会**翻倍**（实测踩过：本该 5.22s，算出 6.72s）。
+    _lines = [{"start": 10.0, "end": 12.5, "text": "第一步，说出你观察到的状态，别说结论。"},
+              {"start": 20.0, "end": 22.0, "text": "第二步，核对感受，别抢着解释。"}]
+    _sp = {"subs": [{"anchor": "第一步，说出你观察到的状态，别说结论。", "pad": 1.5}],
+           "subs_emph": [{"anchor": "第一步，说出你观察到的状态，别说结论。",
+                          "style": "强调", "pad": 1.5}]}
+    _out = vm.build_subs(_sp, _lines, None, 60.0)
+    check("金句版 pad 只生效一次（2.5 + 1.5 = 4.0，不是 5.5）",
+          _out and abs((float(_out[0]["end"]) - float(_out[0]["start"])) - 4.0) < 1e-6,
+          f"{_out[0]['start']}–{_out[0]['end']}" if _out else "空")
+
+
+# ---------------- ⑥ 多段拼接（真跑 ffmpeg） ----------------
 def make_clip(path, w, h, fps, dur, color, with_audio=True, tone=440, noise=True):
     """用 lavfi 造一个测试片段；noise=True 时加轻噪声，避免纯色被压成极小文件"""
     src = f"testsrc2=size={w}x{h}:rate={fps}:duration={dur}"
@@ -235,7 +383,7 @@ def make_clip(path, w, h, fps, dur, color, with_audio=True, tone=440, noise=True
 
 
 def test_timeline(tmp):
-    print("\n④ 多段拼接（真跑 ffmpeg）")
+    print("\n⑥ 多段拼接（真跑 ffmpeg）")
     a = os.path.join(tmp, "s1_320x240_30fps.mp4")
     b = os.path.join(tmp, "s2_480x270_25fps.mp4")      # 不同分辨率 + 不同帧率
     c = os.path.join(tmp, "s3_640x360_30fps.mp4")
@@ -311,6 +459,8 @@ def main():
     test_subs()
     test_map_time()
     test_merge()
+    test_cards()
+    test_preview(tmp)
     test_timeline(tmp)
     print("\n" + "=" * 70)
     print(f"通过 {len(PASS)} 项，失败 {len(FAIL)} 项")
