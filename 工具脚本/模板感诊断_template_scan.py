@@ -13,22 +13,53 @@
     --dir       成果根目录（默认当前目录）
     --diag-structure  额外输出每篇的结构特征（竖条小标题、卡片、疑似模块），
                       用于判断"6 种文章结构是否被轮换使用"
+    --diag-openers    跨篇开篇去同质化诊断：报出同系列内「同时段＋同空间」的重复开篇
     --json      以 JSON 输出，便于脚本消费
 
 节流线（超线会标 ★）：
     我后来试着做的几件小事   应仅出现在方法类文章（>0 即提示）
-    不是……而是……            单篇 ≤2 次
+    不是……而是……            目标 ≤1 次；硬上限 2（提示级）；≥3 次进 ★ 强制复核
     那一刻/慢慢/一点点/我忽然  单篇合计 ≤3 次
     愿你……                   不每篇都用
     初三年级词                与"高一"人设冲突
 """
 import re, glob, os, sys, argparse, json
 
-# 节流线配置
+# 节流线配置（2026-09-28 收紧：「不是…而是…」改为「目标≤1 / 硬上限2 / ≥3复核」）
 THRESH = {
-    "buer": 2,        # 不是…而是… 单篇上限
-    "same_word": 3,   # 那一刻+慢慢+一点点+我忽然 合计上限
+    "buer": 1,         # 不是…而是… 目标上限（写作时应压到 1 次以内）
+    "buer_hard": 2,    # 硬上限；≥3 次进 ★ 警告，须逐句复核并写明保留理由
+    "same_word": 3,    # 那一刻+慢慢+一点点+我忽然 合计上限
 }
+
+# 开篇取样长度与「三要素」词表（跨篇开篇去同质化，见 SOP 02-writing.md）
+OPENER_HEAD = 600
+OPEN_WORDS = {
+    "时段": ["清晨", "早上", "早晨", "上午", "中午", "下午", "傍晚", "晚上",
+             "夜里", "深夜", "半夜", "凌晨", "晚饭", "饭桌", "放学", "周末"],
+    "空间": ["玄关", "门口", "门外", "房门", "卧室", "客厅", "厨房", "车里",
+             "车上", "校门", "学校", "饭桌", "餐桌", "卫生间", "阳台", "沙发", "走廊"],
+    "触发": ["摔门", "反锁", "砰", "夺过", "抢过", "路由器", "放下书包", "放下碗",
+             "没说话", "沉默", "来电", "电话", "消息", "卷子", "成绩"],
+}
+
+
+def opener_tags(vis: str) -> dict:
+    """取开篇「时段/空间/触发」三要素（每维取正文中**最靠前**命中的那个词）
+
+    取「最靠前」而非词表顺序，是为了跳过正文开头的改编声明/引荐块——
+    那些段落不含场景词，第一次命中的位置自然落在正文开篇句上。
+    """
+    head = re.sub(r"\s", "", vis)[:OPENER_HEAD]
+    out = {}
+    for dim, words in OPEN_WORDS.items():
+        best, pos = "", len(head) + 1
+        for w in words:
+            i = head.find(w)
+            if 0 <= i < pos:
+                best, pos = w, i
+        out[dim] = best
+    return out
 
 PAT_BUER = re.compile(r"不是.{1,30}?而是")
 SAME_WORDS = ["那一刻", "慢慢", "一点点", "我忽然", "我突然"]
@@ -37,8 +68,14 @@ EXPECT_GRADE = ["高一", "高二"]   # 人设应为高中段
 
 
 def visible_text(html: str) -> str:
-    """去 script/style/标签，得到可见文字。"""
-    body = re.sub(r"<(script|style)\b.*?</\1>", "", html, flags=re.S | re.I)
+    """去 head/script/style/标签，得到可见文字。
+
+    ⚠️ 必须去掉 <head>：否则 <title> 里的句式（例如标题本身写成"不是…而是…"）
+    会被计入**正文**配额——标题句式归第 1 步「标题三类轮换」管，不是正文指纹。
+    （2026-09-28 修：第 14 篇曾因此被误报 3 次，实际正文只有 1 次。）
+    """
+    body = re.sub(r"<head\b.*?</head>", "", html, flags=re.S | re.I)
+    body = re.sub(r"<(script|style)\b.*?</\1>", "", body, flags=re.S | re.I)
     return re.sub(r"<[^>]+>", "", body)
 
 
@@ -72,6 +109,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dir", default=".", help="成果根目录")
     ap.add_argument("--diag-structure", action="store_true", help="额外输出结构特征")
+    ap.add_argument("--diag-openers", action="store_true",
+                    help="跨篇开篇去同质化：报出同系列内「同时段＋同空间」的重复开篇")
     ap.add_argument("--json", action="store_true", help="JSON 输出")
     ap.add_argument("--count", action="store_true",
                     help="只报可见字符数 + 区间判定（普通稿 1600-2400 / 速览 900-1400）")
@@ -115,12 +154,15 @@ def main():
             buer=len(PAT_BUER.findall(vis)),
             yuan=vis.count("愿你"),
             grades={g: vis.count(g) for g in GRADE_WORDS if vis.count(g)},
+            otags=opener_tags(vis),
         )
         warns = []
         if row["small"]:
             warns.append("含'小事情'模块")
-        if row["buer"] > THRESH["buer"]:
-            warns.append(f"不是而>2({row['buer']})")
+        if row["buer"] > THRESH["buer_hard"]:
+            warns.append(f"不是而{row['buer']}次·须逐句复核")
+        elif row["buer"] > THRESH["buer"]:
+            warns.append("不是而2次·建议压到1")
         if same > THRESH["same_word"]:
             warns.append(f"同类词>3({same})")
         if row["yuan"]:
@@ -218,6 +260,42 @@ def main():
                   f"{s['quote_blocks']:>5}  {'、'.join(flags) if flags else '（现场故事/概念解释/清单工具）'}")
             for sub in s["subs"][:5]:
                 print(f"        · {sub[:44]}")
+
+    if args.diag_openers:
+        from collections import Counter
+        print("\n=== 跨篇开篇去同质化诊断（核心判据：同系列内「时段」过度集中）===")
+        print(f"{'篇':>3} {'时段':<8} {'空间':<7} {'触发':<10}  判定")
+        print("-" * 88)
+        seen_combo = {}
+        for r in rows:
+            t = r["otags"]
+            note = ""
+            if t["时段"] and t["空间"]:
+                key = (t["时段"], t["空间"])
+                if key in seen_combo:
+                    note = f"  ★★ 与第 {seen_combo[key]} 篇 同期段＋同空间"
+                else:
+                    seen_combo[key] = r["n"]
+            elif not any(t.values()):
+                note = "  ⚠ 开篇无场景锚点（缺时段/空间/触发）"
+            print(f"{r['n']:>3} {t['时段'] or '—':<8} {t['空间'] or '—':<7} "
+                  f"{t['触发'] or '—':<10} {note}")
+        print("-" * 88)
+
+        tc = Counter(r["otags"]["时段"] for r in rows if r["otags"]["时段"])
+        strong = sum(1 for _, v in Counter(
+            (r["otags"]["时段"], r["otags"]["空间"]) for r in rows
+            if r["otags"]["时段"] and r["otags"]["空间"]).items() if v > 1)
+        print("时段分布：" + ("／".join(f"{k} {v} 篇" for k, v in tc.most_common())
+                          if tc else "（均未识别）"))
+        over = [(k, v) for k, v in tc.most_common() if v >= 3]
+        if over:
+            print("★ 时段过度集中：" + "；".join(f"「{k}」{v} 篇" for k, v in over)
+                  + "   ← 须换掉大部分；只改时间点是「假换」（见 SOP 02-writing.md）")
+        if strong:
+            print(f"★ 同期段＋同空间 重复 {strong} 组，须改其中一篇的开篇设定")
+        if not over and not strong:
+            print("✓ 开篇时段分散，未见同质化")
     return 0
 
 
