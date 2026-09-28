@@ -240,6 +240,13 @@ def parse_emph(block: str):
     return out
 
 
+# ⭐ 「片尾定格卡」的**明确开关**（写法：`片尾定格卡：是` 或 `片尾卡：是`）
+#   2026-09-28 立：**取代**原来的"条目里出现『回放』二字就触发"——
+#   那个关键词逻辑让**否定式说明**也照样触发（"不要在结尾写'再回放一帧'这类话"本身就会生成片尾卡），
+#   本项目为此连踩 4 次（见硬坑 34）。**要片尾卡就写开关，别再用关键词去猜。**
+_END_CARD_RE = re.compile(r"片尾\s*(定格)?\s*卡?\s*[:：=]\s*(是|要|启用|on)", re.I)
+
+
 def parse_punch(block: str):
     """金句大字卡 → [{text, marks, anchor, hold}]（含可选片尾定格卡）"""
     out, end_added = [], False
@@ -264,7 +271,8 @@ def parse_punch(block: str):
         card["hold"] = _hold(head, DEFAULT_PUNCH_HOLD)
         out.append(card)
 
-        wants_end = any("回放" in s for s in it[1:]) or "回放" in head
+        # ⭐ 2026-09-28 改：**只认明确开关**（`片尾定格卡：是`），不再从"回放"二字去猜
+        wants_end = any(_END_CARD_RE.search(s) for s in (it[1:] + [head]))
         if wants_end and not end_added:
             end_card = {k: v for k, v in card.items() if k != "anchor"}
             end_card["at"] = "end"
@@ -684,7 +692,7 @@ SAMPLE = """# 测试文案
 ### 金句大字卡（居中）
 1. 「检查没查出来，不等于孩子在装」 → "不等于孩子在装"标暖橙/暖棕系、其余白色；停约 3 秒
    - 挂在这句：「检查没查出来，不等于孩子在装」
-   - 结尾再回放一帧同一张卡（方便截图）
+   - 片尾定格卡：是
 
 ### 序号条
 - 文案照抄：**① 多久了　② 影响多大　③ 有没有危险情况**
@@ -766,6 +774,11 @@ def selftest() -> int:
     chk(p[0]["marks"][0].get("bold") is True, "大字卡标色默认加粗（MD 没写也加）")
     chk(p[1].get("at") == "end" and p[1].get("to_end") is True, "片尾定格卡正确")
     chk("anchor" not in p[1], "片尾卡不带 anchor")
+    # ⭐ 回归锁（2026-09-28）：片尾卡**只认明确开关**，说明里的"回放"二字不再触发
+    chk(len(parse_punch('1. 「甲」→ "乙"标暖色\n   - 别写"再回放一帧"这类话')) == 1,
+        '说明里的「回放」二字**不再**触发片尾卡（旧的「关键词触发」已废弃 —— 硬坑 34 踩过 4 次）')
+    chk(len(parse_punch('1. 「甲」→ "乙"标暖色\n   - 片尾定格卡：是')) == 2,
+        '明确开关「片尾定格卡：是」触发片尾卡')
 
     print("【4】序号条")
     s = parse_seq(_pick(_subsections(_section(SAMPLE, "上屏方案")), "序号条"))

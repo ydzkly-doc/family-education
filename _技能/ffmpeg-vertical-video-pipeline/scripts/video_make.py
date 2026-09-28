@@ -1749,6 +1749,10 @@ def main():
         spec["zoom"] = args.zoom
     if args.preset_fast:
         spec["preset"] = "veryfast"
+    # ⭐ 2026-09-28 修：`--bitrate` 此前**定义了却没人读**（死参数，静默失效），
+    #    文档里一直教用户改用 `--set bitrate=10M` 绕过 —— 这里补上接线。
+    if args.bitrate:
+        spec["bitrate"] = args.bitrate
 
     # ---------- --set 动态覆盖（最后应用，优先级最高） ----------
     for kv in args.set:

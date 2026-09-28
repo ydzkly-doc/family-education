@@ -221,40 +221,68 @@ def text_width(text: str, fontsize: float) -> float:
 
 
 def wrap_cjk(text: str, fontsize: float, max_width: float) -> str:
-    """
-    贪心折行，优先在标点后断开，其次标点前，最后硬断。
-    返回用 '\\n' 连接的文本（交由 _esc 转成 ASS 的 \\N）。
+    r"""折行：**先按总宽定行数，再按目标行宽均衡分配**（断点优先落在标点处）。
+
+    返回用 '\n' 连接的文本（交由 _esc 转成 ASS 的 \N）。
+
+    ⭐ 2026-09-28 重写。旧版是"贪心累加 ＋ 标点优先 ＋ 超宽硬断取中点"，有两个实测毛病：
+      · **标点优先**：`第四步，只商量一个能试的动作。` 里**句首那个逗号**让第一行只填 4 个字，
+        一整行空间被扔掉 → 多出一行 → 字幕整体上顶一行 → **正好压到嘴**（用户实拍反馈"遮到嘴部"）；
+      · **硬断取中点**：16 字被排成 4/5/6 **三行**，而按行宽（860px ÷ 82px ≈ 10.4 字）本该 2 行。
+    新版：`行数 = ⌈总宽 ÷ 行宽⌉`，再让每行都尽量贴近 `总宽 ÷ 行数`——
+    **行数最少（不顶到脸）＋ 行宽均衡（末行不会只剩一两个字）**，两个毛病一起解决。
     """
     text = text.strip()
     if not text:
         return text
-    if text_width(text, fontsize) <= max_width:
+    total = text_width(text, fontsize)
+    if total <= max_width:
         return text
 
-    lines, cur = [], ""
-    for ch in text:
-        cur += ch
-        if text_width(cur, fontsize) > max_width:
-            # 超宽了，回溯找断点
-            cut = -1
-            for i in range(len(cur) - 1, 0, -1):
-                if cur[i - 1] in BREAK_AFTER:
-                    cut = i
-                    break
-            if cut <= 0:
-                for i in range(len(cur) - 1, 0, -1):
-                    if cur[i] in BREAK_BEFORE:
-                        cut = i
-                        break
-            if cut <= 0:
-                # 兜底硬断：取**中点**而不是塞满一行 ——
-                # 否则第一行塞满、末行只剩一两个字（实测很难看）。
-                # （中文没有词间空格，硬断必然切开某处，但均衡断读起来舒服得多）
-                cut = max(1, len(cur) // 2)
-            lines.append(cur[:cut])
-            cur = cur[cut:]
-    if cur:
-        lines.append(cur)
+    # ① 最少需要几行（这是"不超宽"的硬约束，也是不再上顶的关键）
+    n = int(total // max_width)
+    if total % max_width:
+        n += 1
+    n = max(2, n)
+    target = total / n                       # 每行目标宽度
+
+    def _pick(seg: str, cands: list) -> int:
+        """挑断点：**有标点可用就优先标点**（在标点断点里选离目标最近的那个），
+        一个标点都不在可用范围时，才退回到"离目标最近"的位置。"""
+        for pool in ([i for i in cands if i < len(seg) and seg[i - 1] in BREAK_AFTER],
+                     [i for i in cands if i < len(seg) and seg[i] in BREAK_BEFORE]):
+            if pool:
+                return min(pool, key=lambda i: abs(text_width(seg[:i], fontsize) - target))
+        return min(cands, key=lambda i: abs(text_width(seg[:i], fontsize) - target))
+
+    lines, start = [], 0
+    for k in range(n - 1):
+        rest = text[start:]
+        if not rest:
+            break
+        left = n - k - 1                     # 这一行之后还剩几行
+        # 候选断点要**同时满足两条**：
+        #   ① 本行不超宽；
+        #   ② 剩下的内容后面几行**装得下** —— 这条是"不再多出一行"的关键：
+        #      它会把断点从"句子太靠前的标点"（如「第四步，」）往后推，避免白白浪费一行。
+        cands = [i for i in range(1, len(rest) + 1)
+                 if text_width(rest[:i], fontsize) <= max_width
+                 and text_width(rest[i:], fontsize) <= left * max_width]
+        if not cands:
+            cands = [1]
+        cut = _pick(rest, cands)
+        lines.append(rest[:cut])
+        start += cut
+
+    tail = text[start:]
+    while text_width(tail, fontsize) > max_width:      # 兜底：末行仍超宽就再切一刀
+        i = len(tail) - 1
+        while i > 1 and text_width(tail[:i], fontsize) > max_width:
+            i -= 1
+        lines.append(tail[:i])
+        tail = tail[i:]
+    if tail:
+        lines.append(tail)
     return "\n".join(x.strip() for x in lines if x.strip())
 
 

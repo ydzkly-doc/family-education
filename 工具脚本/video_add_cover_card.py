@@ -28,8 +28,19 @@ r"""
     "$PY" 工具脚本/video_add_cover_card.py "成片_01.mp4" --seconds 2.5
     "$PY" 工具脚本/video_add_cover_card.py "成片_01.mp4" --inplace        # 跑完自动改名覆盖
     "$PY" 工具脚本/video_add_cover_card.py "成片_01.mp4" --dry-run        # 只看命令
+
+⭐⭐ 2026-09-28 加的两件事：
+  ① **防重入**：`tpad` **不是幂等的** —— 对已加过封面卡的成片再跑一次，会在前面**再叠 2 秒**（变 4 秒）。
+     所以本脚本跑之前会检查「标记文件」与「`_旧版本/` 里的无封面卡备份」；
+     命中就**停下报错**，真要重加得加 `--force`（或者更稳：从 `_旧版本/…_无封面卡.mp4` 重做）。
+  ② **抽帧标记**：跑完会在成片旁写 `<成片>.cover.json`。
+     因为封面卡让**正片整体后移了 N 秒**，而 `subs.ass` 的时间码是相对正片的 ——
+     `video_check_frames.py` 靠这个标记**自动把抽帧点后移**（否则看到的画面会早 N 秒，
+     于是"字幕有没有遮嘴"根本查不出来，2026-09-28 实测踩过）。
 """
 import argparse
+import datetime
+import json
 import os
 import shutil
 import subprocess
@@ -73,6 +84,43 @@ def _video_bitrate(ffmpeg: str, src: str) -> str:
     return ""
 
 
+def _cover_mark_path(video: str) -> str:
+    return video + ".cover.json"
+
+
+def _existing_cover_seconds(src: str):
+    """探测"这个成片是不是已经加过封面卡"→ (秒数 or None, 依据说明)。
+
+    两条证据（任一命中即判定"已加过"）：
+      ① 成片旁的标记文件 `<成片>.cover.json`（本脚本自己写的，最可信）；
+      ② `_旧版本/<名>_无封面卡.mp4` 存在（`--inplace` 的备份；⚠️ 该目录有 3 天自动清理，可能已不在）。
+    """
+    mk = _cover_mark_path(src)
+    if os.path.exists(mk):
+        try:
+            with open(mk, encoding="utf-8") as f:
+                return json.load(f).get("seconds"), f"标记文件 {os.path.basename(mk)}"
+        except Exception:
+            return None, "标记文件解析失败"
+    bak = os.path.join(os.path.dirname(src), "_旧版本",
+                       os.path.splitext(os.path.basename(src))[0] + "_无封面卡.mp4")
+    if os.path.exists(bak):
+        return None, f"备份存在（{os.path.relpath(bak, os.path.dirname(src))}）"
+    return None, ""
+
+
+def _write_cover_mark(video: str, seconds: float):
+    """在成片旁写抽帧标记，供 `video_check_frames.py` 自动后移时间码。"""
+    with open(_cover_mark_path(video), "w", encoding="utf-8") as f:
+        json.dump({
+            "seconds": round(float(seconds), 3),
+            "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "note": "正片前的静止封面卡时长；抽帧自查要按它把时间码后移",
+        }, f, ensure_ascii=False, indent=1)
+    print(f"   ℹ️ 已写抽帧标记：{os.path.basename(_cover_mark_path(video))}"
+          f"（抽帧自查会自动 +{seconds:g}s）")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("video", help="成片路径")
@@ -80,12 +128,25 @@ def main():
     ap.add_argument("--bitrate", default=None,
                     help="视频码率；不指定则**沿用输入成片的码率**（避免重编码降码）")
     ap.add_argument("--inplace", action="store_true", help="跑完自动改名覆盖原文件")
+    ap.add_argument("--force", action="store_true",
+                    help="已知加过封面卡仍要强行再叠（⛔ 会把 2 秒变 4 秒）")
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
 
     src = os.path.abspath(a.video)
     if not os.path.isfile(src):
         raise SystemExit(f"❌ 找不到文件：{src}")
+
+    # ⭐ 防重入（2026-09-28 加）：tpad 不幂等，重复跑会把封面卡叠成 4 秒
+    if not a.force:
+        sec, why = _existing_cover_seconds(src)
+        if why:
+            shown = f"{sec:g} 秒" if isinstance(sec, (int, float)) else "若干秒"
+            raise SystemExit(
+                f"⛔ 这个成片**看起来已经加过封面卡**了（{shown}；依据：{why}）。\n"
+                f"   再跑一次会在前面**再叠 {a.seconds:g} 秒**（`tpad` 不是幂等的）。\n"
+                f"   ✅ 要重加：从 `_旧版本/<名>_无封面卡.mp4` 出发重做（最稳）；\n"
+                f"   ⚠️ 确实要叠加：加 --force（一般不该这么做）。")
     ms = int(round(a.seconds * 1000))
     dst = os.path.splitext(src)[0] + "_封面卡.mp4"
 
@@ -130,9 +191,11 @@ def main():
         os.rename(dst, src)
         print(f"✅ 已覆盖：{src}")
         print(f"   （加封面卡前的版本已备份到 {os.path.relpath(bak, os.path.dirname(src))}）")
+        _write_cover_mark(src, a.seconds)
     else:
         print(f"✅ 完成：{dst}")
         print("   （要让原文件名生效，加 --inplace，或自己改名覆盖）")
+        _write_cover_mark(dst, a.seconds)
 
 
 if __name__ == "__main__":

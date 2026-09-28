@@ -29,7 +29,20 @@
   # 列出某类的完整路径（供人工圈选后另行删除）
   python 工具脚本/过程文件过期扫描_scan_stale.py --list A
 
+  # ⭐ 列出「可自动清理的视频类产物」（过程片段 + 旧版本）—— 供每周任务直接消费
+  python 工具脚本/过程文件过期扫描_scan_stale.py --video-garbage
+
 安全：本脚本只读不写（除 --out 指定的报告），不调用任何删除操作。
+      **删除一律交给 `工具脚本/trash_to_recycle.py`（送回收站 + 全盘核实）**，本脚本只负责"列出清单"。
+
+⭐ 2026-09-28 新增「视频类产物」维度（用户要求"定期清理视频的过程文件、旧版本文件"）：
+  视频**单个体积在 100~700MB**，是全工作区体量的头号来源（实测 50 个 ≈9.5GB）。
+  它们和"文档类过程文件"的价值完全不同——**没有任何"可复用提示词"，且 100% 可重出**：
+    · `_过程文件/` 里的视频（`_stage0_join.mp4`／`_stage1_cut.mp4` 等）= 管道的中间拼接产物，重跑即重建；
+    · `_旧版本/` 里的视频 = 改前备份的成片，由 `md + _素材/` 随时重出。
+  → 所以单列出来、**保留期更短（默认 3 天）**，并由每周任务**自动送回收站**（见 `--video-garbage`）。
+  ⛔ **绝不列入**：`_素材/`（**拍摄母带，删了不可再生**）、`_成品/成片_*.mp4`（**发布成品**）、
+     以及任何非视频文件（ass／png／md／zip）。
 """
 import argparse
 import datetime
@@ -47,6 +60,10 @@ POLICY = {
            ["_封面候选*/", "_过程文件/", "_未采用*/", "_原始*/", "_归档*/"]),
     "D": (None, "长期归档（报告、长期资产，不自动过期）",
            ["_档案/", "_资产/"]),
+    # ⭐ 2026-09-28 新增：视频/成片的**旧版本备份目录**
+    #   （与目录里**视频文件**的保留期一致＝3 天；文件级清单见 `collect_video_garbage`）
+    "E": (3,    "视频与成片的旧版本备份（可由 md + _素材 重出）",
+           ["_旧版本/"]),
 }
 
 # 目录名前缀 -> 类别
@@ -55,9 +72,22 @@ PREFIX_CAT = {
     "_backup": "B", "_备份": "B",
     "_封面候选": "C", "_过程文件": "C", "_未采用": "C", "_原始": "C", "_归档": "C",
     "_档案": "D", "_资产": "D",
+    "_旧版本": "E",
 }
 
 SKIP_DIRS = {".git", ".workbuddy", "__pycache__", "node_modules"}
+
+# ---- 视频类产物（文件级；2026-09-28 立）----
+# ⭐ 只在这两个目录里收：一个是管道中间产物，一个是改前备份——**都 100% 可重出**。
+# ⛔ 绝不收：`_素材/`（拍摄母带，不可再生）、`_成品/` 根下的 `成片_*.mp4`（发布成品）。
+VIDEO_GARBAGE_DIRS = ("_过程文件", "_旧版本")
+VIDEO_EXT = {".mp4", ".mov", ".m4v", ".mts", ".avi", ".mkv", ".flv", ".wmv"}
+# 保留 3 天的依据（2026-09-28 定）：
+#   · `_stage*.mp4` 是**管道内部中间态**——出片完成即无用，重跑约 10 分钟就回来；
+#   · `_旧版本/` 的成片是**改版备份**——改版周期通常 1~2 天，3 天已覆盖回退窗口；
+#   · 兜底是**回收站**（不自动清空）→ 真需要更早的版本仍能从回收站还原；
+#   · 实测这批文件 28 个 / 6.3GB，多留一周就多占一周空间。
+VIDEO_KEEP_DAYS = 3
 
 
 def classify(name):
@@ -158,15 +188,64 @@ def is_snapshot_catalog(d, name):
     return False
 
 
+def collect_video_garbage(base, keep_days=VIDEO_KEEP_DAYS):
+    """文件级收集「可自动清理的视频类产物」（2026-09-28 立）。
+
+    ⭐ 两条判据（**只有这两条**）：
+      ① 路径里带 `_过程文件` 目录 —— 管道的中间拼接产物（`_stage0_join.mp4`／`_stage1_cut.mp4`），
+         纯中间态，**重跑管道即重建**；
+      ② 路径里带 `_旧版本` 目录 —— 改前备份的成片，**由 md ＋ `_素材/` 随时重出**。
+    ⛔ 不收：`_素材/`（**拍摄母带，删了不可再生**）、`_成品/` 根下的 `成片_*.mp4`（**发布成品**）、
+       以及任何非视频文件（ass／png／md／zip）。
+
+    返回 [{path, size, age, expired, kind}]，按体积降序。
+    """
+    now = datetime.datetime.now()
+    out = []
+    for root, dirs, files in os.walk(base):
+        dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
+        parts = os.path.relpath(root, base).split(os.sep)
+        hit = [p for p in VIDEO_GARBAGE_DIRS if p in parts]
+        if not hit:
+            continue
+        kind = "过程片段" if hit[0] == "_过程文件" else "旧版本"
+        for f in files:
+            if os.path.splitext(f)[1].lower() not in VIDEO_EXT:
+                continue
+            p = os.path.join(root, f)
+            try:
+                st = os.stat(p)
+            except OSError:
+                continue
+            age = (now - datetime.datetime.fromtimestamp(st.st_mtime)).days
+            out.append({
+                "path": os.path.relpath(p, base),
+                "size": st.st_size,
+                "age": age,
+                "expired": age >= keep_days,
+                "kind": kind,
+            })
+    out.sort(key=lambda x: -x["size"])
+    return out
+
+
+def _mb(n):
+    return f"{n/1024/1024:.1f}"
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", default=".", help="工作区根目录（默认当前目录）")
     ap.add_argument("--keep-days", default="", help="覆盖保留天数，如 A=7,B=7,C=14")
     ap.add_argument("--out", default="", help="输出 markdown 报告到该路径")
-    ap.add_argument("--list", default="", help="列出指定类别(A/B/C/D)的完整路径")
+    ap.add_argument("--list", default="", help="列出指定类别(A/B/C/D/E)的完整路径")
     ap.add_argument("--quiet", action="store_true", help="只输出汇总")
     ap.add_argument("--brief", action="store_true",
                     help="简报模式：只列具体文件夹名 + 建议动作（供定期扫描用）")
+    ap.add_argument("--video-garbage", action="store_true",
+                    help="只列出「可自动清理的视频类产物」（过程片段 + 旧版本），供定期任务直接消费")
+    ap.add_argument("--video-keep-days", type=int, default=VIDEO_KEEP_DAYS,
+                    help=f"视频类产物的保留天数（默认 {VIDEO_KEEP_DAYS} 天）")
     args = ap.parse_args()
 
     # 解析覆盖
@@ -184,6 +263,36 @@ def main():
 
     base = os.path.abspath(args.base)
     now = datetime.datetime.now()
+
+    # ⭐ --video-garbage：只输出「可自动清理的视频类产物」清单
+    #    （每周任务直接消费；删除交给 trash_to_recycle.py，本脚本只列清单）
+    if args.video_garbage:
+        vg = collect_video_garbage(base, args.video_keep_days)
+        exp = [v for v in vg if v["expired"]]
+        print(f"【视频类产物 · 可自动清理】保留期 {args.video_keep_days} 天")
+        print(f"合计 {len(vg)} 个 / {_mb(sum(v['size'] for v in vg))} MB；"
+              f"其中超期 {len(exp)} 个 / {_mb(sum(v['size'] for v in exp))} MB")
+        print()
+        if exp:
+            print("-" * 72)
+            print("待清清单（超期项，按体积降序；**路径在第一列**，供 trash_to_recycle.py 直接消费）")
+            print("-" * 72)
+            for v in exp:
+                print(f"{v['path']}\t{_mb(v['size'])}M\t{v['age']}天\t{v['kind']}")
+            rest = [v for v in vg if not v["expired"]]
+            if rest:
+                print()
+                print(f"（另有未超期 {len(rest)} 个 / {_mb(sum(v['size'] for v in rest))} MB，本次不动）")
+        else:
+            print("（本周没有超期的视频类产物，无需清理）")
+            print()
+            print("未超期（仍在保留期内，本次不动）：")
+            for v in vg:
+                print(f"{v['path']}\t{_mb(v['size'])}M\t{v['age']}天\t{v['kind']}")
+        print()
+        print("⛔ 本清单不含：`_素材/`（拍摄母带，删了不可再生）、`_成品/成片_*.mp4`（发布成品）、"
+              "任何非视频文件（ass／png／md）。")
+        return
 
     def age_of(mtime):
         return (now - datetime.datetime.fromtimestamp(mtime)).days if mtime else -1
@@ -266,6 +375,23 @@ def main():
                     exp_txt += f"（按快照子项计，本类共 {expanded} 个子项）"
             print(f"  {cat} 类（{'、'.join(pats)}，保留{kd_txt}）：{len(sub)} 个 / "
                   f"{sum(r['size'] for r in sub)/1024/1024:.1f}M" + exp_txt)
+
+        # ⭐ 视频类产物（2026-09-28 新增）：全工作区体量的**头号来源**，且**可自动清理**
+        #    （它和文档类过程文件价值不同：没有提示词可摘，且 100% 可重出）
+        vg = collect_video_garbage(base, args.video_keep_days)
+        if vg:
+            ve = [v for v in vg if v["expired"]]
+            print()
+            print(f"【视频类产物 · 可自动清理（保留 {args.video_keep_days} 天）】")
+            print(f"  共 {len(vg)} 个 / {_mb(sum(v['size'] for v in vg))} MB；"
+                  f"超期 {len(ve)} 个 / {_mb(sum(v['size'] for v in ve))} MB"
+                  + ("　← 本周可自动送回收站" if ve else "　← 本周无超期，不动"))
+            for v in ve:
+                print(f"  - {v['path']}　{_mb(v['size'])}M · {v['age']}天 · {v['kind']}")
+            rest = [v for v in vg if not v["expired"]]
+            if rest:
+                print(f"  （另有未超期 {len(rest)} 个 / {_mb(sum(v['size'] for v in rest))} MB，本次不动）")
+            print("  ⛔ 不含 `_素材/`（拍摄母带）与 `_成品/成片_*.mp4`（发布成品）")
         return
 
     # --list 模式
@@ -359,12 +485,39 @@ def main():
                 )
         lines.append("")
 
+    # ---- 视频类产物（文件级；2026-09-28 新增）----
+    vg = collect_video_garbage(base, args.video_keep_days)
+    if vg:
+        ve = [v for v in vg if v["expired"]]
+        lines.append(f"## 视频类产物 · 可自动清理（保留 {args.video_keep_days} 天）"
+                     f"　（{len(vg)} 个 / {_mb(sum(v['size'] for v in vg))} MB）")
+        lines.append("")
+        lines.append(f"其中**超期 {len(ve)} 个 / {_mb(sum(v['size'] for v in ve))} MB**"
+                     f"（超期项由每周任务自动送回收站）。")
+        lines.append("")
+        lines.append("> ⭐ 这两类**都可重出**、**没有提示词要摘录**：")
+        lines.append("> · `_过程文件/` 里的视频 ＝ 管道的中间拼接产物（`_stage0_join`／`_stage1_cut`），**重跑即重建**；")
+        lines.append("> · `_旧版本/` 里的视频 ＝ 改前备份的成片，**由 md ＋ `_素材/` 随时重出**。")
+        lines.append("> ⛔ 本节**不含** `_素材/`（**拍摄母带，删了不可再生**）与 `_成品/成片_*.mp4`（**发布成品**）。")
+        lines.append("")
+        lines.append("| 状态 | 体积 | 放置 | 类型 | 路径 |")
+        lines.append("|---|---|---|---|---|")
+        for v in vg:
+            flag = (f"**超期** ({v['age']}天)" if v["expired"]
+                    else f"保留 ({v['age']}/{args.video_keep_days}天)")
+            lines.append(f"| {flag} | {_mb(v['size'])}M | {v['age']}天前 | {v['kind']} | `{v['path']}` |")
+        lines.append("")
+
     lines.append("## 下一步")
     lines.append("")
     lines.append("1. 圈选上表中确认可清的项（A 类通常可全清，B 类确认对应修复已验证通过后可清）")
     lines.append("2. 按 SOP 三步安全清理法执行：`send2trash` 回收站 + 分批 ≤10 项 + 逐批核对")
     lines.append("3. 清理前先 `git commit` 一次，让删除可回滚")
     lines.append("4. 清理后重跑 `系列发布全套自检_selfcheck.py` 确认正式成果零影响")
+    lines.append("5. ⭐ **视频类产物**（`_过程文件/` 里的视频 ＋ `_旧版本/` 里的视频）："
+                 "跑 `--video-garbage` 取清单，**超期即可直接送回收站**"
+                 "（无提示词要摘录、且 100% 可重出，由每周任务自动执行）——"
+                 "⛔ 但**绝不碰** `_素材/`（母带）与 `_成品/成片_*.mp4`（发布成品）")
     lines.append("")
 
     report = "\n".join(lines)
