@@ -122,6 +122,40 @@ def preflight():
     return branch, remote
 
 
+def is_forbidden(path):
+    """判断某条状态项是否命中「过程目录 / 缓存」。
+
+    ⚠️ 2026-09-29 修（原实现是「FORBIDDEN_PARTS 子串匹配整条路径」）：
+    子串匹配造成两类误报——
+      ① **文件名里含 `_封面`** 被当成过程目录（实测：`第01篇_卡片_01_封面.jpg`，
+         2026-09-29 目录重整时一次性误报 72 项）；
+      ② **删除项（`D`）也算命中**——而删除根本不可能"入库"。
+    误报的代价不只是噪音：**非交互环境下本脚本按默认值 False 直接中止**，
+    等于静默阻断提交（`ask()` 里 `default_yes=False`）。
+
+    新判据：
+      · **目录名**——`_` 开头的按**前缀**匹配（覆盖 `_预览_旧` 这类变体）＋ 精确匹配；
+      · **文件名**——只做精确匹配或**后缀**匹配（`.pyc` / `.DS_Store` 这类）。
+    """
+    norm = path.replace("\\", "/")
+    parts = [p for p in norm.split("/") if p]
+    if not parts:
+        return False
+    dirs, fname = parts[:-1], parts[-1]
+    prefix_parts = [p for p in FORBIDDEN_PARTS if p.startswith("_")]
+    suffix_parts = [p for p in FORBIDDEN_PARTS if p.startswith(".")]
+    for d in dirs:
+        if d in FORBIDDEN_PARTS:
+            return True
+        if any(d.startswith(p) for p in prefix_parts):
+            return True
+    if fname in FORBIDDEN_PARTS:
+        return True
+    if any(fname.endswith(p) for p in suffix_parts):
+        return True
+    return False
+
+
 def show_changes():
     """列出待提交内容，返回 (files, forbidden, bigs)。"""
     hr("二、待提交内容")
@@ -145,8 +179,8 @@ def show_changes():
 
     forbidden, bigs = [], []
     for code, path in files:
-        norm = path.replace("\\", "/")
-        if any(part in norm for part in FORBIDDEN_PARTS):
+        # ⚠️ 删除项（D）不参与过程目录检查——**删掉的东西不可能"入库"**（2026-09-29 修）
+        if code != "D" and is_forbidden(path):
             forbidden.append(path)
         full = os.path.join(os.getcwd(), path)
         if os.path.isfile(full):

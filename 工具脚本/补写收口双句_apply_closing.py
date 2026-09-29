@@ -88,7 +88,7 @@ def already_done(s):
 
 
 def process(series, root, apply=False):
-    d = os.path.join(root, '王金海讲书', series, '公众号文章')
+    d = os.path.join(root, '公众号', '王金海讲书', series, '公众号文章')
     if not os.path.isdir(d):
         print('❌ 目录不存在：%s' % d)
         return []

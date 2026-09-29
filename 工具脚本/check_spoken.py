@@ -11,7 +11,7 @@
 
 用法：
     PY="C:/Users/ZhuanZ/.workbuddy/binaries/python/versions/3.13.12/python.exe"
-    "$PY" 工具脚本/check_spoken.py "手机方案/公众号文章"
+    "$PY" 工具脚本/check_spoken.py "公众号/手机方案/公众号文章"
     "$PY" 工具脚本/check_spoken.py <目录或文件…> --max-len 15 --examples 6
 """
 import argparse

@@ -61,9 +61,19 @@ HEDGE_RE = re.compile(r"因人而异|因家庭而异|不意味着|但这并不|�
 
 
 def series_of(p: Path, root: Path) -> str:
+    """从正文路径推断「系列名」。
+
+    ⭐ 2026-09-29：所有内容系列已收进 `公众号/`，故先剥掉这一层，
+    再按「`王金海讲书/<书名>` 算一个系列」的既有规则归组——否则全库会
+    被误归成**一个**名叫「公众号」的系列。
+    """
     try:
         parts = p.relative_to(root).parts
     except ValueError:
+        return "?"
+    if parts and parts[0] == "公众号":
+        parts = parts[1:]
+    if not parts:
         return "?"
     if parts[0] == "王金海讲书" and len(parts) > 1:
         return "王金海讲书/" + parts[1]

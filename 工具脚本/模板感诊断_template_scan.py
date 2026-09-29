@@ -14,6 +14,8 @@
     --diag-structure  额外输出每篇的结构特征（竖条小标题、卡片、疑似模块），
                       用于判断"6 种文章结构是否被轮换使用"
     --diag-openers    跨篇开篇去同质化诊断：报出同系列内「同时段＋同空间」的重复开篇
+    --count     篇幅诊断：可见字符数 + 体裁分档判定（叙事型 2000–2800 / 方法型 1200–1800）
+    --baseline  <目录>  与改动前备份对比，做 30% 降幅复核
     --json      以 JSON 输出，便于脚本消费
 
 节流线（超线会标 ★）：
@@ -60,6 +62,55 @@ def opener_tags(vis: str) -> dict:
                 best, pos = w, i
         out[dim] = best
     return out
+
+
+# 段落节奏：单个「叙述段」的字数参考线（2026-09-28 立，**实测校准**）
+#   实测 5 个系列：>90 字是**常态**（几乎每篇都有），毫无区分度；
+#   最长段实测最大值 99／122／178／187／236 → 取 **180 字（约 8–9 行）** 作参考线。
+#   ⚠️ 超线只提示"看一眼要不要拆"，**不是不合格**；**不得为拆段牺牲连贯**（见 SOP「连贯优先」）。
+#   ⚠️ 只统计**叙述段**（不含 <br> 的 <p>）——含 <br> 的是结构化卡／清单，不适用本判据。
+PARA_MAX = 180
+
+
+def para_lengths(html: str):
+    """各「叙述段」的可见字数（排除含 <br> 的结构化卡）。"""
+    out = []
+    for m in re.finditer(r"<p\b[^>]*>(.*?)</p>", html, re.S):
+        inner = m.group(1)
+        if "<br" in inner:
+            continue
+        t = re.sub(r"<[^>]+>", "", inner)
+        t = re.sub(r"\s", "", t).replace("&nbsp;", "")
+        if t:
+            out.append(len(t))
+    return out
+
+
+# 体裁辅助判据：正文叙述占比（2026-09-28 立）
+#   SOP 篇幅已按体裁分档（叙事型 2000–2800 / 方法型 1200–1800），
+#   "这篇是叙事还是方法"不能靠感觉——用**正文叙述段字数占全文的比例**提示。
+#   正文叙述段 = 非居中 且 font-size ≥15.5px 的 <p>（改前只按"有无 <br>"分，
+#   结果把 14px 的卡片说明也当成正文 → 全库恒为 90%+，毫无区分度，已修正）。
+NARR_HI, NARR_LO = 0.60, 0.40
+
+
+def narr_stats(html: str):
+    """→ (正文叙述段字数, 卡片/说明段字数)。"""
+    body = other = 0
+    for m in re.finditer(r"<p\b([^>]*)>(.*?)</p>", html, re.S):
+        style, inner = m.group(1), m.group(2)
+        t = re.sub(r"<[^>]+>", "", inner)
+        t = re.sub(r"\s", "", t).replace("&nbsp;", "")
+        if not t:
+            continue
+        s = style.replace(" ", "")
+        m2 = re.search(r"font-size:([\d.]+)px", s)
+        fs = float(m2.group(1)) if m2 else 16.0
+        if fs >= 15.5 and "text-align:center" not in s:
+            body += len(t)
+        else:
+            other += len(t)
+    return body, other
 
 PAT_BUER = re.compile(r"不是.{1,30}?而是")
 SAME_WORDS = ["那一刻", "慢慢", "一点点", "我忽然", "我突然"]
@@ -113,7 +164,7 @@ def main():
                     help="跨篇开篇去同质化：报出同系列内「同时段＋同空间」的重复开篇")
     ap.add_argument("--json", action="store_true", help="JSON 输出")
     ap.add_argument("--count", action="store_true",
-                    help="只报可见字符数 + 区间判定（普通稿 1600-2400 / 速览 900-1400）")
+                    help="只报可见字符数 + 体裁分档判定（叙事型 2000-2800 / 方法型 1200-1800；1800-2000 过渡带）")
     ap.add_argument("--baseline", default=None,
                     help="对比基线目录（如改动前的备份目录）：用于 30%% 降幅复核线")
     args = ap.parse_args()
@@ -140,6 +191,8 @@ def main():
         vis = visible_text(html)
         n = re.search(r"第(\d+)篇", os.path.basename(d))
         same = sum(vis.count(w) for w in SAME_WORDS)
+        _pl = para_lengths(html)
+        _narr, _card = narr_stats(html)
         row = dict(
             n=int(n.group(1)) if n else 0,
             name=os.path.basename(d),
@@ -155,6 +208,9 @@ def main():
             yuan=vis.count("愿你"),
             grades={g: vis.count(g) for g in GRADE_WORDS if vis.count(g)},
             otags=opener_tags(vis),
+            max_para=max(_pl) if _pl else 0,                  # 最长"叙述段"字数
+            over_para=sum(1 for x in _pl if x > PARA_MAX),    # 超长叙述段条数
+            narr_ratio=(_narr / (_narr + _card)) if (_narr + _card) else 0.0,  # 叙述段占比（判体裁用）
         )
         warns = []
         if row["small"]:
@@ -178,34 +234,43 @@ def main():
         print(json.dumps(rows, ensure_ascii=False, indent=2))
         return 0
 
-    # ---- --count 模式：可见字符数 + 区间判定（普通稿 1600–2400 / 速览 900–1400）----
+    # ---- --count 模式：可见字符数 + 体裁分档判定（2026-09-28 起按体裁分档）----
     if args.count:
         print(f"=== 篇幅诊断：{os.path.basename(base)}（{len(rows)} 篇）===")
-        print(f"参考区间：普通完整稿 1600–2400（轻稿 1600–1900 / 深度稿 1900–2400）；速览短答 900–1400")
-        print(f"{'篇':>3} {'字数':>6} {'区间判定':<28}  标题")
+        print("参考档位（按体裁）：叙事型 2000–2800 ／ 方法型 1200–1800"
+              "（1800–2000 为两档过渡带）／ 速览短答 900–1400")
+        print(f"{'篇':>3} {'字数':>6} {'正文%':>6} {'叙事档':<6} {'方法档':<6}  标题")
         print("-" * 96)
-        short = long_ = okn = 0
+        n_ok = m_ok = both_bad = 0
+        n_hi = n_lo = 0
         baseline = None
         if args.baseline:
             baseline = os.path.abspath(args.baseline)
+
+        def _verdict(c, lo, hi, soft_lo=None, soft_hi=None):
+            if c < lo:
+                return "过渡" if (soft_lo and c >= soft_lo) else "偏薄"
+            if c <= hi:
+                return "✅"
+            if soft_hi and c <= soft_hi:
+                return "过渡"
+            return "偏长"
+
         for r in rows:
             c = r["chars"]
-            if c < 900:
-                verdict, mark = "严重偏薄（<900）", "❌"
-                short += 1
-            elif c < 1400:
-                verdict, mark = "偏薄（900–1400，仅限速览/短答）", "⚠️"
-                short += 1
-            elif c < 1600:
-                # 1400–1600：既不达普通稿下限，也不是"速览短答"体量——典型的"差一点没写足"
-                verdict, mark = "偏薄（1400–1600，未达普通稿下限）", "⚠️"
-                short += 1
-            elif c <= 2400:
-                verdict, mark = "正常区间", "✅"
-                okn += 1
-            else:
-                verdict, mark = "偏长（>2400）", "⚠️"
-                long_ += 1
+            vn = _verdict(c, 2000, 2800, soft_lo=1800)
+            vm = _verdict(c, 1200, 1800, soft_hi=2000)
+            if vn == "✅":
+                n_ok += 1
+            if vm == "✅":
+                m_ok += 1
+            if vn != "✅" and vm != "✅":
+                both_bad += 1
+            nr = r.get("narr_ratio", 0.0)
+            if nr >= NARR_HI:
+                n_hi += 1
+            elif nr <= NARR_LO:
+                n_lo += 1
             extra = ""
             if baseline:
                 # 尝试按篇号匹配基线正文，做 30% 降幅复核
@@ -219,10 +284,18 @@ def main():
                     if old:
                         drop = (old - c) / old * 100
                         extra = f"  原 {old} → 降幅 {drop:.0f}%" + ("  ★≥30% 须复核四要点" if drop >= 30 else "")
-            print(f"{r['n']:>3} {c:>6} {mark} {verdict:<26}  {r['title'][:30]}{extra}")
+            _pq = f"  ★超长段×{r['over_para']}" if r.get("over_para") else ""
+            print(f"{r['n']:>3} {c:>6} {nr * 100:>5.0f}% {vn:<6} {vm:<6}  "
+                  f"{r['title'][:30]}{_pq}{extra}")
         print("-" * 96)
-        print(f"正常 {okn} ／ 偏薄 {short} ／ 偏长 {long_}")
+        print(f"叙事档合格 {n_ok} ／ 方法档合格 {m_ok} ／ 两档皆不合格 {both_bad}")
+        print(f"体裁提示（按正文叙述占比）：偏叙事型(≥60%) {n_hi} ／ 偏方法型(≤40%) {n_lo} ／ "
+              f"混合 {len(rows) - n_hi - n_lo}　← 仅辅助，实际档位以规划表「篇职能」为准")
+        _po = sum(1 for r in rows if r.get("over_para"))
+        print(f"段落节奏：{_po} 篇含超长叙述段（单段 >{PARA_MAX} 字，约 8–9 行）"
+              + ("（全部达标）" if not _po else ""))
         print("提示：区间是报警器不是配额；偏长不等于要删——先确认五层完整性是否真的冗余。")
+        print("      ⚠️ 收官篇的「工具合集／总导航」卡片区属附录，**单独计**，不并入正文档（见 SOP 篇幅条）。")
         return 0
 
     print(f"=== 模板感 / 表达节流诊断：{os.path.basename(base)}（{len(rows)} 篇）===")

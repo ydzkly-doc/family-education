@@ -9,10 +9,19 @@ import os, re, sys, glob
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # 家庭教育/
 
+# ⛔ 自动发现必须排除「非内容本体」的目录。它们在内部同样含 `公众号/<系列>/公众号文章`：
+#    · `_备份`/`_backup` = 历史快照   · `_档案` = 一次性归档   · `_旧版本`/`_过程文件` = 中间产物
+#    扫进去会 ① 重复生成 ② **把预览文件写进备份里、污染快照**。
+#    ⚠️ 2026-09-29 实测：命中的 65 个目录里 **39 个在 `_备份/`**——而原代码只排除了英文
+#    `_backup`，**中文 `_备份` 一直漏网**（与 `.gitignore` 那条「中英混用会静默漏掉」同源教训）。
+EXCLUDE_DIRS = {"_备份", "_backup", "_backups", "_档案", "_旧版本", "_过程文件", "_预览",
+                ".git", "node_modules", "__pycache__"}
+
+
 def find_series_dirs():
     dirs = []
     for p in glob.glob(os.path.join(ROOT, "**", "公众号文章"), recursive=True):
-        if "_backup" in p or os.sep+"_backup" in p:
+        if set(os.path.relpath(p, ROOT).split(os.sep)) & EXCLUDE_DIRS:
             continue
         if glob.glob(os.path.join(p, "发布包_*")):
             dirs.append(p)

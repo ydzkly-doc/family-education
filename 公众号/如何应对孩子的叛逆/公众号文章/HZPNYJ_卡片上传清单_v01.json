@@ -1,0 +1,308 @@
+{
+  "assets": [
+    {
+      "article": "01",
+      "order": 1,
+      "basename": "HZPNYJ_孩子叛逆_第01篇_卡片_01_封面_v01.jpg",
+      "path": "发布包_第01篇_辨认叛逆/卡片发布包/HZPNYJ_孩子叛逆_第01篇_卡片_01_封面_v01.jpg",
+      "size": [
+        1242,
+        1656
+      ],
+      "bytes": 96016,
+      "sha256": "22e37b9735610ea7aaceb430e7374440cae5c448b914335a2472c72c7d1b40ae"
+    },
+    {
+      "article": "01",
+      "order": 2,
+      "basename": "HZPNYJ_孩子叛逆_第01篇_卡片_02_内容_v01.jpg",
+      "path": "发布包_第01篇_辨认叛逆/卡片发布包/HZPNYJ_孩子叛逆_第01篇_卡片_02_内容_v01.jpg",
+      "size": [
+        1242,
+        1656
+      ],
+      "bytes": 97726,
+      "sha256": "1ae37a11eed000d87b39f50a04b7a33d11e318fde5922525e5fa5e422803eeeb"
+    },
+    {
+      "article": "01",
+      "order": 3,
+      "basename": "HZPNYJ_孩子叛逆_第01篇_卡片_03_内容_v01.jpg",
+      "path": "发布包_第01篇_辨认叛逆/卡片发布包/HZPNYJ_孩子叛逆_第01篇_卡片_03_内容_v01.jpg",
+      "size": [
+        1242,
+        1656
+      ],
+      "bytes": 97018,
+      "sha256": "abc1546289398a3e5eb40d451422e26dc509ce0d7880331cd11a2ab8de3cd2ba"
+    },
+    {
+      "article": "01",
+      "order": 4,
+      "basename": "HZPNYJ_孩子叛逆_第01篇_卡片_04_内容_v01.jpg",
+      "path": "发布包_第01篇_辨认叛逆/卡片发布包/HZPNYJ_孩子叛逆_第01篇_卡片_04_内容_v01.jpg",
+      "size": [
+        1242,
+        1656
+      ],
+      "bytes": 96948,
+      "sha256": "db4477c625304f4f6a17cec278139fbbddc53c4301d3cc0d5e14e251802ea90f"
+    },
+    {
+      "article": "01",
+      "order": 5,
+      "basename": "HZPNYJ_孩子叛逆_第01篇_卡片_05_收尾_v01.jpg",
+      "path": "发布包_第01篇_辨认叛逆/卡片发布包/HZPNYJ_孩子叛逆_第01篇_卡片_05_收尾_v01.jpg",
+      "size": [
+        1242,
+        1656
+      ],
+      "bytes": 96256,
+      "sha256": "1783f67f9e417a2d64fd97e9837b8ef4552e6417b280941362b5171905b2fd68"
+    },
+    {
+      "article": "02",
+      "order": 1,
+      "basename": "HZPNYJ_孩子叛逆_第02篇_卡片_01_封面_v02.jpg",
+      "path": "发布包_第02篇_停止唠叨/卡片发布包/HZPNYJ_孩子叛逆_第02篇_卡片_01_封面_v02.jpg",
+      "size": [
+        1242,
+        1656
+      ],
+      "bytes": 97266,
+      "sha256": "ae18806d4fbb6ea01d8ad4cce4f900c8eb46e780cb2c7dc6e43b0991a722c5dd"
+    },
+    {
+      "article": "02",
+      "order": 2,
+      "basename": "HZPNYJ_孩子叛逆_第02篇_卡片_02_内容_v01.jpg",
+      "path": "发布包_第02篇_停止唠叨/卡片发布包/HZPNYJ_孩子叛逆_第02篇_卡片_02_内容_v01.jpg",
+      "size": [
+        1242,
+        1656
+      ],
+      "bytes": 97648,
+      "sha256": "252fcf49c67f9ff0bc5b13f121fd1855363219a012fe4d4e886a1357934978b3"
+    },
+    {
+      "article": "02",
+      "order": 3,
+      "basename": "HZPNYJ_孩子叛逆_第02篇_卡片_03_内容_v01.jpg",
+      "path": "发布包_第02篇_停止唠叨/卡片发布包/HZPNYJ_孩子叛逆_第02篇_卡片_03_内容_v01.jpg",
+      "size": [
+        1242,
+        1656
+      ],
+      "bytes": 97233,
+      "sha256": "e6c2415285a948fac09b73f5d818107fe4e67bed24543b849551fe1268e601d5"
+    },
+    {
+      "article": "02",
+      "order": 4,
+      "basename": "HZPNYJ_孩子叛逆_第02篇_卡片_04_内容_v01.jpg",
+      "path": "发布包_第02篇_停止唠叨/卡片发布包/HZPNYJ_孩子叛逆_第02篇_卡片_04_内容_v01.jpg",
+      "size": [
+        1242,
+        1656
+      ],
+      "bytes": 97747,
+      "sha256": "cc63613cd358104f7093a9f5a263929abce497fc97a33c1a412c42e974a28090"
+    },
+    {
+      "article": "02",
+      "order": 5,
+      "basename": "HZPNYJ_孩子叛逆_第02篇_卡片_05_收尾_v02.jpg",
+      "path": "发布包_第02篇_停止唠叨/卡片发布包/HZPNYJ_孩子叛逆_第02篇_卡片_05_收尾_v02.jpg",
+      "size": [
+        1242,
+        1656
+      ],
+      "bytes": 96789,
+      "sha256": "9eea89d51c21f62a3bb66f92efe33c70108ccd727a0823b845ce36c38fb42f5f"
+    },
+    {
+      "article": "03",
+      "order": 1,
+      "basename": "HZPNYJ_孩子叛逆_第03篇_卡片_01_封面_v02.jpg",
+      "path": "发布包_第03篇_真实认可/卡片发布包/HZPNYJ_孩子叛逆_第03篇_卡片_01_封面_v02.jpg",
+      "size": [
+        1242,
+        1656
+      ],
+      "bytes": 97090,
+      "sha256": "25c1e1b7eec5634c7fac96b373093aee8cb9182bf009c612ff010d7bf9cebf8e"
+    },
+    {
+      "article": "03",
+      "order": 2,
+      "basename": "HZPNYJ_孩子叛逆_第03篇_卡片_02_内容_v01.jpg",
+      "path": "发布包_第03篇_真实认可/卡片发布包/HZPNYJ_孩子叛逆_第03篇_卡片_02_内容_v01.jpg",
+      "size": [
+        1242,
+        1656
+      ],
+      "bytes": 97690,
+      "sha256": "ce435d9d2ab8cb57cfd9a79b6efbefb33e60eb64b057fc952f78a25e6a2a022d"
+    },
+    {
+      "article": "03",
+      "order": 3,
+      "basename": "HZPNYJ_孩子叛逆_第03篇_卡片_03_内容_v01.jpg",
+      "path": "发布包_第03篇_真实认可/卡片发布包/HZPNYJ_孩子叛逆_第03篇_卡片_03_内容_v01.jpg",
+      "size": [
+        1242,
+        1656
+      ],
+      "bytes": 97104,
+      "sha256": "871d198f5ac8070a9242ccc693f17e87cab00e08ae854bc47277e50234fe247e"
+    },
+    {
+      "article": "03",
+      "order": 4,
+      "basename": "HZPNYJ_孩子叛逆_第03篇_卡片_04_收尾_v02.jpg",
+      "path": "发布包_第03篇_真实认可/卡片发布包/HZPNYJ_孩子叛逆_第03篇_卡片_04_收尾_v02.jpg",
+      "size": [
+        1242,
+        1656
+      ],
+      "bytes": 96673,
+      "sha256": "e7254ccbafa8fc0e18d9f9f638ee5945dd046dd038d1f075bd5f473203d04feb"
+    },
+    {
+      "article": "04",
+      "order": 1,
+      "basename": "HZPNYJ_孩子叛逆_第04篇_卡片_01_封面_v01.jpg",
+      "path": "发布包_第04篇_多提问/卡片发布包/HZPNYJ_孩子叛逆_第04篇_卡片_01_封面_v01.jpg",
+      "size": [
+        1242,
+        1656
+      ],
+      "bytes": 97207,
+      "sha256": "dd23a0297d96a2718556ddefec90a56ada4adf2b89308ddb73785749e45f3ea3"
+    },
+    {
+      "article": "04",
+      "order": 2,
+      "basename": "HZPNYJ_孩子叛逆_第04篇_卡片_02_内容_v01.jpg",
+      "path": "发布包_第04篇_多提问/卡片发布包/HZPNYJ_孩子叛逆_第04篇_卡片_02_内容_v01.jpg",
+      "size": [
+        1242,
+        1656
+      ],
+      "bytes": 97328,
+      "sha256": "530bd2472abcdf93367152096665a8df9a93b592736c432231b0c31b3a7c7d76"
+    },
+    {
+      "article": "04",
+      "order": 3,
+      "basename": "HZPNYJ_孩子叛逆_第04篇_卡片_03_内容_v01.jpg",
+      "path": "发布包_第04篇_多提问/卡片发布包/HZPNYJ_孩子叛逆_第04篇_卡片_03_内容_v01.jpg",
+      "size": [
+        1242,
+        1656
+      ],
+      "bytes": 96963,
+      "sha256": "db64d33d049c178ff9ef7f1c57068aaa9049265e215fa7f1f6326a3d77fe53e0"
+    },
+    {
+      "article": "04",
+      "order": 4,
+      "basename": "HZPNYJ_孩子叛逆_第04篇_卡片_04_收尾_v01.jpg",
+      "path": "发布包_第04篇_多提问/卡片发布包/HZPNYJ_孩子叛逆_第04篇_卡片_04_收尾_v01.jpg",
+      "size": [
+        1242,
+        1656
+      ],
+      "bytes": 97753,
+      "sha256": "d00204e472936e4b680aa8d99efd4e28e3e905b06c500859ca35497edb287227"
+    },
+    {
+      "article": "05",
+      "order": 1,
+      "basename": "HZPNYJ_孩子叛逆_第05篇_卡片_01_封面_v03.jpg",
+      "path": "发布包_第05篇_自主与责任/卡片发布包/HZPNYJ_孩子叛逆_第05篇_卡片_01_封面_v03.jpg",
+      "size": [
+        1242,
+        1656
+      ],
+      "bytes": 97894,
+      "sha256": "17c223eccaab9cc5d0017f3947c99c2b88a822519ec8ed0e2374ba8b12908ea1"
+    },
+    {
+      "article": "05",
+      "order": 2,
+      "basename": "HZPNYJ_孩子叛逆_第05篇_卡片_02_内容_v01.jpg",
+      "path": "发布包_第05篇_自主与责任/卡片发布包/HZPNYJ_孩子叛逆_第05篇_卡片_02_内容_v01.jpg",
+      "size": [
+        1242,
+        1656
+      ],
+      "bytes": 97301,
+      "sha256": "d34b41ce275ee0ada9904131e49fde75ee3bce118ce07b4dfdf1ab416ae7ce88"
+    },
+    {
+      "article": "05",
+      "order": 3,
+      "basename": "HZPNYJ_孩子叛逆_第05篇_卡片_03_内容_v01.jpg",
+      "path": "发布包_第05篇_自主与责任/卡片发布包/HZPNYJ_孩子叛逆_第05篇_卡片_03_内容_v01.jpg",
+      "size": [
+        1242,
+        1656
+      ],
+      "bytes": 97291,
+      "sha256": "78512d95a26bd663caaf32e501b628bb01cc0b5d1c123f0a3a5a052f2b137c58"
+    },
+    {
+      "article": "05",
+      "order": 4,
+      "basename": "HZPNYJ_孩子叛逆_第05篇_卡片_04_内容_v01.jpg",
+      "path": "发布包_第05篇_自主与责任/卡片发布包/HZPNYJ_孩子叛逆_第05篇_卡片_04_内容_v01.jpg",
+      "size": [
+        1242,
+        1656
+      ],
+      "bytes": 97873,
+      "sha256": "45899b1beb16f3d66468fe135a8cf84294c8f25361bcc956c7117ab6fe1d20e6"
+    },
+    {
+      "article": "05",
+      "order": 5,
+      "basename": "HZPNYJ_孩子叛逆_第05篇_卡片_05_收尾_v03.jpg",
+      "path": "发布包_第05篇_自主与责任/卡片发布包/HZPNYJ_孩子叛逆_第05篇_卡片_05_收尾_v03.jpg",
+      "size": [
+        1242,
+        1656
+      ],
+      "bytes": 97632,
+      "sha256": "50b9549f9766d0b6c225842eb6d1e20d879304514aaf87d92df68a0a291b860d"
+    }
+  ],
+  "backend_counts": [
+    {
+      "article": "01",
+      "description_chars": 580,
+      "title_plus_description": 594
+    },
+    {
+      "article": "02",
+      "description_chars": 600,
+      "title_plus_description": 614
+    },
+    {
+      "article": "03",
+      "description_chars": 610,
+      "title_plus_description": 625
+    },
+    {
+      "article": "04",
+      "description_chars": 609,
+      "title_plus_description": 623
+    },
+    {
+      "article": "05",
+      "description_chars": 635,
+      "title_plus_description": 650
+    }
+  ],
+  "long_assets_unchanged": true
+}

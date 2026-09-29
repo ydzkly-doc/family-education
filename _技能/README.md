@@ -23,7 +23,34 @@ C:/Users/ZhuanZ/.workbuddy/skills/<技能名>/
 
 | 技能 | 文件数 | 说明 |
 |---|---|---|
-| `ffmpeg-vertical-video-pipeline` | 12 | 口播短视频自动合成管道（`scripts/` ＋ `SKILL.md` ＋ `reference/`） |
+| `ffmpeg-vertical-video-pipeline` | 13 | 口播短视频自动合成管道（`scripts/` ＋ `SKILL.md` ＋ `reference/`） |
+| `family-education-learning-coach` | 13 | 家庭教育两年学习系统教练（`SKILL.md` ＋ `references/` ＋ `assets/templates/`）。状态目录固定在 `家庭教育学习系统/`。⭐ **同时镜像进专家包** `family-education-learning-planner/skills/` |
+
+---
+
+## ⭐ 第二类目标：专家包镜像（2026-09-29 立）
+
+有些技能要被**打进专家包**（专家包要自包含，如 `family-education-learning-planner/skills/family-education-learning-coach/`）。
+这类副本与 `_技能/` 快照一样，**由同一个脚本单向镜像**——所以磁盘上有多份，**真相源永远只有用户级那一份**。
+
+镜像目标写在 `工具脚本/skills_sync.py` 的 `MIRROR_TARGETS`。新增带技能的专家包时加一行即可：
+
+```python
+MIRROR_TARGETS = {
+    "family-education-learning-coach": [
+        # ① 建包/注册/重新打包 zip 用的那棵
+        "…/marketplaces/my-experts/plugins/<包名>/skills",
+        # ② 应用装载后运行的那棵（要等专家被装载过才出现，不存在则跳过）
+        "…/cache/my-experts/<包名>/<版本>/skills",
+    ],
+}
+```
+
+⚠️ **两条注意**：
+1. ⛔ **不要直接改专家包里的技能副本**——下次同步会被覆盖。改源，再跑脚本。
+2. **目标父目录不存在时会跳过**（不凭空创建 `cache/` 结构），等应用装载过该专家后自动开始镜像。
+
+只同步快照、跳过专家包镜像：加 `--local-only`。
 
 ---
 

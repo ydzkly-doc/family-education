@@ -1,0 +1,334 @@
+{
+  "assets": [
+    {
+      "article": 1,
+      "order": 1,
+      "basename": "HXSSGX_和谐师生_第01篇_卡片_01_封面_v02.jpg",
+      "relative_path": "发布包_第1篇_先听委屈/卡片发布包/HXSSGX_和谐师生_第01篇_卡片_01_封面_v02.jpg",
+      "bytes": 97814,
+      "size": [
+        1242,
+        1656
+      ],
+      "sha256": "8f201ae1e8990f5340d54ec79f178e05e38e9ee481c37df1849113e339184f4b"
+    },
+    {
+      "article": 1,
+      "order": 2,
+      "basename": "HXSSGX_和谐师生_第01篇_卡片_02_内容_v01.jpg",
+      "relative_path": "发布包_第1篇_先听委屈/卡片发布包/HXSSGX_和谐师生_第01篇_卡片_02_内容_v01.jpg",
+      "bytes": 97229,
+      "size": [
+        1242,
+        1656
+      ],
+      "sha256": "b6cb31f50dce639d7093ed98e6b58741bec95c5279b20623e73d2d322704d5a5"
+    },
+    {
+      "article": 1,
+      "order": 3,
+      "basename": "HXSSGX_和谐师生_第01篇_卡片_03_内容_v01.jpg",
+      "relative_path": "发布包_第1篇_先听委屈/卡片发布包/HXSSGX_和谐师生_第01篇_卡片_03_内容_v01.jpg",
+      "bytes": 97564,
+      "size": [
+        1242,
+        1656
+      ],
+      "sha256": "14def9dca798d1bc99631ca87ad3710fbc18a4c2ab9da6f120d218a46672434a"
+    },
+    {
+      "article": 1,
+      "order": 4,
+      "basename": "HXSSGX_和谐师生_第01篇_卡片_04_收尾_v01.jpg",
+      "relative_path": "发布包_第1篇_先听委屈/卡片发布包/HXSSGX_和谐师生_第01篇_卡片_04_收尾_v01.jpg",
+      "bytes": 96810,
+      "size": [
+        1242,
+        1656
+      ],
+      "sha256": "1740c02d12734fe156bc60a445963f6bcfe0f1889e461408ba293759d8e540d2"
+    },
+    {
+      "article": 2,
+      "order": 1,
+      "basename": "HXSSGX_和谐师生_第02篇_卡片_01_封面_v01.jpg",
+      "relative_path": "发布包_第2篇_挡枪/卡片发布包/HXSSGX_和谐师生_第02篇_卡片_01_封面_v01.jpg",
+      "bytes": 97056,
+      "size": [
+        1242,
+        1656
+      ],
+      "sha256": "188e24832c04a2a1b66752896365143a6ba6945b407c2f6f48a4be80968d01c2"
+    },
+    {
+      "article": 2,
+      "order": 2,
+      "basename": "HXSSGX_和谐师生_第02篇_卡片_02_内容_v01.jpg",
+      "relative_path": "发布包_第2篇_挡枪/卡片发布包/HXSSGX_和谐师生_第02篇_卡片_02_内容_v01.jpg",
+      "bytes": 97790,
+      "size": [
+        1242,
+        1656
+      ],
+      "sha256": "8b3426c726a9c5411b19e684584d214bf78c650f6660ca2ac54d8b1eecbea564"
+    },
+    {
+      "article": 2,
+      "order": 3,
+      "basename": "HXSSGX_和谐师生_第02篇_卡片_03_内容_v01.jpg",
+      "relative_path": "发布包_第2篇_挡枪/卡片发布包/HXSSGX_和谐师生_第02篇_卡片_03_内容_v01.jpg",
+      "bytes": 97806,
+      "size": [
+        1242,
+        1656
+      ],
+      "sha256": "09df43cba7fe141c6c0e20d962a7c3ecfbec62ae5295234d18073a8db7e64f76"
+    },
+    {
+      "article": 2,
+      "order": 4,
+      "basename": "HXSSGX_和谐师生_第02篇_卡片_04_内容_v01.jpg",
+      "relative_path": "发布包_第2篇_挡枪/卡片发布包/HXSSGX_和谐师生_第02篇_卡片_04_内容_v01.jpg",
+      "bytes": 97847,
+      "size": [
+        1242,
+        1656
+      ],
+      "sha256": "c21d033c921597c5d35382e81e8a208e15be3642afbf797d440be91393a8391f"
+    },
+    {
+      "article": 2,
+      "order": 5,
+      "basename": "HXSSGX_和谐师生_第02篇_卡片_05_收尾_v01.jpg",
+      "relative_path": "发布包_第2篇_挡枪/卡片发布包/HXSSGX_和谐师生_第02篇_卡片_05_收尾_v01.jpg",
+      "bytes": 97423,
+      "size": [
+        1242,
+        1656
+      ],
+      "sha256": "4cb3d7df40ef70166c5bba0c3949d0dd25a1b84e30857167c2518ba370791cd5"
+    },
+    {
+      "article": 3,
+      "order": 1,
+      "basename": "HXSSGX_和谐师生_第03篇_卡片_01_封面_v01.jpg",
+      "relative_path": "发布包_第3篇_媒婆/卡片发布包/HXSSGX_和谐师生_第03篇_卡片_01_封面_v01.jpg",
+      "bytes": 96694,
+      "size": [
+        1242,
+        1656
+      ],
+      "sha256": "27275425e116f9555e6c725e5af94ea41f1f8eaf447e741c3186a9ba20e8df98"
+    },
+    {
+      "article": 3,
+      "order": 2,
+      "basename": "HXSSGX_和谐师生_第03篇_卡片_02_内容_v01.jpg",
+      "relative_path": "发布包_第3篇_媒婆/卡片发布包/HXSSGX_和谐师生_第03篇_卡片_02_内容_v01.jpg",
+      "bytes": 97032,
+      "size": [
+        1242,
+        1656
+      ],
+      "sha256": "452dddbeaeff0bb7887d0c41078f3339e18ce99e9a862f0564e0a068477b554d"
+    },
+    {
+      "article": 3,
+      "order": 3,
+      "basename": "HXSSGX_和谐师生_第03篇_卡片_03_内容_v01.jpg",
+      "relative_path": "发布包_第3篇_媒婆/卡片发布包/HXSSGX_和谐师生_第03篇_卡片_03_内容_v01.jpg",
+      "bytes": 97365,
+      "size": [
+        1242,
+        1656
+      ],
+      "sha256": "cd3514fc0acf26eefdfd10ec50d662999296c4e7f4be1b42283e97e99148cd95"
+    },
+    {
+      "article": 3,
+      "order": 4,
+      "basename": "HXSSGX_和谐师生_第03篇_卡片_04_收尾_v01.jpg",
+      "relative_path": "发布包_第3篇_媒婆/卡片发布包/HXSSGX_和谐师生_第03篇_卡片_04_收尾_v01.jpg",
+      "bytes": 97652,
+      "size": [
+        1242,
+        1656
+      ],
+      "sha256": "9662486d7db8896536de1fc6b32f4416bf48cf8210704d65e0addc911c3b4971"
+    },
+    {
+      "article": 4,
+      "order": 1,
+      "basename": "HXSSGX_和谐师生_第04篇_卡片_01_封面_v01.jpg",
+      "relative_path": "发布包_第4篇_拜菩萨/卡片发布包/HXSSGX_和谐师生_第04篇_卡片_01_封面_v01.jpg",
+      "bytes": 97484,
+      "size": [
+        1242,
+        1656
+      ],
+      "sha256": "ad1ed45c97500772b7affcbf186692651c8fc6c8601da8209c72df6692597de2"
+    },
+    {
+      "article": 4,
+      "order": 2,
+      "basename": "HXSSGX_和谐师生_第04篇_卡片_02_内容_v01.jpg",
+      "relative_path": "发布包_第4篇_拜菩萨/卡片发布包/HXSSGX_和谐师生_第04篇_卡片_02_内容_v01.jpg",
+      "bytes": 97401,
+      "size": [
+        1242,
+        1656
+      ],
+      "sha256": "f101b8f44ceb071e027f55b4af2438db23bbacd62ae39d9f21f5087bb0be30df"
+    },
+    {
+      "article": 4,
+      "order": 3,
+      "basename": "HXSSGX_和谐师生_第04篇_卡片_03_内容_v01.jpg",
+      "relative_path": "发布包_第4篇_拜菩萨/卡片发布包/HXSSGX_和谐师生_第04篇_卡片_03_内容_v01.jpg",
+      "bytes": 97559,
+      "size": [
+        1242,
+        1656
+      ],
+      "sha256": "50b152cb7d3e310e671fd7e0f96b3e67139069921619ce1d05542b13f19da5bd"
+    },
+    {
+      "article": 4,
+      "order": 4,
+      "basename": "HXSSGX_和谐师生_第04篇_卡片_04_内容_v01.jpg",
+      "relative_path": "发布包_第4篇_拜菩萨/卡片发布包/HXSSGX_和谐师生_第04篇_卡片_04_内容_v01.jpg",
+      "bytes": 97683,
+      "size": [
+        1242,
+        1656
+      ],
+      "sha256": "0896a245b50e00adab2a9029d25a4ab4661b478ca081943d33790963dda0f1e1"
+    },
+    {
+      "article": 4,
+      "order": 5,
+      "basename": "HXSSGX_和谐师生_第04篇_卡片_05_收尾_v01.jpg",
+      "relative_path": "发布包_第4篇_拜菩萨/卡片发布包/HXSSGX_和谐师生_第04篇_卡片_05_收尾_v01.jpg",
+      "bytes": 96823,
+      "size": [
+        1242,
+        1656
+      ],
+      "sha256": "624f45c98ad0465d78e71164b5a44c5a5b01963f8a8fbc3db50a4cd0420d3515"
+    },
+    {
+      "article": 5,
+      "order": 1,
+      "basename": "HXSSGX_和谐师生_第05篇_卡片_01_封面_v01.jpg",
+      "relative_path": "发布包_第5篇_具体修复/卡片发布包/HXSSGX_和谐师生_第05篇_卡片_01_封面_v01.jpg",
+      "bytes": 97850,
+      "size": [
+        1242,
+        1656
+      ],
+      "sha256": "c12bad17e62c863afa094c797e89fe1a13afe6f3d8fe353f7f4f750e62ab4ee5"
+    },
+    {
+      "article": 5,
+      "order": 2,
+      "basename": "HXSSGX_和谐师生_第05篇_卡片_02_内容_v01.jpg",
+      "relative_path": "发布包_第5篇_具体修复/卡片发布包/HXSSGX_和谐师生_第05篇_卡片_02_内容_v01.jpg",
+      "bytes": 97854,
+      "size": [
+        1242,
+        1656
+      ],
+      "sha256": "d4cc112a7ec2f81c3c51e37cdf7689bb591649b7d56f33fa8e63626fcc824acc"
+    },
+    {
+      "article": 5,
+      "order": 3,
+      "basename": "HXSSGX_和谐师生_第05篇_卡片_03_内容_v01.jpg",
+      "relative_path": "发布包_第5篇_具体修复/卡片发布包/HXSSGX_和谐师生_第05篇_卡片_03_内容_v01.jpg",
+      "bytes": 97386,
+      "size": [
+        1242,
+        1656
+      ],
+      "sha256": "413b824f32089e602d7fb4566166b3a01d6fd7489b160b9fa9dec174d9405fe4"
+    },
+    {
+      "article": 5,
+      "order": 4,
+      "basename": "HXSSGX_和谐师生_第05篇_卡片_04_内容_v01.jpg",
+      "relative_path": "发布包_第5篇_具体修复/卡片发布包/HXSSGX_和谐师生_第05篇_卡片_04_内容_v01.jpg",
+      "bytes": 97296,
+      "size": [
+        1242,
+        1656
+      ],
+      "sha256": "945bee70aef8e39ad695568ba1773181f8d5195c8771fe7b5d39dc3fb9ea3af6"
+    },
+    {
+      "article": 5,
+      "order": 5,
+      "basename": "HXSSGX_和谐师生_第05篇_卡片_05_收尾_v01.jpg",
+      "relative_path": "发布包_第5篇_具体修复/卡片发布包/HXSSGX_和谐师生_第05篇_卡片_05_收尾_v01.jpg",
+      "bytes": 97566,
+      "size": [
+        1242,
+        1656
+      ],
+      "sha256": "746dc74c25888d88041529ac158f45a7113e743914e6c6d525f5eb08f1d58426"
+    }
+  ],
+  "backend_counts": [
+    {
+      "article": 1,
+      "title": "孩子说“老师不喜欢我”，先别急着讲道理",
+      "title_chars": 19,
+      "description_chars": 547,
+      "total_chars": 566
+    },
+    {
+      "article": 2,
+      "title": "挡枪：当众护住尊严，事后陪他负责",
+      "title_chars": 16,
+      "description_chars": 544,
+      "total_chars": 560
+    },
+    {
+      "article": 3,
+      "title": "媒婆：两头传真话，让彼此看见好",
+      "title_chars": 15,
+      "description_chars": 562,
+      "total_chars": 577
+    },
+    {
+      "article": 4,
+      "title": "拜菩萨：父母先敬人，孩子学尊重",
+      "title_chars": 15,
+      "description_chars": 558,
+      "total_chars": 573
+    },
+    {
+      "article": 5,
+      "title": "师生关系修复，先商量谁来做什么",
+      "title_chars": 15,
+      "description_chars": 574,
+      "total_chars": 589
+    }
+  ],
+  "source_assets_unchanged": {
+    "发布包_第1篇_先听委屈\\长图文发布包\\01_标题作者摘要.txt": "fc814e232c426a9a7ef5aedf33b63b40b2dafc4ce4c5857c2bf1fbec4659c217",
+    "发布包_第1篇_先听委屈\\长图文发布包\\封面_第1篇_先听委屈.jpg": "1abf9ab14e1d3e7a91c6a3bf78e565c8c4f766661a57b738d17f88af487ccf90",
+    "发布包_第1篇_先听委屈\\长图文发布包\\正文_第1篇_先听委屈.html": "5f6fe6b66e55187796979b7f523fcb4c661a007ffc3e30c2127d773b5d1a49bd",
+    "发布包_第2篇_挡枪\\长图文发布包\\01_标题作者摘要.txt": "bde0ce88ec2e2c14632ac3fb5a20443802b63135ad37e57def3ad675761bc7d3",
+    "发布包_第2篇_挡枪\\长图文发布包\\封面_第2篇_挡枪.jpg": "01917c85afce1a19ef06ac8a6a6c1e97aa696cdf352936ac54303d2d5306e2b1",
+    "发布包_第2篇_挡枪\\长图文发布包\\正文_第2篇_挡枪.html": "16d004c052d3aa5888d84a5e18c89536c4a8e52bed3cd64bfd149768ca0f5c25",
+    "发布包_第3篇_媒婆\\长图文发布包\\01_标题作者摘要.txt": "4e24cd6dacfcabe3251835ed1ad24b50ced7ce35d6da2ce99094f40b8893faba",
+    "发布包_第3篇_媒婆\\长图文发布包\\封面_第3篇_媒婆.jpg": "02ff23b337c34726d45b2c11172870475c7e2b582b6cc06a5276f51940ad26e0",
+    "发布包_第3篇_媒婆\\长图文发布包\\正文_第3篇_媒婆.html": "a7f1d3ab96bf62cf05893edce795c04982208ed221a22232479e05eb1e7ee412",
+    "发布包_第4篇_拜菩萨\\长图文发布包\\01_标题作者摘要.txt": "845315b14b5483568ca8d9690901d7acc1d21a3de62aa98b07c4282eef8d984f",
+    "发布包_第4篇_拜菩萨\\长图文发布包\\封面_第4篇_拜菩萨.jpg": "1da7057d79f64dcf22e5e8e217616a08793f3665ca2e37d61b70a8ca0c7c1000",
+    "发布包_第4篇_拜菩萨\\长图文发布包\\正文_第4篇_拜菩萨.html": "4651250e34c7afb448d36ce4e4f1e8e83b01c75d4bd1dc0ddcd64e2a5539a05c",
+    "发布包_第5篇_具体修复\\长图文发布包\\01_标题作者摘要.txt": "1bf13185a4c9eb96714bfd2ee50301ef7b71b6d527ccd422f4f21743e561e0d3",
+    "发布包_第5篇_具体修复\\长图文发布包\\封面_第5篇_具体修复.jpg": "6869118ea55322696f4d147971405ed563783302024fe23d800cde861bc403ba",
+    "发布包_第5篇_具体修复\\长图文发布包\\正文_第5篇_具体修复.html": "5e3bd776a502e2d12ced88051c738b996acab41234cf6b379438620febad0958"
+  }
+}

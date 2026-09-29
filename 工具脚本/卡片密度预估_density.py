@@ -12,12 +12,12 @@
 
 用法：
    python 卡片密度预估_density.py --base "<卡片文章目录>" [篇号 …]
-   python 卡片密度预估_density.py --base "D:/…/父母做到这点孩子会有惊人改变/公众号文章/卡片文章" 1 2 3
+   python 卡片密度预估_density.py --base "D:/…/公众号/父母做到这点孩子会有惊人改变/公众号文章/卡片文章" 1 2 3
 选项：
    --render  渲染器文件名（默认 卡片文章渲染_card_render.py）
    --all     扫描该目录下全部存在的配置
 """
-import sys, os, json, argparse, importlib.util
+import sys, os, json, argparse, importlib.util, re
 
 sys.stdout.reconfigure(encoding='utf-8')
 
@@ -47,6 +47,10 @@ AVAIL = AREA_BOT - AREA_TOP
 
 def total_of(card, cfg):
     """按卡型复现渲染器的 total（内容块总高）"""
+    # 新渲染器可提供同源几何测量，旧系列仍沿用下面的兼容公式。
+    if hasattr(R, 'measure_card'):
+        measured = R.measure_card(card, cfg)
+        return measured['total'], measured['chars']
     sc = cfg.get('content_scale', 1.0)
     t = card.get('type')
 
@@ -103,11 +107,16 @@ def total_of(card, cfg):
 
 
 nums = A.nums
+config_paths = {}
+for filename in sorted(os.listdir(os.path.join(B, '脚本'))):
+    match = re.search(r'第(\d+)篇_卡片配置(?:_v\d+)?\.json$', filename)
+    if match:
+        number = int(match.group(1))
+        if number in config_paths:
+            print('❌ 同篇配置重名：%s' % filename); sys.exit(2)
+        config_paths[number] = os.path.join(B, '脚本', filename)
 if A.all or not nums:
-    nums = []
-    for f in sorted(os.listdir(os.path.join(B, '脚本'))):
-        if f.endswith('_卡片配置.json'):
-            nums.append(int(f[1:3]))
+    nums = sorted(config_paths)
 if not nums:
     print('❌ 未找到任何配置'); sys.exit(2)
 
@@ -118,7 +127,7 @@ print('目标带 62–68%% → 块高 %d ~ %d px ｜ 红线 70%% = %d px\n'
 
 stat = {'ok': 0, 'high': 0, 'low': 0, 'over': 0}
 for n in nums:
-    p = os.path.join(B, '脚本', '第%02d篇_卡片配置.json' % n)
+    p = config_paths.get(n, os.path.join(B, '脚本', '第%02d篇_卡片配置.json' % n))
     if not os.path.exists(p):
         print('第%d篇：配置不存在，跳过\n' % n)
         continue

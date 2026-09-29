@@ -3,7 +3,7 @@
 ## 正式成果结构
 
 ```text
-<系列>/公众号文章/
+公众号/<系列>/公众号文章/
   00_系列选题规划.md
   03_发布手册.md
   发布包_第1篇_短标题/
@@ -71,11 +71,11 @@
 项目根目录的工具脚本可复用，运行前先确认参数与范围：
 
 ```text
-python 工具脚本/系列发布全套自检_selfcheck.py --dir <系列/公众号文章> --source <实际来源关键词>
-python 工具脚本/系列发布全套自检_selfcheck.py --dir <系列/公众号文章> --legacy --source <实际来源关键词>
+python 工具脚本/系列发布全套自检_selfcheck.py --dir <公众号/系列/公众号文章> --source <实际来源关键词>
+python 工具脚本/系列发布全套自检_selfcheck.py --dir <公众号/系列/公众号文章> --legacy --source <实际来源关键词>
 python 工具脚本/微信HTML规范校验修复_wx_html_fix.py --check <正文文件...>
 python 工具脚本/wechat_official_verify.py <新生成或点名返工的正文文件.html>
-python 工具脚本/wechat_official_verify.py --dir <系列/公众号文章>
+python 工具脚本/wechat_official_verify.py --dir <公众号/系列/公众号文章>
 python 工具脚本/wechat_official_verify.py --dedupe <正文文件.html> --dry-run   # 冗余嵌套清理预览
 python 工具脚本/wechat_official_verify.py --setup                              # 环境探针自检
 ```

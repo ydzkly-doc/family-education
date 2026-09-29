@@ -402,6 +402,26 @@ def make_cover(spec: dict, ass_dir: str, out_png: str, at: float = 0.0):
 
 
 # ---------------- 卡片定位（锚点 / 段号 / 秒数） ----------------
+# 锚点定位的可疑情况（2026-09-28 立）：**只提示、不改行为**。
+# 收集在这里，由 preview_plan 与正式流程末尾统一汇报（见 report_anchor_warnings）。
+ANCHOR_WARNINGS: list = []
+
+
+def _warn_anchor(msg: str):
+    ANCHOR_WARNINGS.append(msg)
+
+
+def report_anchor_warnings():
+    """把锚点定位的可疑情况汇总打印（--preview 与正式出片共用同一份）"""
+    if not ANCHOR_WARNINGS:
+        return
+    print()
+    print(f"  ⚠️ 锚点定位需人工确认 {len(ANCHOR_WARNINGS)} 处：")
+    for w in ANCHOR_WARNINGS:
+        print(f"    · {w}")
+    print("    （**只提示、不改行为**——管道仍按现在的选择上屏，请对照成片确认）")
+
+
 def _key(s: str) -> str:
     """去掉标点空白，只留字与词，用于宽松比对"""
     return re.sub(r"[^\w\u4e00-\u9fff]", "", s or "")
@@ -411,20 +431,40 @@ def find_line_by_text(text: str, lines):
     """
     在字幕行里找「含该文本」的一句，返回行下标（找不到返回 None）。
     先用精确包含，再退一步做相似度匹配（容忍 ASR 的个别错字）。
+
+    ⭐ 2026-09-28：两条路径都可能**悄悄选错**，所以把可疑情况收集起来提示：
+      · 包含命中**多处**（同一句话在片里说了两遍）→ 现在取第 1 处，未必是想要那处；
+      · 相似度兜底命中 → 本身就不确定，相似度和第二候选都该让人看见。
+    ⛔ **只提示、不改行为**——自动"纠正"一个可能正确的定位，比不提示危险得多。
     """
     import difflib
     k = _key(text)
     if not k or not lines:
         return None
-    for i, ln in enumerate(lines):
-        if k in _key(ln.get("text", "")):
-            return i
-    best, bi = 0.0, None
+    hits = [i for i, ln in enumerate(lines) if k in _key(ln.get("text", ""))]
+    if hits:
+        if len(hits) > 1:
+            _warn_anchor(
+                f'「{text[:18]}」在字幕里命中 {len(hits)} 处'
+                f'（第 {"、".join(str(h + 1) for h in hits[:4])} 句）——取**第 1 处**；'
+                f'若它其实该挂后面那处，卡片会**提前浮出来**')
+        return hits[0]
+    best, bi, second = 0.0, None, 0.0
     for i, ln in enumerate(lines):
         r = difflib.SequenceMatcher(None, k, _key(ln.get("text", ""))).ratio()
         if r > best:
-            best, bi = r, i
-    return bi if best >= 0.62 else None
+            second, best, bi = best, r, i
+        elif r > second:
+            second = r
+    if best < 0.62:
+        return None
+    if second >= best - 0.05:
+        _warn_anchor(
+            f'「{text[:18]}」有两个候选很接近（{best:.2f} / {second:.2f}）——**需人工确认**挂在哪一句')
+    elif best < 0.80:
+        _warn_anchor(
+            f'「{text[:18]}」是**相似度兜底**命中的（{best:.2f}）——多半是录音改了词，请对照成片确认位置')
+    return bi
 
 
 def seg_bounds_of(lens, xfade_d: float):
@@ -1436,6 +1476,7 @@ def preview_plan(spec, workdir) -> str | None:
     if not raw:
         print(f"  ⚠️ 逐字稿是空的：{script}")
         return None
+    ANCHOR_WARNINGS.clear()          # 每次预览重新收集（只算本次）
 
     lines, total = simulate_timings(raw)
     print("=" * 70)
@@ -1492,6 +1533,7 @@ def preview_plan(spec, workdir) -> str | None:
     if not subs:
         print("  ℹ️ 本方案没有底部字幕（只有卡片/序号条）")
     print(f"  ASS：{ass}")
+    report_anchor_warnings()
 
     # BGM 状态（preview 不校验素材，只看配置；实际选曲与落点要真跑）
     print()
@@ -1778,6 +1820,7 @@ def main():
     workdir = args.workdir or os.path.join(
         os.path.dirname(os.path.abspath(spec["out"])), "_过程文件")
     make(spec, workdir)
+    report_anchor_warnings()
 
 
 if __name__ == "__main__":

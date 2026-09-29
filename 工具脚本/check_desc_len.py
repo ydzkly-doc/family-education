@@ -22,7 +22,7 @@ import os
 import re
 import sys
 
-SERIES = (r"D:/个人资料/家庭教育/孩子不上学了怎么办/视频号文案")
+SERIES = (r"D:/个人资料/家庭教育/公众号/孩子不上学了怎么办/视频号文案")
 LIMIT = 100
 
 # 六条（发布序）；缺目录就跳过

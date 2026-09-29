@@ -77,6 +77,25 @@ def test_anchor():
     p, err, _ = vm.resolve_place({"anchor": "完全不存在的句子XYZ"}, lines, bounds, 3.0)
     check("anchor 未命中时返回原因", p is None and bool(err), f"err={err}")
 
+    # ⭐ 2026-09-28（A2）：**可疑定位必须被看见**——只提示、不改行为
+    vm.ANCHOR_WARNINGS.clear()
+    dup = lines + [{"text": "检查没查出来，不等于孩子在装，真的。",
+                    "start": 20.0, "end": 22.0, "matched": True}]
+    p, err, _ = vm.resolve_place({"anchor": "检查没查出来，不等于孩子在装"}, dup, bounds, 3.0)
+    check("重复命中会提示（仍取第 1 处）",
+          p is not None and abs(p[0] - 3.4) < 0.01 and len(vm.ANCHOR_WARNINGS) == 1,
+          f"{vm.ANCHOR_WARNINGS}")
+
+    vm.ANCHOR_WARNINGS.clear()
+    p, err, _ = vm.resolve_place({"anchor": "不等于孩在装"}, lines, bounds, 3.0)
+    check("相似度兜底会提示（低置信度）",
+          p is not None and len(vm.ANCHOR_WARNINGS) >= 1, f"{vm.ANCHOR_WARNINGS}")
+
+    vm.ANCHOR_WARNINGS.clear()
+    p, err, _ = vm.resolve_place({"anchor": "不等于孩子在装"}, lines, bounds, 3.0)
+    check("精确命中不产生提示", p is not None and not vm.ANCHOR_WARNINGS,
+          f"{vm.ANCHOR_WARNINGS}")
+
     # 段号
     p, err, _ = vm.resolve_place({"seg": 2}, lines, bounds, 3.0)
     check("seg 段号定位", p is not None and abs(p[0] - 9.0) < 0.01, f"{p}")

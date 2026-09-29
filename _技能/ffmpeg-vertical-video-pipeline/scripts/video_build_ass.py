@@ -220,7 +220,29 @@ def text_width(text: str, fontsize: float) -> float:
     return w * fontsize
 
 
-def wrap_cjk(text: str, fontsize: float, max_width: float) -> str:
+def _keep_ranges(text: str, marks):
+    """标色词在 text 里的字符区间 —— 折行时**不可从中间拆断**。
+
+    ⭐ 2026-09-28：实测 `家里最好只留一个主要沟通者。`（14 字 / 82px）被折成
+       `家里最好只留一` / `个主要沟通者。` —— 标色词「只留一个」**被换行拆成两半**。
+       颜色没丢（render_line 已修跨行着色），但读起来是**半截词**。
+    """
+    keep = []
+    for m in (marks or []):
+        w = (m or {}).get("word")
+        if not w:
+            continue
+        st = 0
+        while True:
+            i = text.find(w, st)
+            if i < 0:
+                break
+            keep.append((i, i + len(w)))
+            st = i + 1
+    return keep
+
+
+def wrap_cjk(text: str, fontsize: float, max_width: float, keep_together=None) -> str:
     r"""折行：**先按总宽定行数，再按目标行宽均衡分配**（断点优先落在标点处）。
 
     返回用 '\n' 连接的文本（交由 _esc 转成 ASS 的 \N）。
@@ -231,6 +253,9 @@ def wrap_cjk(text: str, fontsize: float, max_width: float) -> str:
       · **硬断取中点**：16 字被排成 4/5/6 **三行**，而按行宽（860px ÷ 82px ≈ 10.4 字）本该 2 行。
     新版：`行数 = ⌈总宽 ÷ 行宽⌉`，再让每行都尽量贴近 `总宽 ÷ 行数`——
     **行数最少（不顶到脸）＋ 行宽均衡（末行不会只剩一两个字）**，两个毛病一起解决。
+
+    `keep_together`：**不可拆断的字符区间**（如标色词），见 `_keep_ranges`。
+    ⚠️ 它只是"优先避开"，不是硬约束——真避不开时宁可拆词，也不能让某行超宽出画。
     """
     text = text.strip()
     if not text:
@@ -238,6 +263,12 @@ def wrap_cjk(text: str, fontsize: float, max_width: float) -> str:
     total = text_width(text, fontsize)
     if total <= max_width:
         return text
+
+    keep = list(keep_together or [])
+
+    def _bad(i: int) -> bool:
+        """断点 i（相对整句）是否落在某个不可拆区间的**内部**"""
+        return any(s < i < e for s, e in keep)
 
     # ① 最少需要几行（这是"不超宽"的硬约束，也是不再上顶的关键）
     n = int(total // max_width)
@@ -265,11 +296,11 @@ def wrap_cjk(text: str, fontsize: float, max_width: float) -> str:
         #   ① 本行不超宽；
         #   ② 剩下的内容后面几行**装得下** —— 这条是"不再多出一行"的关键：
         #      它会把断点从"句子太靠前的标点"（如「第四步，」）往后推，避免白白浪费一行。
-        cands = [i for i in range(1, len(rest) + 1)
-                 if text_width(rest[:i], fontsize) <= max_width
-                 and text_width(rest[i:], fontsize) <= left * max_width]
-        if not cands:
-            cands = [1]
+        raw = [i for i in range(1, len(rest) + 1)
+               if text_width(rest[:i], fontsize) <= max_width
+               and text_width(rest[i:], fontsize) <= left * max_width]
+        # ③ 再避开"不可拆区间"（标色词）；全被排除时退回 raw —— 不能因为保词而折不开
+        cands = [i for i in raw if not _bad(start + i)] or raw or [1]
         cut = _pick(rest, cands)
         lines.append(rest[:cut])
         start += cut
@@ -279,7 +310,13 @@ def wrap_cjk(text: str, fontsize: float, max_width: float) -> str:
         i = len(tail) - 1
         while i > 1 and text_width(tail[:i], fontsize) > max_width:
             i -= 1
+        j = i                                          # 同时尽量不落在不可拆区间内
+        while j > 1 and _bad(start + j):
+            j -= 1
+        if j > 1:
+            i = j
         lines.append(tail[:i])
+        start += i
         tail = tail[i:]
     if tail:
         lines.append(tail)
@@ -493,7 +530,8 @@ def build_ass(spec: dict, out_path: str, wrap: bool = True) -> str:
             default_tag = "{" + default_anim + "}" if default_anim else ""
             txt = item["text"]
             if wrap:
-                txt = wrap_cjk(txt, fs, mw)
+                # ⚠️ 折行时要告诉它"标色词不可拆"（否则「只留一个」会被换行切成两半）
+                txt = wrap_cjk(txt, fs, mw, _keep_ranges(txt, item.get("marks")))
             tag = item.get("anim", default_tag) or ""
             extra = _override_tags(item, sd)
             L.append(f"Dialogue: 0,{_ts(item['start'])},{_ts(item['end'])},"
@@ -567,6 +605,21 @@ def _selftest():
             print(f"    · {i}")
     else:
         print("\n  ✅ 全部落在安全区内")
+    print()
+    print("=" * 70)
+    print("标色词不跨行自检（⭐ 2026-09-28：断点不得落在标色词**内部**）")
+    print("=" * 70)
+    for nm, txt, w in (("14 字 / 82px（实测踩过：只留一 ／ 个）",
+                        "家里最好只留一个主要沟通者。", "只留一个"),
+                       ("18 字 / 82px（实测：但不 ／ 能是）",
+                        "返校是目标，但不能是唯一那把尺子。", "唯一那把尺子"),
+                       ("20 字 / 82px（三行，断点都在标点处）",
+                        "家里乱，不是因为没人管，是两个人使反了劲。", "使反了劲")):
+        wrapped = wrap_cjk(txt, 82, 860, _keep_ranges(txt, [{"word": w}]))
+        whole = any(w in ln for ln in wrapped.split("\n"))
+        print(f"  {'✅' if whole else '⛔'} {nm}：「{w}」"
+              f"{'未被拆开' if whole else '**被换行拆开了**'}")
+        print(f"      {wrapped.replace(chr(10), ' ／ ')}")
     print()
     print("=" * 70)
     print("标色自检（⭐ 含**跨行**标色词——2026-09-27 修过的静默丢失）")

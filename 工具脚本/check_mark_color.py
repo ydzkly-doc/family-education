@@ -76,7 +76,7 @@ def main(argv):
     mds = [a for a in argv if a.lower().endswith(".md")]
     if not mds:
         root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
-        vdir = os.path.join(root, "孩子不上学了怎么办", "视频号文案")
+        vdir = os.path.join(root, "公众号", "孩子不上学了怎么办", "视频号文案")
         if os.path.isdir(vdir):
             for sub in sorted(os.listdir(vdir)):
                 p = os.path.join(vdir, sub)

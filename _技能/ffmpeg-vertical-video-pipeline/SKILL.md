@@ -742,6 +742,9 @@ python scripts/video_bgm.py --pick "安静的钢琴"  # 试一次风格筛选（
 | 45 | ⛔ 抽帧自查有「片头偏移」——不修的话，查"遮不遮嘴"等于白查 | [hk45](reference/hard_fixes_full.md#hk45) |
 | 46 | ⛔ 折行会把"本该 2 行的句子变成 3 行" → 字幕上顶 → 压到嘴 | [hk46](reference/hard_fixes_full.md#hk46) |
 | 47 | ⛔ `tpad` 加封面卡不是幂等的 | [hk47](reference/hard_fixes_full.md#hk47) |
+| 48 | ⛔ 折行会把**标色词**从中间拆开（颜色没丢，但读起来是半截词） | [hk48](reference/hard_fixes_full.md#hk48) |
+| 49 | ⚠️ 锚点定位可能"悄悄选错"（**重复命中**／**低置信度兜底**）——现在会提示，但仍**不改行为** | [hk49](reference/hard_fixes_full.md#hk49) |
+| 50 | ⭐ 提词器"整句一行"太长 → 素人念成背书（已改**气口版**：意群折行 ＋ `//` ＋【重读】） | [hk50](reference/hard_fixes_full.md#hk50) |
 
 ## 目录
 
@@ -759,7 +762,7 @@ scripts/
   md_spec.py         ⭐ 文案 MD → 剪辑单片段（读「上屏方案」区块 + 抽逐字稿）
 reference/
   md_authoring_guide.md    ⭐⭐ **文案 MD 写作规范**（给创作者看的那份要求）
-  hard_fixes_full.md       ⭐ **硬坑清单的完整取证**（47 条：现象／根因／修法／判据）
+  hard_fixes_full.md       ⭐ **硬坑清单的完整取证**（50 条：现象／根因／修法／判据）
                            主文件只留「一行判据表」，**某条与当前改动相关时**再查这里
   spec_example_multi.json  ⭐ 多文件 + 锚点定位的完整示例剪辑单（照它改最快）
   背景与设计说明见本文件「硬坑清单」（判据表）＋ `reference/hard_fixes_full.md`（详情）
