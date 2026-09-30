@@ -728,7 +728,7 @@ python scripts/video_bgm.py --pick "安静的钢琴"  # 试一次风格筛选（
 | 31 | ⛔ 同一条逻辑绝不在两处各写一遍 | [hk31](reference/hard_fixes_full.md#hk31) |
 | 32 | ⛔ 强调句（底部字幕）的锚点句必须"独占一行"，否则只上屏半句 | [hk32](reference/hard_fixes_full.md#hk32) |
 | 33 | ⛔ iPhone/MOV 的音频流不从 0 起 → 音画不同步（声音比口型早约 0.7 秒） | [hk33](reference/hard_fixes_full.md#hk33) |
-| 34 | ⛔ `### 金句大字卡` 区块里出现"回放"两字 → 会自动多出一张片尾定格卡 | [hk34](reference/hard_fixes_full.md#hk34) |
+| 34 | ⛔ 片尾定格卡被**说明文字**误触发（"回放"关键词 → 明确开关，**两次修**） | [hk34](reference/hard_fixes_full.md#hk34) |
 | 35 | ⛔ 抽帧取证的两个坑（会把结论带反） | [hk35](reference/hard_fixes_full.md#hk35) |
 | 36 | ⛔ 上屏卡片的默认位置＝顶部（画面正中和中下部都会盖住人脸） | [hk36](reference/hard_fixes_full.md#hk36) |
 | 37 | ⛔ 封面裁切：钩子必须落在 y ∈ [420, 1500]，否则"用第一帧做封面"会被裁掉一部分 | [hk37](reference/hard_fixes_full.md#hk37) |

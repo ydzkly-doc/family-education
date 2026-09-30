@@ -3,7 +3,7 @@
 import io, os, sys
 sys.stdout.reconfigure(encoding='utf-8')
 
-ROOT = r'D:\个人资料\家庭教育\为什么学生不喜欢上学\公众号文章'
+ROOT = r'D:\个人资料\家庭教育\公众号\为什么学生不喜欢上学\公众号文章'
 
 DESC = {}
 TITLES = {}

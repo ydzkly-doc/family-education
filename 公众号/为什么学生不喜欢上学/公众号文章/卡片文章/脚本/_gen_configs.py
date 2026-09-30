@@ -3,8 +3,8 @@
 import io, json, os, sys
 sys.stdout.reconfigure(encoding='utf-8')
 
-BASE = r'D:\个人资料\家庭教育\为什么学生不喜欢上学\公众号文章\卡片文章'
-ROOT = r'D:\个人资料\家庭教育\为什么学生不喜欢上学\公众号文章'
+BASE = r'D:\个人资料\家庭教育\公众号\为什么学生不喜欢上学\公众号文章\卡片文章'
+ROOT = r'D:\个人资料\家庭教育\公众号\为什么学生不喜欢上学\公众号文章'
 SCRIPT = os.path.join(BASE, '脚本')
 
 OUTS = {

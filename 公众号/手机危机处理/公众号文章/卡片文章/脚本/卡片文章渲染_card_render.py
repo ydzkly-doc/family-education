@@ -45,7 +45,7 @@ GOLD  = '#F0DDC4'      # ⭐ 高亮块【底色】——必须浅：块内文字
 F_TITLE = r'C:\Windows\Fonts\msyhbd.ttc'
 F_REG   = r'C:\Windows\Fonts\msyh.ttc'
 
-BASE = r'D:\个人资料\家庭教育\手机危机处理\公众号文章\卡片文章'
+BASE = r'D:\个人资料\家庭教育\公众号\手机危机处理\公众号文章\卡片文章'
 OUT = os.path.join(BASE, '发布包_第1篇_手机危机', '卡片发布包')
 BG_DIR = os.path.join(BASE, '_过程文件', '底图成品')
 # ⚠️ 2026-09-19：**此处不得建目录**。

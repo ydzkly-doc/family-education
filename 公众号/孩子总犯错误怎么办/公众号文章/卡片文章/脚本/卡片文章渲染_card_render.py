@@ -43,7 +43,7 @@ GOLD  = '#d8be8c'      # 辅暖沙色 · 高亮块底（呼应长文 #B08C62）
 F_TITLE = r'C:\Windows\Fonts\msyhbd.ttc'
 F_REG   = r'C:\Windows\Fonts\msyh.ttc'
 
-BASE = r'D:\个人资料\家庭教育\孩子总犯错误怎么办\公众号文章\卡片文章'
+BASE = r'D:\个人资料\家庭教育\公众号\孩子总犯错误怎么办\公众号文章\卡片文章'
 OUT = os.path.join(BASE, '发布包_第1篇_重复犯错', '卡片发布包')
 BG_DIR = os.path.join(BASE, '_过程文件', '底图成品')
 # ⚠️ 2026-09-19：建目录移出模块顶层（原写法让"任何 import"都凭空建目录，

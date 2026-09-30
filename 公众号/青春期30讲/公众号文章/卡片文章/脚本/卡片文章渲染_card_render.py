@@ -41,7 +41,7 @@ CREAM = '#f5ecdc'
 F_TITLE = r'C:\Windows\Fonts\msyhbd.ttc'
 F_REG   = r'C:\Windows\Fonts\msyh.ttc'
 
-BASE = r'D:\个人资料\家庭教育\青春期30讲\公众号文章\卡片文章'
+BASE = r'D:\个人资料\家庭教育\公众号\青春期30讲\公众号文章\卡片文章'
 OUT = os.path.join(BASE, '发布包_第14篇_持久战')
 BG_DIR = os.path.join(BASE, '_过程文件', '底图成品')
 # ⚠️ 2026-09-19：建目录移出模块顶层（原写法让"任何 import"都凭空建目录，

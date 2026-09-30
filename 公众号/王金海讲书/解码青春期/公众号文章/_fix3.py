@@ -8,7 +8,7 @@
 """
 import glob, os, re
 
-BASE = r"D:/个人资料/家庭教育/王金海讲书/解码青春期/公众号文章"
+BASE = r"D:/个人资料/家庭教育/公众号/王金海讲书/解码青春期/公众号文章"
 files = sorted(glob.glob(os.path.join(BASE, "发布包_第*", "正文_*.html")),
                key=lambda p: int(re.search(r"第(\d+)篇", p).group(1)))[:3]
 BODY = "#3a322c"
