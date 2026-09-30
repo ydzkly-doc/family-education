@@ -1,0 +1,61 @@
+{
+  "name": "sop-lazy-load-test",
+  "version": "0.0.1",
+  "description": "Load-mechanism verification only. Confirms that agents + skills can coexist and that skill references load on demand.",
+  "author": {
+    "name": "ydzkly",
+    "email": ""
+  },
+  "expertType": "agent",
+  "agentName": "sop-lazy-load-test",
+  "displayName": {
+    "en": "SOP Lazy-Load Test",
+    "zh": "SOP按需加载验证"
+  },
+  "profession": {
+    "en": "Load Test",
+    "zh": "加载机制验证"
+  },
+  "displayDescription": {
+    "en": "Load-mechanism verification only; confirms agents and skills coexist and that skill references load on demand.",
+    "zh": "仅用于验证加载机制：确认 agent 与 skills 可并存、skill 的 references 按需加载，不参与任何实际内容生产。"
+  },
+  "agents": [
+    "./agents/sop-lazy-load-test.md"
+  ],
+  "skills": "../skill-bundle-test",
+  "categoryId": "06-ContentCreative",
+  "tags": [
+    {
+      "en": "Load Test",
+      "zh": "加载验证"
+    },
+    {
+      "en": "Skill Bundle",
+      "zh": "技能结构"
+    },
+    {
+      "en": "Lazy Load",
+      "zh": "按需加载"
+    }
+  ],
+  "defaultInitPrompt": {
+    "en": "Verify the lazy-load mechanism.",
+    "zh": "验证按需加载机制。"
+  },
+  "quickPrompts": [
+    {
+      "en": "Verify the lazy-load mechanism.",
+      "zh": "验证按需加载机制。"
+    },
+    {
+      "en": "Confirm agents and skills coexist.",
+      "zh": "确认 agent 与 skills 可以并存。"
+    },
+    {
+      "en": "Check whether references load on demand.",
+      "zh": "检查 references 是否按需加载。"
+    }
+  ],
+  "plugin": "sop-lazy-load-test"
+}
