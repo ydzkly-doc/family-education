@@ -56,6 +56,30 @@ DASH = "\x01"     # 破折号占位符（处理完换回 ——）
 PRIMARY = set("，；：！？。" + DASH)   # 主切点（可在其后折行）
 SECOND = set("、")                    # 次切点（仅整块过宽时用）
 
+# ── 区块定位（2026-10-03 放宽，配合「6 节精简模板」）──────────────
+# 旧写法写死了 `## 二、口播文案` + 后面的 `---`；精简模板改成
+# `## 一、口播文案`（不再用 --- 分隔）就会报"找不到区块"。现在：
+#   · 编号任意（`一、`/`二、`/没有编号都认），只认标题里的「口播文案」四个字；
+#   · 区块结束改为「先出现的 `\n---\n` 或下一个 #/##/### 标题」，与管道 `md_spec._section()` 同口径。
+SPOKEN_HEAD = r'^##[ \t]*(?:[^\s、]{1,4}、)?[ \t]*口播文案[^\n]*$'
+PROM_HEAD = r'^##[ \t]*(?:[^\s、]{1,4}、)?[ \t]*提词器文案[^\n]*$'
+
+
+def _cut_zone(rest: str) -> int:
+    """区块正文的结束位置（返回的偏移上是 `\\n` 字符）。
+
+    判据取**先出现者**：独立一行的 `---` ／ 下一个 `#`/`##`/`###` 标题。
+    调用方一律用 `rest[j + 1:]` 接回剩下的原文——两种判据下都成立。
+    """
+    cands = []
+    a = rest.find('\n---\n')
+    if a >= 0:
+        cands.append(a)
+    h = re.search(r'\n#{1,3}\s', rest)
+    if h:
+        cands.append(h.start())
+    return min(cands) if cands else len(rest)
+
 
 def extract_spoken(body: str):
     """口播段 → 逐句列表（剥掉方括号提示行、去掉粗体记号）
@@ -76,17 +100,29 @@ def extract_spoken(body: str):
 
 
 def collect_marks(md_text: str):
-    """从「四、上屏方案」抽标色词（＝作者已定好的重读词）。
+    """从「上屏方案」节抽标色词（＝作者已定好的重读词）。
 
     只认「X」标…这种写法（"标"紧跟引号），因此**不会误抓"挂在这句：「…」"**。
+    ⚠️ 2026-10-03：**编号任意**（新 6 节模板是「三、上屏方案」）——
+    原来写死 `## 四、上屏方案` 会**抽不到词 → 提词器一个【】都没有**（静默失效）。
     """
-    m = re.search(r'## 四、上屏方案\n(.*?)(?=\n## |\Z)', md_text, re.S)
+    m = re.search(r'^#{2,4}[^\n]*上屏方案[^\n]*\n(.*?)(?=\n#{2}\s|\n---\n|\Z)',
+                  md_text, re.S | re.M)
     blk = m.group(1) if m else ''
     words = []
-    for mm in re.finditer(r'[「\u201c\u201d"]([^」\u201c\u201d"]{2,14})[」\u201c\u201d"]\s*标', blk):
-        w = mm.group(1).strip()
-        if w and w not in words:
-            words.append(w)
+    # 逐行处理：只看 `→` 右侧含"标"的行，并把**该侧所有引号词**都收进来。
+    # ⚠️ 2026-10-03：旧写法用 `[「X」]\s*标` 逐个匹配，遇到**连续两个标色词**
+    #   （`“警示灯”“不是全部答案”标暖色加粗`）只会抓到紧邻"标"的最后一个 → 静默漏词。
+    for line in blk.split("\n"):
+        if "→" not in line:
+            continue
+        rhs = line.split("→", 1)[1]
+        if "标" not in rhs:
+            continue
+        for mm in re.finditer(r'[「\u201c\u201d"]([^」\u201c\u201d"]{2,14})[」\u201c\u201d"]', rhs):
+            w = mm.group(1).strip()
+            if w and w not in words:
+                words.append(w)
     return words
 
 
@@ -169,9 +205,33 @@ def add_breath(line: str) -> str:
 
 
 def mark_read(line: str, words) -> str:
+    """给重读词加【】（长词优先，且**只在未标记区段里替换**）。
+
+    ⚠️ 不能直接用 `str.replace`（2026-10-03 实测踩到）：
+      标色词常常**互相包含**（本例："还愿意回来找我" ⊃ "回来找我"）——
+      长词先被标成 `【还愿意回来找我】`，短词再在里面命中一次 →
+      生成**嵌套标记** `【还愿意【回来找我】】`（念的时候会莫名多一次停顿）。
+      → 修法：每次替换前先算出已有的 `【…】` 区间，**落在区间内的命中一律跳过**。
+    """
     for w in sorted(words, key=len, reverse=True):
-        if w in line:
-            line = line.replace(w, '【%s】' % w)
+        spans = [(m.start(), m.end()) for m in re.finditer(r'【[^】]*】', line)]
+
+        def inside(i: int) -> bool:
+            return any(s < i < e for s, e in spans)
+
+        res, i = '', 0
+        while True:
+            j = line.find(w, i)
+            if j < 0:
+                res += line[i:]
+                break
+            if inside(j) or inside(j + len(w) - 1):
+                res += line[i:j + 1]
+                i = j + 1
+                continue
+            res += line[i:j] + '【' + w + '】'
+            i = j + len(w)
+        line = res
     return line
 
 
@@ -272,6 +332,11 @@ def _selftest():
     w = collect_marks('## 四、上屏方案\n1. 「甲乙句」 → "甲乙"标暖色\n   - 挂在这句：「丙丁句」\n')
     chk(w == ['甲乙'], f'标色词抽取（{"、".join(w)}）')
 
+    # ⑩ 互相包含的标色词**不产生嵌套标记**（2026-10-03 实测：`【还愿意【回来找我】】`）
+    n = mark_read('是他不同意之后，还愿意回来找我说话。', ['回来找我', '还愿意回来找我', '不同意'])
+    chk(n == '是他【不同意】之后，【还愿意回来找我】说话。', f'标色词嵌套已消除（{n}）')
+    chk('【' not in n.replace('【不同意】', '').replace('【还愿意回来找我】', ''), '标记不重叠')
+
     print(f'\n✅ gen_prompter 自检：{ok} 项全部通过')
 
 
@@ -302,10 +367,11 @@ def main():
 
     t = io.open(a.md, encoding='utf-8').read()
 
-    m = re.search(r'## 二、口播文案\n(.*?)\n---\n', t, re.S)
-    if not m:
-        raise SystemExit('❌ 找不到「## 二、口播文案」区块（或它后面没有 --- 分隔）')
-    sentences = extract_spoken(m.group(1))
+    mh = re.search(SPOKEN_HEAD, t, re.M)
+    if not mh:
+        raise SystemExit('❌ 找不到「## …口播文案」区块（标题里必须有「口播文案」四个字）')
+    _rest = t[mh.end():]
+    sentences = extract_spoken(_rest[:_cut_zone(_rest)])
 
     words = [] if (a.plain or a.no_mark) else collect_marks(t)
 
@@ -313,15 +379,16 @@ def main():
     titles = [x.strip() for x in a.titles.split('||') if x.strip()]
     prompter, nline, nsent, over = build_prompter(sentences, cuts, titles, words, a.plain)
 
-    # 定位「三、提词器文案」区块（到下一个 --- 为止）
-    i = t.index('## 三、提词器文案')
-    tail = t[i:]
-    j = tail.find('\n---\n')
-    if j < 0:
-        raise SystemExit('❌ 提词器区块后面找不到 --- 分隔')
+    # 定位「提词器文案」区块（标题行保留，正文整段替换）
+    ph = re.search(PROM_HEAD, t, re.M)
+    if not ph:
+        raise SystemExit('❌ 找不到「## …提词器文案」区块')
+    head_line = t[ph.start():ph.end()]
+    tail = t[ph.end():]
+    j = _cut_zone(tail)
     front = tail[:j]
     k = front.find('\n\n')                      # 标题行与其后正文之间
-    prefix = front[:k + 2] if k >= 0 else front + '\n\n'
+    prefix = head_line + (front[:k + 2] if k >= 0 else front + '\n\n')
     new_tail = prefix + prompter + tail[j + 1:]
 
     old_body = front[k + 2:].strip() if k >= 0 else ''
@@ -334,7 +401,7 @@ def main():
     print(f'口播句数：{nsent}　→ 分 {len(titles)} 段　→ 提词器 {nline} 行'
           + ('' if a.plain else f'（气口版，行宽上限 {MAX_LINE}）'))
     if words:
-        print(f'重读词 {len(words)} 个（取自「四、上屏方案」的标色词）：{"、".join(words)}')
+        print(f'重读词 {len(words)} 个（取自「上屏方案」节的标色词）：{"、".join(words)}')
     if over:
         print(f'⚠️ {len(over)} 行超过行宽 {MAX_LINE} 字 —— 多半是**没有标点的长串**，折不开是正常的，肉眼确认一下：')
         for l in over[:5]:
@@ -349,7 +416,7 @@ def main():
             print('⚠️ **文字内容有差异**（去掉 --check 即写入）')
         return
 
-    io.open(a.md, 'w', encoding='utf-8').write(t[:i] + new_tail)
+    io.open(a.md, 'w', encoding='utf-8').write(t[:ph.start()] + new_tail)
     print('✅ 提词器已重生成' + ('（内容与原来相同）' if same_text else ''))
     if not a.plain:
         print('   记号：行尾＝大换气　// ＝行内停半拍　【】＝重读')

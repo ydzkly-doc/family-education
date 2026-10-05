@@ -55,6 +55,30 @@ DENOISE_PRESETS = {
     "强": "hqdn3d=6:5:9:7",
 }
 
+# ---------------- 画面色调预设（逆光素材的补救；2026-10-03 立） ----------------
+# ⭐ 为什么要有它：**逆光/背光拍的素材，脸会发暗**——这是拍摄问题，但可以不重拍补救。
+#
+# ⛔ 先判"是不是逆光"，别看"整体亮不亮"：逆光的特征是**反差过大**，不是整体欠曝。
+#    量化判据（用 ffmpeg signalstats 或抽帧直方图，看**脸部**和**背景高光**两处）：
+#      · 脸的暗部（p25）低于 ~100，同时背景高光已顶到 250+  → 就是逆光
+#      · 此时**整体平均亮度可能很正常**（实测 01/02 两条脸部 YAVG 都是 130，看着不暗，
+#        但暗部只有 60~95 → 念稿的人"看着脸是黑的"）
+#
+# ⛔⛔ **不要用"提 gamma / 抬曝光"**：背景已经 250+ 了，再抬就是一片死白（实测验过）。
+#    正确手法是 **抬暗部 ＋ 压高光**（=压缩动态范围），所以这里全用 `curves`。
+#
+# ⚠️ 用法：`--set visual.tone=中`（默认「关闭」＝完全不影响存量行为）。
+TONE_PRESETS = {
+    "关闭": None,
+    # 弱：只要一点点通透感，肤色基本不动
+    "弱": "curves=all='0/0.03 0.3/0.40 0.7/0.76 1/1',eq=saturation=1.03",
+    # 中：实测 2026-10-03 的 02 条逆光素材用的就是这一档
+    #     脸 p25 95→122、背景高光 251→249（脸亮了，背景反而更受控）
+    "中": "curves=all='0/0.04 0.3/0.42 0.6/0.66 1/0.99',eq=saturation=1.05:contrast=1.02",
+    # 强：脸更亮，但高光细节开始丢、画面略发灰 —— 只在"弱/中都不够"时用
+    "强": "curves=all='0/0.07 0.3/0.48 0.6/0.72 1/0.98',eq=saturation=1.08",
+}
+
 # ---------------- 转场预设（ffmpeg xfade 的 transition 名） ----------------
 TRANSITIONS = {
     "叠化": "fade",
@@ -268,7 +292,8 @@ def build_timeline(entries, out_path: str, gains=None, xfade_d: float = 0.25,
                    transition: str = "fade", denoise: str | None = None,
                    color_match: bool = True, crf: int = 18, preset: str = "medium",
                    out_w: int | None = None, out_h: int | None = None,
-                   fps: float | None = None, audios: dict | None = None) -> str:
+                   fps: float | None = None, audios: dict | None = None,
+                   tone: str | None = None) -> str:
     """
     把若干「段」串成一条时间线。段可以来自不同文件（entries 里各自带 file）。
 
@@ -331,6 +356,11 @@ def build_timeline(entries, out_path: str, gains=None, xfade_d: float = 0.25,
         if color_match and gains:
             g = gains[i]
             chain.append(f"colorchannelmixer=rr={g[0]}:gg={g[1]}:bb={g[2]}")
+        # ⭐ 色调（逆光补救）：放在**色温对齐之后**——
+        #    color_match 的增益是按"原始亮度"测出来的，先对齐、再上统一曲线，
+        #    这样对齐的语义不变、各段又都吃到同一条曲线（见 TONE_PRESETS）。
+        if tone:
+            chain.append(tone)
         fc.append(f"[{fi}:v]trim=start={s:.3f}:end={t:.3f},setpts=PTS-STARTPTS,"
                   f"settb=AVTB,{','.join(chain)}[v{i}]")
 

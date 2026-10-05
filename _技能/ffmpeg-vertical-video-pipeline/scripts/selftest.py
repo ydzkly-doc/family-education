@@ -490,7 +490,7 @@ def main():
         # 本脚本只管「主流程逻辑」（锚点/换算/拼接）；其它模块各管一摊，改完对应代码单独跑
         print("其它模块的自检入口：")
         print("  python md_spec.py --selftest            文案 MD 解析（版本/卡片/背景音乐）")
-        print("  python video_bgm.py --selftest          BGM 57 项（含 ffmpeg 真实混音 + 压低包络）")
+        print("  python video_bgm.py --selftest          BGM 62 项（含 ffmpeg 真实混音 + 压低包络 + 斜坡）")
         print("  python video_asr.py --selftest-align    文案对齐（不跑模型）")
         print("  python video_audio.py --presets         音频预设与默认值")
         print("  python video_build_ass.py --selftest    字幕折行与标色")

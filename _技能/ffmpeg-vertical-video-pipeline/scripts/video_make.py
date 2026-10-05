@@ -204,6 +204,44 @@ def probe_duration(video: str) -> float:
     return int(h) * 3600 + int(mi) * 60 + float(s)
 
 
+def probe_stream_span(path: str, kind: str = "v") -> tuple[float, float] | None:
+    """
+    取**单条流**的 (start_time, duration)；取不到返回 None。kind='v' 视频流 / 'a' 音频流。
+
+    ⚠️ 与 `probe_duration` 的关键区别（hk57 的全部要点）：
+      `probe_duration` 读的是**容器** Duration —— 它等于**最长那条流**的时长，
+      所以「音轨比视频短 9 秒」这种情况，看容器时长**完全看不出来**（数字很"正常"），
+      只有分别读 v:0 / a:0 才暴露。
+
+    ⚠️⚠️ 判「谁先结束」必须用 **start_time + duration**，⛔ 不能直接比 duration：
+      iPhone 素材的音轨常带 0.1~0.7s 的**起始偏移**（画面先到、声音后到），
+      此时「音频短 0.55s」是假的 —— 它的结束时刻其实还在视频之后。
+    """
+    ffprobe = os.path.join(os.path.dirname(FFMPEG),
+                           "ffprobe.exe" if os.name == "nt" else "ffprobe")
+    if not os.path.exists(ffprobe):
+        ffprobe = shutil.which("ffprobe") or ffprobe
+    p = subprocess.run([ffprobe, "-v", "error", "-select_streams", f"{kind}:0",
+                        "-show_entries", "stream=start_time,duration",
+                        "-of", "default=noprint_wrappers=1", path],
+                       capture_output=True, text=True,
+                       encoding="utf-8", errors="replace")
+    vals = {}
+    for line in (p.stdout or "").splitlines():
+        if "=" not in line:
+            continue
+        k, _, v = line.partition("=")
+        v = v.strip()
+        if v and v.lower() != "n/a":
+            try:
+                vals[k.strip()] = float(v)
+            except ValueError:
+                pass
+    if "duration" not in vals:
+        return None
+    return vals.get("start_time", 0.0), vals["duration"]
+
+
 # ---------------- 编码参数 ----------------
 def bitrate_arg(v) -> str | None:
     """把 8 / '8M' / '8000k' 统一成 ffmpeg 认的写法（裸数字 <100 视为 Mbps）"""
@@ -335,6 +373,22 @@ def compose(video: str, ass_path: str, out_path: str, audio_chain: str | None = 
         args += ["-map", "0:v", "-map", "1:a"]
     if audio_chain:
         args += ["-af", audio_chain]
+    # ⭐ 护栏（hk57）：音轨比视频短 → 尾部会出现「没声音的画面」，一并截掉
+    #    成因：某段素材录制时音轨被截断（iPhone 偶发），音频到此为止、视频还在跑。
+    #    ⛔ 只看 probe_duration（容器时长）发现不了；必须分别读 v:0 / a:0，且比**结束时刻**。
+    v_span = probe_stream_span(video, "v")
+    a_span = (probe_stream_span(ext_audio, "a") if ext_audio
+              else probe_stream_span(video, "a"))
+    tail_to = None
+    if v_span and a_span:
+        v_end = v_span[0] + v_span[1]
+        a_end = a_span[0] + a_span[1]
+        if v_end - a_end > 0.5:
+            tail_to = a_end - v_span[0]          # 换到输出时间轴（常态 v_start=0）
+            print(f"    ⚠️ 音轨比视频短 {v_end - a_end:.2f}s"
+                  f"（视频到 {v_end:.2f}s ／ 音频到 {a_end:.2f}s）")
+            print(f"       → 尾部自动裁到 {tail_to:.2f}s"
+                  f"（⚠️ 素材录制断了音频，请核对拍摄那条素材；见 hk57）")
     args += ["-c:v", "libx264", "-preset", preset]
     br = bitrate_arg(bitrate)
     if br:
@@ -343,8 +397,10 @@ def compose(video: str, ass_path: str, out_path: str, audio_chain: str | None = 
         args += ["-crf", str(crf), "-maxrate", "12M", "-bufsize", "24M"]
     args += ["-profile:v", "high", "-level", "4.0",
              "-pix_fmt", "yuv420p",
-             "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart",
-             os.path.abspath(out_path)]
+             "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart"]
+    if tail_to:                       # hk57：截掉「没有声音的尾部」
+        args += ["-t", f"{tail_to:.3f}"]
+    args += [os.path.abspath(out_path)]
     run(args, cwd=work, label=f"合成 -> {os.path.basename(out_path)}")
     return out_path
 
@@ -919,16 +975,19 @@ def make(spec: dict, workdir: str):
                 f"({g[0]:.3f},{g[1]:.3f},{g[2]:.3f})" for g in gains))
         dn_name = vcfg.get("denoise", "关闭")
         dn = vv.DENOISE_PRESETS.get(dn_name) if visual_on else None
+        tn_name = vcfg.get("tone", "关闭")
+        tn = vv.TONE_PRESETS.get(tn_name) if visual_on else None
         xd = vcfg.get("xfade", 0.25) if visual_on else 0.0
         trans = vcfg.get("transition", "叠化") if visual_on else "无"
         lens = [e["end"] - e["start"] for e in entries]
         pending_bounds = seg_bounds_of(lens, xd)
         joined = os.path.join(workdir, "_stage0_join.mp4")
         vv.build_timeline(entries, joined, gains, xd, trans, dn,
-                          visual_on and cm, crf, preset, w_u, h_u, fps_u)
+                          visual_on and cm, crf, preset, w_u, h_u, fps_u, tone=tn)
         print(f"    → {os.path.basename(joined)}  {vv.probe_duration(joined):.2f}s"
               + (f"（叠化 {xd}s × {len(entries) - 1}）" if xd else "（硬切）")
-              + (f"  降噪 {dn_name}" if dn else ""))
+              + (f"  降噪 {dn_name}" if dn else "")
+              + (f"  色调 {tn_name}" if tn else ""))
         video_for_cut = joined
         preserve = None          # 已拼接，段间停顿不再需要保留
     else:
@@ -1116,6 +1175,39 @@ def make(spec: dict, workdir: str):
         two_pass = bool(cfg.get("loudnorm", {}).get("enabled")
                         and cfg["loudnorm"].get("two_pass", True))
         if bgm_plan:
+            # ⭐ 2026-10-02 加：**BGM 的 gain 要预补偿 loudnorm 的整体抬升**
+            #    为什么：BGM **必须**在 loudnorm 之前混入（两遍法要求测"混了 BGM 之后的信号"），
+            #    于是当素材被判"偏轻"时，loudnorm 的整体增益**会连 BGM 一起抬**——
+            #    实测 05：素材 −25.7 LUFS → 目标 −14，抬了约 **+11 dB**，BGM 也跟着 +11 dB，
+            #    结果比"事后用 `video_add_bgm.py` 补加"的同类成片（输入已是 −14 的成片，
+            #    loudnorm 增益≈0）**响一大截**——用户听出来了（"第五条 BGM 明显比前四条高"）。
+            #    → 混音前先测一次**素材（含前置链）**的响度，把 gain 预扣掉这个抬升量，
+            #      **两条路径的 gain 口径就统一成"绝对 dB"**。
+            #    ℹ️ 补加路径不受影响：它的输入是归一化过的成片（≈−14.2）→ 补偿量 <1 dB，不触发。
+            if two_pass:
+                _base = va.analyze(stage2, pre, chain_cwd)
+                # ⛔⛔ 2026-10-03：**取不到响度就必须停下**，不许静默跳过预补偿。
+                #    踩过的坑：这一步偶发失败（重试后仍可能失败）→ 原来只是 print 一句、
+                #    然后 gain 保持原值 → 成片里 **BGM 比口播高约 15 dB**，
+                #    而**没有任何错误提示**，靠用户耳朵才发现（"第二篇 BGM 声量有点高"）。
+                #    → 宁可停下让人重跑（偶发，重跑通常就好），也不产出音量不对的成片。
+                if _base is None:
+                    raise RuntimeError(
+                        "响度分析失败（拿不到素材响度）→ **BGM 音量无法预补偿**。\n"
+                        "       · 这一步是**偶发**失败，**直接重跑一次**通常即可；\n"
+                        "       · ⛔ 别绕过它出片：那样 BGM 会比口播高约 15 dB 且不报错。\n"
+                        "       · 想彻底不要 BGM：把 `### 背景音乐` 节删掉（或置空）。")
+                try:
+                    _i_s = float((_base or {}).get("input_i"))
+                except (TypeError, ValueError):
+                    _i_s = 0.0
+                _i_t = float(cfg.get("loudnorm", {}).get("I", -14.0))
+                _comp = _i_t - _i_s
+                if _i_s and abs(_comp) > 1.0:
+                    bgm_plan["gain"] = float(bgm_plan["gain"]) - _comp
+                    print(f"    · BGM 预补偿 {_comp:+.1f} dB"
+                          f"（素材 {_i_s:.1f} → 目标 {_i_t:.1f} LUFS）"
+                          f"，有效 gain {bgm_plan['gain']:+.1f} dB")
             # ⭐ Stage A：前置链 + BGM → WAV（混音**必须**在 loudnorm 之前，见 mix_bgm 说明）
             mix = os.path.join(workdir, "_bgm_mix.wav")
             mix_bgm(stage2, bgm_plan, pre, workdir, mix, dur)
@@ -1147,7 +1239,10 @@ def make(spec: dict, workdir: str):
         if at == "end":
             at = max(0.0, probe_duration(stage2) - 2.0)
         elif cover_cfg.get("anchor"):
-            pos, err = resolve_place(cover_cfg, lines, seg_bounds, 2.0)
+            # ⛔ 2026-10-02 修：resolve_place 返回**三个**值 (pos, err, 命中行)，
+            #    这里原来写成 `pos, err = …` → 一旦封面写了锚点就 **ValueError 崩在最后一步**
+            #    （成片其实已经出好了，只是封面图没生成）。锚点这条路以前没被跑过，所以一直没暴露。
+            pos, err, _hit = resolve_place(cover_cfg, lines, seg_bounds, 2.0)
             if pos is None:
                 print(f"    ⚠️ 封面锚点定位失败（{err}），改用片头帧")
                 at = 0.0

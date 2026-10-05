@@ -33,6 +33,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 if HERE not in sys.path:
@@ -335,7 +336,8 @@ def probe_duration(path: str) -> float | None:
     return int(h) * 3600 + int(mi) * 60 + float(s)
 
 
-def analyze(src: str, pre_chain: str | None = None, cwd: str | None = None) -> dict | None:
+def analyze(src: str, pre_chain: str | None = None, cwd: str | None = None,
+            retries: int = 2) -> dict | None:
     """
     第一遍：测响度（不改文件）
 
@@ -344,14 +346,27 @@ def analyze(src: str, pre_chain: str | None = None, cwd: str | None = None) -> d
       所以在「前置链之前」测会算错补偿量。
       实测踩过：目标 -14 LUFS，成片只到 -15.86（差 1.86 LU）。
       → pre_chain 传进来，测量时一并应用，测到的才是 loudnorm 真正要处理的信号。
+
+    ⭐ 2026-10-03 加**重试**（`retries`）：这一步在本机**偶发**取不到 JSON ——
+      实测同一个文件、同一条命令，手动跑成功、管道里跑失败（查了完整命令，非确定性）。
+      ⛔ 后果**严重且静默**：`video_make.make()` 里的「BGM 预补偿」会跳过，
+      于是 BGM 的 gain 没扣掉 loudnorm 的整体抬升 → 成片里 **BGM 比口播高约 15 dB**
+      （用户实听出来的："第二篇 BGM 声量有点高，第一篇比较合适"）。
     """
     print("  [响度分析]" + ("（含前置链）" if pre_chain else ""))
     af = ",".join(x for x in (pre_chain, "loudnorm=print_format=json") if x)
-    p = run([FFMPEG, "-hide_banner", "-i", os.path.abspath(src), "-af", af,
-             "-f", "null", "-"], cwd=cwd)
-    m = re.search(r"\{[^{}]*\"input_i\"[^{}]*\}", p.stderr or "", re.S)
+    m = None
+    for attempt in range(max(0, retries) + 1):
+        p = run([FFMPEG, "-hide_banner", "-i", os.path.abspath(src), "-af", af,
+                 "-f", "null", "-"], cwd=cwd)
+        m = re.search(r"\{[^{}]*\"input_i\"[^{}]*\}", p.stderr or "", re.S)
+        if m:
+            break
+        if attempt < retries:
+            print(f"    ⚠️ 未取到 JSON（第 {attempt + 1} 次尝试），重试…")
+            time.sleep(0.8)
     if not m:
-        print("    分析失败，未取到 JSON")
+        print(f"    分析失败，未取到 JSON（已重试 {retries} 次）")
         return None
     try:
         d = json.loads(m.group(0))

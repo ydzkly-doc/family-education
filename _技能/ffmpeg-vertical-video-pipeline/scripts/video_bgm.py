@@ -311,6 +311,11 @@ def plan(cfg: dict, lines, total: float, dirs: list[str],
          "fade_in": fade_in, "fade_out": fade_out, "handoff": handoff,
          "loop": bool(cfg.get("loop", True)), "total": float(total),
          "duck": float(cfg.get("duck", 12.0)),
+         # ⭐ duck_ramp：压低区间的**斜坡秒数**（0 = 老行为：硬台阶）
+         #    为什么要有它（2026-10-01 用户听感反馈）：硬台阶在听感上不是"压低"，
+         #    而是"背景音突然变强／突然变小"——尤其人声一开口那一下。
+         #    >0 时把全部压低区间合成**一条平滑包络**（clamp 斜坡），听感才自然。
+         "duck_ramp": float(cfg.get("duck_ramp") or 0.0),
          "head": None, "tail": None, "dips": []}
 
     if placement == "full":
@@ -429,15 +434,33 @@ def build_filter(p: dict, pre_chain: str | None, total: float,
         if p["fade_out"] > 0:
             st = max(0.0, t_end - p["fade_out"])
             chain.append(f"afade=t=out:st={st:.3f}:d={min(p['fade_out'], t_end):.3f}")
-        # 人声区间 → 额外压低（每段一个 volume 实例，用 timeline 的 enable）
+        # 人声区间 → 额外压低
+        #   duck_ramp <= 0：每段一个 volume 实例 + timeline enable（**硬台阶**，老行为）
+        #   duck_ramp  > 0：合成**一条平滑包络**，避免"背景音突然变强／变小"
         dl = db2lin(-p["duck"])
-        for s, e in (p.get("duck_spans") or []):
-            chain.append(f"volume=volume={dl}:enable='between(t,{s:.3f},{e:.3f})'")
-        # 定点额外压低（「某句」那半秒）
-        for d in p["dips"]:
-            s, e = d["span"]
-            chain.append(f"volume=volume={db2lin(-d['extra'])}:"
-                         f"enable='between(t,{s:.3f},{e:.3f})'")
+        ramp = float(p.get("duck_ramp") or 0.0)
+        spans = p.get("duck_spans") or []
+        if ramp > 0.01 and spans:
+            def bump(s, e):
+                r = min(ramp, max(0.02, (e - s) / 2.0))
+                return (f"clip((t-{s:.3f})/{r:.3f},0,1)"
+                        f"*clip(({e:.3f}-t)/{r:.3f},0,1)")
+            duck_terms = [bump(s, e) for s, e in spans]
+            dip_terms = [f"{1 - db2lin(-d['extra']):.6f}*{bump(*d['span'])}"
+                         for d in p["dips"]]
+            expr = f"1-{1 - dl:.6f}*(" + "+".join(duck_terms) + ")"
+            if dip_terms:
+                expr += "-(" + "+".join(dip_terms) + ")"
+            # ⚠️ 表达式里的逗号必须留在单引号内（与下面 enable='between(t,a,b)' 同一道理）
+            chain.append(f"volume=volume='{expr}':eval=frame")
+        else:
+            for s, e in spans:
+                chain.append(f"volume=volume={dl}:enable='between(t,{s:.3f},{e:.3f})'")
+            # 定点额外压低（「某句」那半秒）
+            for d in p["dips"]:
+                s, e = d["span"]
+                chain.append(f"volume=volume={db2lin(-d['extra'])}:"
+                             f"enable='between(t,{s:.3f},{e:.3f})'")
         f.append(f"[1:a]{','.join(chain)}[bgm0]")
         f.append(f"[vp][bgm0]amix=inputs=2:duration=first:normalize=0:"
                  f"dropout_transition=0[{out_label}]")
@@ -479,8 +502,10 @@ def describe(p: dict) -> list[str]:
          f"音量：{p['gain']:+.1f} dB 相对口播"]
     if p["placement"] == "full":
         n = len(p.get("duck_spans") or [])
+        r = float(p.get("duck_ramp") or 0.0)
         L.append(f"位置：**全程垫底**，人声出现时自动压低 {p['duck']:.0f} dB"
-                 + (f"（{n} 段包络）" if n else "（⚠️ 无时间码，未压低）"))
+                 + (f"（{n} 段包络" + (f"，{r:.2f}s 斜坡" if r > 0.01 else "，硬台阶")
+                    + "）" if n else "（⚠️ 无时间码，未压低）"))
     else:
         seg = []
         if p["head"]:
@@ -768,6 +793,41 @@ def selftest() -> int:
               f"Δ{d:+.1f}dB（区间前 {a:.1f} / 区间内 {b:.1f}）")
         check("包络区间结束后恢复原音量", abs(c - a) < 2.0,
               f"恢复后 {c:.1f} vs 之前 {a:.1f}")
+
+    # ⑦c ⭐ duck_ramp（压低斜坡）—— 2026-10-01 新增能力
+    #     新增点在于**把包络写成一个带引号的 volume 表达式**（`volume=volume='…':eval=frame`），
+    #     逗号留在单引号内 —— 这种写法必须**真跑一遍**才算证明（不能只看字符串）。
+    rampw = os.path.join(lib, "_斜坡验证.wav")
+    sil = os.path.join(lib, "_静音底.wav")
+    run([FF, "-hide_banner", "-loglevel", "error", "-y",
+         "-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo:d=10",
+         "-c:a", "pcm_s16le", sil])
+    pl6 = plan({"file": "钢琴_安静_60s.mp3", "placement": "full", "gain": -20,
+                "duck": 12, "duck_ramp": 0.5}, lines10, 10.0, bgm_dirs(base))
+    fc6 = build_filter(pl6, None, 10.0)
+    check("duck_ramp：合成为**单个** volume 表达式（不再逐段 enable）",
+          fc6.count("volume=volume='") == 1 and "enable='between" not in fc6,
+          fc6[:140])
+    check("duck_ramp：表达式含斜坡 clip 项", "clip((" in fc6, fc6[:140])
+    check("duck_ramp：默认（不写）仍是硬台阶", 
+          "enable='between(t," in build_filter(pp3, None, 91.8))
+    p6 = run([FF, "-hide_banner", "-loglevel", "error", "-y",
+              "-i", sil, "-stream_loop", "-1", "-i", bt,
+              "-filter_complex", fc6, "-map", "[aout]",
+              "-ar", "48000", "-ac", "2", "-c:a", "pcm_s16le", rampw])
+    check("duck_ramp 表达式 ffmpeg 实跑成功", p6.returncode == 0 and os.path.isfile(rampw),
+          (p6.stderr or "")[-200:])
+    if p6.returncode == 0:
+        def band3(path, s, t=0.5):
+            r = run([FF, "-hide_banner", "-ss", str(s), "-t", str(t), "-i", path,
+                     "-af", "highpass=f=80,lowpass=f=150,volumedetect",
+                     "-f", "null", "-"])
+            m = re.search(r"mean_volume:\s*(-?[\d.]+)", r.stderr or "")
+            return float(m.group(1)) if m else -120.0
+        # 压低区间是 1.92~7.08；ramp 0.5s → t=2.05 才刚下坡，t=3.0 已满压
+        edge, deep = band3(rampw, 2.05), band3(rampw, 3.0)
+        check("斜坡真的在渐变（坡上比满压处明显更响）", edge - deep > 6.0,
+              f"坡上 {edge:.1f} / 满压 {deep:.1f} → Δ{edge - deep:+.1f}dB")
 
     print("\n" + "=" * 68)
     print(f"结果：通过 {ok} / 失败 {fail}")

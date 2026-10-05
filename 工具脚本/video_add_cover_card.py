@@ -26,8 +26,16 @@ r"""
     PY="C:/Users/ZhuanZ/.workbuddy/binaries/python/envs/default/Scripts/python.exe"
     "$PY" 工具脚本/video_add_cover_card.py "成片_01.mp4"                  # 默认前置 2 秒
     "$PY" 工具脚本/video_add_cover_card.py "成片_01.mp4" --seconds 2.5
+    "$PY" 工具脚本/video_add_cover_card.py "成片_01.mp4" --at 1.2         # ⭐ 取"正片第 1.2 秒"那一帧当封面卡
     "$PY" 工具脚本/video_add_cover_card.py "成片_01.mp4" --inplace        # 跑完自动改名覆盖
     "$PY" 工具脚本/video_add_cover_card.py "成片_01.mp4" --dry-run        # 只看命令
+
+⭐⭐ 2026-10-02 加的 `--at`（封面卡取哪一帧）：
+    原来写死"克隆第 1 帧"，而**第 1 帧常常正好是闭眼／表情没到位的那一瞬**
+    （05 实测：前置的 2 秒静止画面里人闭着眼，很扎眼）。
+    `--at T` 改成「抽第 T 秒那一帧 → 循环 N 秒 → 与正片 concat」（画面/时长与老做法等价）。
+    ⭐ **T 的选法**：要保持"封面卡上有开头钩子大字"，就取 **0 ~ 钩子时长（本系列 2s）之间**的一帧（如 1.2s）；
+    想封面卡干净无字，则取钩子结束之后（如 2.4s）。`--at 0`（默认）＝ 老行为。
 
 ⭐⭐ 2026-09-28 加的两件事：
   ① **防重入**：`tpad` **不是幂等的** —— 对已加过封面卡的成片再跑一次，会在前面**再叠 2 秒**（变 4 秒）。
@@ -84,28 +92,133 @@ def _video_bitrate(ffmpeg: str, src: str) -> str:
     return ""
 
 
+def _probe_path(ffmpeg: str) -> str:
+    ffprobe = os.path.join(os.path.dirname(ffmpeg), "ffprobe")
+    if os.name == "nt":
+        ffprobe += ".exe"
+    if not os.path.isfile(ffprobe):
+        ffprobe = shutil.which("ffprobe") or ""
+    return ffprobe
+
+
+def _duration(ffmpeg: str, path: str) -> float:
+    """成片时长（秒）；探测失败返回 0。用于判断"当前成片到底加没加封面卡"。"""
+    ffprobe = _probe_path(ffmpeg)
+    if not ffprobe:
+        return 0.0
+    try:
+        p = subprocess.run(
+            [ffprobe, "-v", "error", "-show_entries", "format=duration",
+             "-of", "default=nw=1:nk=1", path],
+            capture_output=True, text=True, timeout=120)
+        return float((p.stdout or "").strip().splitlines()[0])
+    except Exception:
+        return 0.0
+
+
 def _cover_mark_path(video: str) -> str:
     return video + ".cover.json"
 
 
-def _existing_cover_seconds(src: str):
+def _video_fps(ffmpeg: str, src: str) -> str:
+    """探测输入帧率 —— 「抽某一帧当封面卡」那条路径要用它（抽帧图与正片同帧率才能 concat）。"""
+    ffprobe = os.path.join(os.path.dirname(ffmpeg), "ffprobe")
+    if os.name == "nt":
+        ffprobe += ".exe"
+    if not os.path.isfile(ffprobe):
+        ffprobe = shutil.which("ffprobe") or ""
+    if not ffprobe:
+        return "30"
+    try:
+        p = subprocess.run(
+            [ffprobe, "-v", "error", "-select_streams", "v:0",
+             "-show_entries", "stream=r_frame_rate",
+             "-of", "default=nw=1:nk=1", src],
+            capture_output=True, text=True, timeout=120)
+        s = (p.stdout or "").strip().splitlines()
+        s = s[0].strip() if s else ""
+        if "/" in s:
+            num, den = s.split("/")[:2]
+            if den.strip() not in ("", "0"):
+                return "%.6g" % (float(num) / float(den))
+        if s:
+            return s
+    except Exception:
+        pass
+    return "30"
+
+
+def _build_args_pick_frame(ffmpeg: str, src: str, at: float, seconds: float,
+                           bitrate: str, dst: str):
+    """`--at T`（T > 0）走这条：**从成片第 T 秒抽一帧**当静止封面卡。
+
+    为什么不用 `tpad`：`tpad=start_mode=clone` 只会克隆**第 1 帧**，
+    而第 1 帧常常正好是"闭眼／表情没到位"的那一瞬（2026-10-02，05 实测踩到）。
+    → 改为「抽出第 T 秒那一帧 → 循环 N 秒 → 与正片 concat」，音轨用 `adelay` 后移 N 秒。
+    ✅ 与 `tpad` 路径**画面/时长等价**，只是把"克隆第 1 帧"换成"克隆第 T 秒那一帧"。
+
+    ⚠️ 返回 `(args, tmpdir)` —— **抽出的那帧要等 ffmpeg 跑完才能删**（调用方负责）。
+    """
+    import tempfile
+    fps = _video_fps(ffmpeg, src)
+    tmp = tempfile.mkdtemp(prefix="wb_coverframe_")
+    png = os.path.join(tmp, "_cover_frame.png")
+    p = subprocess.run(
+        [ffmpeg, "-hide_banner", "-y", "-ss", "%.6g" % at, "-i", src,
+         "-frames:v", "1", png],
+        capture_output=True, text=True, encoding="utf-8", errors="replace")
+    if p.returncode != 0 or not os.path.isfile(png):
+        shutil.rmtree(tmp, ignore_errors=True)
+        raise SystemExit("⛔ 抽帧失败（--at %.3gs）：\n%s" % (at, (p.stderr or "")[-800:]))
+    ms = int(round(seconds * 1000))
+    fc = (
+        "[0:v]scale=1080:1920:force_original_aspect_ratio=decrease,"
+        "pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p[h];"
+        "[1:v]setsar=1,format=yuv420p[m];"
+        "[h][m]concat=n=2:v=1:a=0[v];"
+        "[1:a]adelay=%d|%d[a]" % (ms, ms)
+    )
+    args = [ffmpeg, "-hide_banner", "-y",
+            "-loop", "1", "-framerate", fps, "-t", "%.6g" % seconds, "-i", png,
+            "-i", src,
+            "-filter_complex", fc,
+            "-map", "[v]", "-map", "[a]",
+            "-r", fps,
+            "-c:v", "libx264", "-preset", "veryfast", "-b:v", bitrate,
+            "-c:a", "aac", "-b:a", "192k", "-pix_fmt", "yuv420p",
+            "-movflags", "+faststart", dst]
+    return args, tmp
+
+
+def _existing_cover_seconds(src: str, ffmpeg: str = ""):
     """探测"这个成片是不是已经加过封面卡"→ (秒数 or None, 依据说明)。
 
     两条证据（任一命中即判定"已加过"）：
       ① 成片旁的标记文件 `<成片>.cover.json`（本脚本自己写的，最可信）；
-      ② `_旧版本/<名>_无封面卡.mp4` 存在（`--inplace` 的备份；⚠️ 该目录有 3 天自动清理，可能已不在）。
+      ② `_旧版本/<名>_无封面卡.mp4` 存在 **且当前成片比它长**（`--inplace` 的备份；
+         ⚠️ 该目录有 3 天自动清理，可能已不在）。
+
+    ⭐ **2026-10-02 修**：证据 ② 原来**只看"备份存在"**就判定已加过 ——
+    可"**从备份重做**"（正是本脚本自己推荐的做法）时备份一定在，于是**必然误拦自己**。
+    现在改成**比时长**：当前成片比备份长 ≈ N 秒才算"已加过"；**与备份一样长 → 未加过，放行**。
     """
     mk = _cover_mark_path(src)
     if os.path.exists(mk):
         try:
-            with open(mk, encoding="utf-8") as f:
-                return json.load(f).get("seconds"), f"标记文件 {os.path.basename(mk)}"
+            return json.load(f).get("seconds"), f"标记文件 {os.path.basename(mk)}"
         except Exception:
             return None, "标记文件解析失败"
     bak = os.path.join(os.path.dirname(src), "_旧版本",
                        os.path.splitext(os.path.basename(src))[0] + "_无封面卡.mp4")
     if os.path.exists(bak):
-        return None, f"备份存在（{os.path.relpath(bak, os.path.dirname(src))}）"
+        rel = os.path.relpath(bak, os.path.dirname(src))
+        if not ffmpeg:
+            return None, f"备份存在（{rel}）"
+        d_cur, d_bak = _duration(ffmpeg, src), _duration(ffmpeg, bak)
+        diff = d_cur - d_bak
+        if d_cur and d_bak and diff > 0.5:
+            return diff, f"比备份长 {diff:.2f}s（备份：{rel}）"
+        return None, ""          # 与备份同长 → 当前就是"未加封面卡"状态
     return None, ""
 
 
@@ -128,6 +241,10 @@ def main():
     ap.add_argument("--bitrate", default=None,
                     help="视频码率；不指定则**沿用输入成片的码率**（避免重编码降码）")
     ap.add_argument("--inplace", action="store_true", help="跑完自动改名覆盖原文件")
+    ap.add_argument("--at", type=float, default=0.0,
+                    help="封面卡取**成片第几秒那一帧**（默认 0 ＝ 第 1 帧）。"
+                         "第 1 帧闭眼/表情没到位时用它，如 --at 1.2"
+                         "（想在封面卡上保留开头钩子大字，就取 0~钩子时长之间的一帧）")
     ap.add_argument("--force", action="store_true",
                     help="已知加过封面卡仍要强行再叠（⛔ 会把 2 秒变 4 秒）")
     ap.add_argument("--dry-run", action="store_true")
@@ -138,8 +255,9 @@ def main():
         raise SystemExit(f"❌ 找不到文件：{src}")
 
     # ⭐ 防重入（2026-09-28 加）：tpad 不幂等，重复跑会把封面卡叠成 4 秒
+    ffmpeg = _ffmpeg()
     if not a.force:
-        sec, why = _existing_cover_seconds(src)
+        sec, why = _existing_cover_seconds(src, ffmpeg)
         if why:
             shown = f"{sec:g} 秒" if isinstance(sec, (int, float)) else "若干秒"
             raise SystemExit(
@@ -150,7 +268,6 @@ def main():
     ms = int(round(a.seconds * 1000))
     dst = os.path.splitext(src)[0] + "_封面卡.mp4"
 
-    ffmpeg = _ffmpeg()
     bitrate = a.bitrate or _video_bitrate(ffmpeg, src) or "10M"
 
     args = [
@@ -162,6 +279,12 @@ def main():
         "-c:a", "aac", "-b:a", "192k",
         dst,
     ]
+    tmpdir = None
+    if a.at and a.at > 0.0001:
+        # ⭐ 2026-10-02 加：第 1 帧闭眼时，改成"抽第 T 秒那一帧"当封面卡
+        args, tmpdir = _build_args_pick_frame(ffmpeg, src, a.at, a.seconds,
+                                              bitrate, dst)
+        print("封面卡取帧：成片第 %.3g 秒那一帧（不是第 1 帧）" % a.at)
     print("前置封面卡：%.2fs" % a.seconds)
     print("视频码率：%s%s" % (bitrate, "" if a.bitrate else "（沿用输入）"))
     print("输出：", dst)
@@ -171,6 +294,8 @@ def main():
 
     p = subprocess.run(args, capture_output=True, text=True,
                        encoding="utf-8", errors="replace")
+    if tmpdir:
+        shutil.rmtree(tmpdir, ignore_errors=True)
     if p.returncode != 0:
         print("!! 失败，最后 15 行：")
         for line in (p.stderr or "").splitlines()[-15:]:

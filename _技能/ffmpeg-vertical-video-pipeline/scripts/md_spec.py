@@ -343,17 +343,53 @@ def parse_marks(block: str):
 
 
 def parse_cover(block: str):
-    """封面 → {text}"""
+    """封面 → `{text, at?, anchor?}`
+
+    · `- 大字：**不是没人管，是各拉各的车**`   → `text`（必填）
+    · `- 取帧：1.2`        → `at`（**封面取成片第几秒那一帧**）
+    · `- 取帧：结尾`       → `at = "end"`（取片尾前 2 秒）
+    · `- 取帧：「第一句话」` → `anchor`（按锚点定位到那句所在时刻）
+
+    ⭐ **为什么要「取帧」**（2026-10-02 加，05 实测踩到）：
+       封面**默认取成片第 0 帧**，而第 0 帧常常正好是**闭眼／表情没到位**的那一瞬
+       （口播刚要开口）。→ 写 `取帧：1.2` 就能避开（那一帧正好睁着眼）。
+    ⚠️ **不写 `取帧` 时返回的 dict 与旧版完全一致**（只有 `text`），老文案行为不变。
+    """
+    if not block or not block.strip():
+        return None
+    res = None
     for ln in block.split("\n"):
-        m = re.search(r"\*\*(.+?)\*\*", ln)
-        if m:
-            t = m.group(1).strip()
-            if t:
-                return {"text": t}
-        a = _anchors(ln)
-        if a:
-            return {"text": a[0]}
-    return None
+        if res is None:
+            m = re.search(r"\*\*(.+?)\*\*", ln)
+            if m and m.group(1).strip():
+                res = {"text": m.group(1).strip()}
+                continue
+            a = _anchors(ln)
+            if a:
+                res = {"text": a[0]}
+                continue
+            continue
+        m2 = re.search(r"取帧\s*[:：]\s*(.+)", ln)
+        if not m2:
+            continue
+        raw = m2.group(1).strip()
+        # ⭐ 行内可能带说明（`取帧：1.2 ← ⭐ 2026-10-02 加…`）——
+        #    ⛔ 不能把整行都吞掉当锚点（会变成 anchor → 定位失败/崩），先取「值」再截断说明。
+        mq = re.match(r"[「『\"'“”](.+?)[」』\"'“”]", raw)
+        if mq:
+            v = mq.group(1).strip()
+        else:
+            v = re.split(r"\s*(?:←|→|#|（|\(|\||——)", raw)[0].strip()
+            v = v.strip("「」\"'“”‘’ 　*")
+        if not v:
+            continue
+        if re.fullmatch(r"\d+(?:\.\d+)?", v):
+            res["at"] = float(v)
+        elif v in ("结尾", "片尾", "末尾", "end"):
+            res["at"] = "end"
+        else:
+            res["anchor"] = v
+    return res
 
 
 def parse_hook(block: str):
@@ -494,6 +530,7 @@ def parse_bgm(block: str):
       - 位置：头尾 / 全程            → placement
       - 音量：比口播低约 22dB / -22  → gain（自动处理正负）
       - 压低：12                     → duck（仅「全程」用）
+      - 斜坡：0.4 秒                 → duck_ramp（压低区间做渐变；不写＝硬台阶）
       - 定点压低：「某句」再压 6dB、0.5 秒 → dips
     """
     if not block or not block.strip():
@@ -563,6 +600,12 @@ def parse_bgm(block: str):
     d = num(duck_v)
     if d is not None:
         cfg["duck"] = abs(d)
+
+    # ⭐ 压低斜坡：`斜坡：0.4 秒`（0 = 硬台阶）。上台阶在听感上是"背景音突然变强/变小"
+    ramp_v = get("斜坡", "渐变", "过渡")
+    r = num(ramp_v)
+    if ramp_v and r is not None:
+        cfg["duck_ramp"] = abs(r)
 
     if dips_v:
         dips = []
