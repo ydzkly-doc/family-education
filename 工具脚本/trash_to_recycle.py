@@ -160,12 +160,31 @@ def cmd_trash(args):
         except Exception as e:  # noqa
             err = e
     else:
+        per_file_err = []
         try:
             from send2trash.win.modern import send2trash as st_modern
             print("  使用 IFileOperation（原生 Unicode）")
+            # ⚠️⚠️ **必须逐个 try/except**（2026-10-05 修）：
+            #   `send2trash.win.modern` 会在**成功移走之后**抛
+            #   `FileNotFoundError [WinError -2147024894]`（**假报错**，文件其实已经进回收站了）。
+            #   原来是在循环里裸调用 → 第一个文件"成功但抛异常" → **整个循环中断**，
+            #   后面几十个文件**一个都不动**（而且只报一条含糊的异常，看起来像"偶发"）。
+            #   实测：一次给 46 个文件，只有第 1 个真的进了回收站。
             for t in targets:
-                st_modern(t)
-            print("  调用完成")
+                try:
+                    st_modern(t)
+                except Exception as e:  # noqa
+                    # 逐文件记下来，**但绝不中断**——是不是真的成功，交给【4】按回收站条目判
+                    per_file_err.append((t, "%s: %s" % (type(e).__name__, e)))
+            if per_file_err:
+                print("  ⚠️ 有 %d 个文件在调用时抛了异常（可能是**成功后的假报错**，"
+                      "以下按回收站条目为准）：" % len(per_file_err))
+                for t, msg in per_file_err[:5]:
+                    print("     · %s → %s" % (os.path.basename(t), msg))
+                if len(per_file_err) > 5:
+                    print("     …另有 %d 个" % (len(per_file_err) - 5))
+            else:
+                print("  调用完成（无异常）")
         except Exception as e:
             err = e
             print(f"  ⚠️ 抛出异常：{type(e).__name__}: {e}")

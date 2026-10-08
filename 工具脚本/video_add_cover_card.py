@@ -26,7 +26,8 @@ r"""
     PY="C:/Users/ZhuanZ/.workbuddy/binaries/python/envs/default/Scripts/python.exe"
     "$PY" 工具脚本/video_add_cover_card.py "成片_01.mp4"                  # 默认前置 2 秒
     "$PY" 工具脚本/video_add_cover_card.py "成片_01.mp4" --seconds 2.5
-    "$PY" 工具脚本/video_add_cover_card.py "成片_01.mp4" --at 1.2         # ⭐ 取"正片第 1.2 秒"那一帧当封面卡
+    ⭐ **推荐**：--cover-image "_成品/_过程文件/cover.png"                 # 用成品封面图当卡（与后台封面同图）
+    "$PY" 工具脚本/video_add_cover_card.py "成片_01.mp4" --at 1.2         # 抽"正片第 1.2 秒"那帧（⚠️ 裸帧，无大字）
     "$PY" 工具脚本/video_add_cover_card.py "成片_01.mp4" --inplace        # 跑完自动改名覆盖
     "$PY" 工具脚本/video_add_cover_card.py "成片_01.mp4" --dry-run        # 只看命令
 
@@ -34,8 +35,20 @@ r"""
     原来写死"克隆第 1 帧"，而**第 1 帧常常正好是闭眼／表情没到位的那一瞬**
     （05 实测：前置的 2 秒静止画面里人闭着眼，很扎眼）。
     `--at T` 改成「抽第 T 秒那一帧 → 循环 N 秒 → 与正片 concat」（画面/时长与老做法等价）。
-    ⭐ **T 的选法**：要保持"封面卡上有开头钩子大字"，就取 **0 ~ 钩子时长（本系列 2s）之间**的一帧（如 1.2s）；
-    想封面卡干净无字，则取钩子结束之后（如 2.4s）。`--at 0`（默认）＝ 老行为。
+
+⛔⛔ **2026-10-05 更正（上一天这里写的结论是错的，勿再沿用）**：
+    ① **默认路径（`--at 0`）＝ `tpad=start_mode=clone` 克隆「正片第 1 帧」**。
+       它**不读 `cover.png`** —— `cover.png` 是管道 `make_cover()` 生成的**后台封面图**，
+       **根本不进成片**。→ 所以"改 MD 里的「取帧」"**只改后台封面，改不了成片开头那 2 秒**。
+       若正片第 1 帧恰好闭眼，成片开头就是闭眼（**07 实测踩到**，而 01–06 只是恰好睁眼）。
+    ② **`--at T>0` 抽的是成片里的裸帧，不带封面大字**：它假定"正片里钩子还亮着"，
+       但**本系列合成一律 `--set hook.hold=0.1`** → 正片里任何 T>0.1 的帧都没大字
+       → `--at 2.5` 抽到的是一张**裸脸**（03 实测踩到：成片前 2 秒没有大字）。
+
+    ✅ **正确做法（推荐）**：`--cover-image <_过程文件/cover.png>`
+       —— 直接拿那张**成品图**（正确取帧 ＋ 封面大字）当封面卡，
+       **成片开头与后台封面就是同一张图**，取帧/眼睛/大字一次解决。
+       07 起按这条路做；01–06 未追溯（它们正片第 1 帧恰好睁眼，且与封面图差异很小）。
 
 ⭐⭐ 2026-09-28 加的两件事：
   ① **防重入**：`tpad` **不是幂等的** —— 对已加过封面卡的成片再跑一次，会在前面**再叠 2 秒**（变 4 秒）。
@@ -149,27 +162,38 @@ def _video_fps(ffmpeg: str, src: str) -> str:
 
 
 def _build_args_pick_frame(ffmpeg: str, src: str, at: float, seconds: float,
-                           bitrate: str, dst: str):
-    """`--at T`（T > 0）走这条：**从成片第 T 秒抽一帧**当静止封面卡。
+                           bitrate: str, dst: str, src_png: str = None):
+    """静止封面卡的**通用**构造：把一张 png 铺 `seconds` 秒 → 与正片 concat。
 
-    为什么不用 `tpad`：`tpad=start_mode=clone` 只会克隆**第 1 帧**，
-    而第 1 帧常常正好是"闭眼／表情没到位"的那一瞬（2026-10-02，05 实测踩到）。
-    → 改为「抽出第 T 秒那一帧 → 循环 N 秒 → 与正片 concat」，音轨用 `adelay` 后移 N 秒。
-    ✅ 与 `tpad` 路径**画面/时长等价**，只是把"克隆第 1 帧"换成"克隆第 T 秒那一帧"。
+    两种入口：
+      · `src_png` 给了 → **直接用这张图**（推荐：传管道的 `_过程文件/cover.png`，
+        它就是"正确取帧 + 封面大字"的成品 → **成片开头与后台封面是同一张图**）；
+      · 没给 → 从成片**第 `at` 秒**抽一帧当底图（⚠️ 抽的是**裸帧，不含封面大字**，
+        见 main 里的警告）。
 
-    ⚠️ 返回 `(args, tmpdir)` —— **抽出的那帧要等 ffmpeg 跑完才能删**（调用方负责）。
+    ⭐ 为什么不用 `tpad`：`tpad=start_mode=clone` 只会克隆**第 1 帧**，
+    而第 1 帧常常正好是"闭眼／表情没到位"的那一瞬（2026-10-02 在 05、2026-10-05 在 07 实测踩到）。
+    ✅ 与 `tpad` 路径**画面/时长等价**，只是把"克隆第 1 帧"换成"指定的那一帧"。
+
+    ⚠️ 返回 `(args, tmpdir)` —— 抽出的那帧要等 ffmpeg 跑完才能删（调用方负责）。
     """
     import tempfile
     fps = _video_fps(ffmpeg, src)
     tmp = tempfile.mkdtemp(prefix="wb_coverframe_")
     png = os.path.join(tmp, "_cover_frame.png")
-    p = subprocess.run(
-        [ffmpeg, "-hide_banner", "-y", "-ss", "%.6g" % at, "-i", src,
-         "-frames:v", "1", png],
-        capture_output=True, text=True, encoding="utf-8", errors="replace")
-    if p.returncode != 0 or not os.path.isfile(png):
-        shutil.rmtree(tmp, ignore_errors=True)
-        raise SystemExit("⛔ 抽帧失败（--at %.3gs）：\n%s" % (at, (p.stderr or "")[-800:]))
+    if src_png:
+        if not os.path.isfile(src_png):
+            shutil.rmtree(tmp, ignore_errors=True)
+            raise SystemExit("⛔ --cover-image 指定的文件不存在：%s" % src_png)
+        shutil.copyfile(src_png, png)
+    else:
+        p = subprocess.run(
+            [ffmpeg, "-hide_banner", "-y", "-ss", "%.6g" % at, "-i", src,
+             "-frames:v", "1", png],
+            capture_output=True, text=True, encoding="utf-8", errors="replace")
+        if p.returncode != 0 or not os.path.isfile(png):
+            shutil.rmtree(tmp, ignore_errors=True)
+            raise SystemExit("⛔ 抽帧失败（--at %.3gs）：\n%s" % (at, (p.stderr or "")[-800:]))
     ms = int(round(seconds * 1000))
     fc = (
         "[0:v]scale=1080:1920:force_original_aspect_ratio=decrease,"
@@ -244,7 +268,11 @@ def main():
     ap.add_argument("--at", type=float, default=0.0,
                     help="封面卡取**成片第几秒那一帧**（默认 0 ＝ 第 1 帧）。"
                          "第 1 帧闭眼/表情没到位时用它，如 --at 1.2"
-                         "（想在封面卡上保留开头钩子大字，就取 0~钩子时长之间的一帧）")
+                         "（⚠️ 这条路抽的是**裸帧**，不带封面大字）")
+    ap.add_argument("--cover-image", default=None,
+                    help="⭐ 推荐：直接拿这张图当封面卡（传管道的 `_过程文件/cover.png`）。"
+                         "它就是\"正确取帧 + 封面大字\"的成品 → 成片开头与后台封面完全一致；"
+                         "用它就不必纠结 `--at`（`--at` 只在你没有 cover.png 时才用）")
     ap.add_argument("--force", action="store_true",
                     help="已知加过封面卡仍要强行再叠（⛔ 会把 2 秒变 4 秒）")
     ap.add_argument("--dry-run", action="store_true")
@@ -280,12 +308,26 @@ def main():
         dst,
     ]
     tmpdir = None
-    if a.at and a.at > 0.0001:
+    if a.cover_image:
+        # ⭐ 推荐路径（2026-10-05 加）：直接拿 cover.png 当封面卡
+        #   —— 成片开头那 2 秒与后台封面是**同一张图**，取帧/眼睛问题一次解决。
+        args, tmpdir = _build_args_pick_frame(ffmpeg, src, 0.0, a.seconds,
+                                              bitrate, dst, src_png=a.cover_image)
+        print("封面卡底图：%s（与后台封面同一张图）" % os.path.basename(a.cover_image))
+    elif a.at and a.at > 0.0001:
         # ⭐ 2026-10-02 加：第 1 帧闭眼时，改成"抽第 T 秒那一帧"当封面卡
         args, tmpdir = _build_args_pick_frame(ffmpeg, src, a.at, a.seconds,
                                               bitrate, dst)
         print("封面卡取帧：成片第 %.3g 秒那一帧（不是第 1 帧）" % a.at)
+        print("⚠️⚠️ 这条路抽的是**成片里的裸帧**，**不含封面大字**！")
+        print("     本系列合成用 hook.hold=0.1（钩子只亮 0.1s）→ 正片里 T>0.1 的帧都没大字。")
+        print("     ✅ 正确做法：加 `--cover-image <_过程文件/cover.png>`（推荐），")
+        print("        或先用 make_cover(..., at=T) 重做 cover.png、再用 --at 0。")
     print("前置封面卡：%.2fs" % a.seconds)
+    if not (a.cover_image or (a.at and a.at > 0.0001)):
+        print("封面卡底图：**正片第 1 帧**（tpad 克隆）")
+        print("   ⚠️ 它**不读** cover.png —— 后台封面图与成片开头可能不是同一帧；")
+        print("      若正片第 1 帧闭眼/表情差，请改用 `--cover-image <_过程文件/cover.png>`。")
     print("视频码率：%s%s" % (bitrate, "" if a.bitrate else "（沿用输入）"))
     print("输出：", dst)
     if a.dry_run:

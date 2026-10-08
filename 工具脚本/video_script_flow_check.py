@@ -40,6 +40,16 @@ def clean(s):
     return re.sub(r"[\s，。、；：？！,;:\.\?\!\"'\u201c\u201d\u300c\u300d\u2014\u2018\u2019()（）]", "", s)
 
 
+def seq_of(dirname):
+    """条号：优先取目录名开头的数字（手机方案是 `02_…`）；
+    旧命名 `…_发布第N条_…` 也认。取不到才回 '??'。"""
+    m = re.match(r"(\d+)[_\-]", dirname)
+    if m:
+        return m.group(1)
+    m = re.search(r"发布第(\d+)条", dirname)
+    return m.group(1) if m else "??"
+
+
 def after(lines, marker, maxlines=2):
     """取标记之后最多 maxlines 行（过渡句常写成两行，只取一行会漏判咬合）。"""
     for i, l in enumerate(lines):
@@ -74,8 +84,8 @@ def main():
     print(f"=== 口播通顺性体检（{len(items)} 条）===")
 
     for name, t in items:
-        seq = re.search(r"发布第(\d+)条", name)
-        tag = f"{seq.group(1) if seq else '??'} {name[:14]}"
+        seq = seq_of(name)
+        tag = f"{seq} {name[:14]}"
         probs = []
         hints = []
 
@@ -137,10 +147,10 @@ def main():
         if not core or not down:
             continue
         if core in clean(down):
-            print(f"  ✅ {idx + 1:02d} ← {idx:02d}：逐字咬合（{core[:20]}…）")
+            print(f"  ✅ {seq_of(name)} ← {seq_of(pname)}：逐字咬合（{core[:20]}…）")
         else:
             bad += 1
-            print(f"  ❌ {idx + 1:02d} ← {idx:02d}：接不上")
+            print(f"  ❌ {seq_of(name)} ← {seq_of(pname)}：接不上")
             print(f"      本条承上：{up}")
             print(f"      上条过渡：{down}")
 
