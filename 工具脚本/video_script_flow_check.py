@@ -4,8 +4,13 @@
 针对的问题（用户原话：「这是口播文案，通顺、语义表达准确是最重要的」）：
   ① 悬空行    —— 口播区某行以「，、；：」结尾，提词器会把人名与台词断在两行；
   ② 引号      —— 口播区/提词器区混入中文引号，或 ASCII 引号不成对（出镜者看稿会误读）；
-  ③ 咬合      —— 本条承上句与上一条过渡句没有逐字回扣（改了上一条忘了下一条）；
+  ③ 编号式指代 —— 全片出现「上一条／下一条／上一集／下一集」（**2026-10-08 口径变更**：
+                  默认走"思绪自然承接"，四处一起清——口播／提词器／发布方案／系列方案）；
   ④ 短句串    —— 一段里连续 ≥3 行都是短句（对话/清单），提示人工核「这句是谁说的」。
+
+⚠️ **③ 于 2026-10-08 换代**：旧版查的是"本条承上句是否逐字回扣上一条过渡句"（咬合链）。
+   新口径**取消了过渡句与承上句**，改查"有没有出现编号式指代"。旧口径只在用户当次明确要
+   "连续剧式强咬合"时才需要（那时另用 `--couple` 手动核，本脚本不再默认查）。
 
 用法：video_script_flow_check.py <系列目录>
 退出码：有 FAIL 则 1。
@@ -34,6 +39,15 @@ def prompt_block(t):
     if "## 二、提词器文案" not in t:
         return ""
     return t.split("## 二、提词器文案", 1)[1].split("\n## ", 1)[0]
+
+
+def sec_block(t, keyword):
+    """按**关键词**取二级节正文（编号任意——2026-10-03 起编号会变）。"""
+    for part in t.split("\n## ")[1:]:
+        head = part.split("\n", 1)[0]
+        if keyword in head:
+            return part
+    return ""
 
 
 def clean(s):
@@ -89,13 +103,13 @@ def main():
         probs = []
         hints = []
 
-        # ① 悬空行
-        for i, ln in enumerate(oral_block(t).split("\n"), 1):
-            s = ln.strip()
-            if not s or s.startswith("#") or s.startswith("【"):
-                continue
-            if s[-1] in P_SUSPEND:
-                probs.append(f"悬空行（以「{s[-1]}」结尾）：{s[:26]}")
+        # ① 悬空行：只查口播区“最后一个内容行”——多行句的中间行以逗号结尾是正常的
+        oral_lines = [ln.strip() for ln in oral_block(t).split("\n")
+                      if ln.strip() and not ln.strip().startswith("#")
+                      and not ln.strip().startswith("【")]
+        if oral_lines and oral_lines[-1][-1] in P_SUSPEND:
+            s = oral_lines[-1]
+            probs.append(f"段尾悬空（以「{s[-1]}」结尾）：{s[:26]}")
 
         # ② 引号
         for label, blk in (("口播区", oral_block(t)), ("提词器区", prompt_block(t))):
@@ -131,28 +145,41 @@ def main():
             for h in hints:
                 print(f"   · {h}")
 
-    # ④ 咬合（跨条）
-    print("\n=== 承上启下咬合 ===")
-    for idx in range(1, len(items)):
-        pname, pt = items[idx - 1]
-        name, t = items[idx]
-        up = after(oral_block(t).split("\n"), "【开场·接上一条】")
-        down = after(oral_block(pt).split("\n"), "【合集·过渡】")
-        # ⚠️ 承上首句的句末标点**可能是 ？**（问句式的承上，2026-10-05 起多了）
-        #    —— 只按「。」切会把后面两句一起吃进来，咬合永远判不过（工具 bug，已修）
-        #    ⚠️ 正则必须带**捕获组**，否则切出来的不是标点、而是「标点之后的所有内容」
-        _m = re.split(r"([。？！])", up, maxsplit=1)
-        up_first = _m[0] + (_m[1] if len(_m) > 1 else "。")
-        core = clean(re.sub(r"^上一条(我)?说[，,]?", "", up_first))
-        if not core or not down:
-            continue
-        if core in clean(down):
-            print(f"  ✅ {seq_of(name)} ← {seq_of(pname)}：逐字咬合（{core[:20]}…）")
-        else:
+    # ④ 承接口径（2026-10-08 新规则：思绪自然承接，不写编号式指代）
+    print("\n=== 承接口径（思绪自然承接）===")
+    BANNED = ("上一条", "下一条", "上一集", "下一集")
+    # 只有“指代系列条目”的用法才算（后接 我/说/讲/谈/提到 等）；
+    # 描述产品机制的“下一条自动接上／再看下一条”不算。
+    REF = re.compile(r"(上一条|下一条|上一集|下一集)\s*(我|说|讲|谈|提到|介绍|的是)")
+    hit_any = False
+    for name, t in items:
+        seq = seq_of(name)
+        hits = []
+        for label, blk in (
+            ("口播区", oral_block(t)),
+            ("提词器区", prompt_block(t)),
+            ("发布方案", sec_block(t, "发布方案")),
+            ("系列方案", sec_block(t, "系列方案")),
+        ):
+            for ln in blk.split("\n"):
+                s = ln.strip().lstrip("> ").strip()
+                # 说明性文字（带 ⛔ 的规矩行）不算——台词才要清
+                if not s or "⛔" in s:
+                    continue
+                # 元说明／否定语境也不算（如“本条不设下一条过渡”“不写上一条”）
+                if re.search(r"不设|不写|不出现|不许|本条不|也不凭|不用再", s):
+                    continue
+                m = REF.search(s)
+                if m:
+                    hits.append((label, m.group(1), s[:34]))
+        if hits:
             bad += 1
-            print(f"  ❌ {seq_of(name)} ← {seq_of(pname)}：接不上")
-            print(f"      本条承上：{up}")
-            print(f"      上条过渡：{down}")
+            hit_any = True
+            print(f"\n⚠️ {seq} {name[:14]}")
+            for label, b, s in hits:
+                print(f"   · [{label}] 出现「{b}」：{s}")
+    if not hit_any:
+        print("  ✅ 全部干净（没有编号式指代）")
 
     print(f"\n{'❌ 有需人工核的地方' if bad else '✅ 全部通过'}")
     return 1 if bad else 0
