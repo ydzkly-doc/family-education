@@ -1,0 +1,43 @@
+{
+  "name": "video-script-studio",
+  "version": "1.0.0",
+  "description": "Turns a WeChat official-account article into a ready-to-shoot, real-person spoken script for WeChat Channels (视频号), with per-article shooting tips, layered key-quote cues, title/cover copy and hashtags. Focused on family-education content.",
+  "author": {
+    "name": "ydzkly",
+    "email": ""
+  },
+  "agents": ["./agents/video-script-studio.md"],
+
+  "expertType": "agent",
+  "agentName": "video-script-studio",
+
+  "displayName": {
+    "en": "Video Script Studio",
+    "zh": "视频号口播文案工作室"
+  },
+  "profession": {
+    "en": "Short-Video Scriptwriter",
+    "zh": "视频号口播文案策划"
+  },
+  "displayDescription": {
+    "en": "Turns your WeChat articles into real-person spoken scripts for WeChat Channels, with shooting tips, key-quote cues and publish copy.",
+    "zh": "把公众号文章改编成真人出镜的视频号口播文案，含拍摄建议、金句提示、标题封面与话题标签，拿来即拍。"
+  },
+  "avatar": "avatars/expert.png",
+  "categoryId": "06-ContentCreative",
+  "defaultInitPrompt": {
+    "zh": "把这篇公众号文章改成一条真人出镜的视频号口播文案，含拍摄建议、金句提示、标题封面和话题标签。",
+    "en": "Turn this WeChat article into a real-person spoken script for WeChat Channels, with shooting tips, key-quote cues and publish copy."
+  },
+  "plugin": "video-script-studio",
+  "tags": [
+    { "en": "Video Script", "zh": "视频口播文案" },
+    { "en": "WeChat Channels", "zh": "视频号运营" },
+    { "en": "Family Education", "zh": "家庭教育内容" }
+  ],
+  "quickPrompts": [
+    { "en": "Turn this WeChat article into a real-person spoken script for WeChat Channels, with shooting tips, key-quote cues, title/cover copy and hashtags.", "zh": "把这篇公众号文章改成一条真人出镜的视频号口播文案，含拍摄建议、金句提示、标题封面和话题标签。" },
+    { "en": "Here's my article. First judge the best format and length for this video, then write the spoken script.", "zh": "这是我的文章，先判断这条视频适合的形态和时长，再写口播稿。" },
+    { "en": "Give me the layered key quotes for this parenting video — one main quote for the big-text card plus supporting ones.", "zh": "帮我给这条育儿视频做金句分层：一句主打做大字卡，再加几句次级金句。" }
+  ]
+}

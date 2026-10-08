@@ -1,0 +1,62 @@
+{
+  "name": "wechat-article-studio",
+  "version": "1.0.0",
+  "description": "Turn raw reading notes / transcripts / outlines into a ready-to-publish WeChat Official Account article package: serialized articles, copy-ready styled HTML, shareable cards, Word docs (on request), a publishing playbook, and per-article publish kits (field sheet + body HTML + cover + checklist) for semi-automatic posting without API access.",
+  "author": {
+    "name": "ydzkly",
+    "email": ""
+  },
+  "agents": [
+    "./agents/wechat-article-studio.md"
+  ],
+  "expertType": "agent",
+  "agentName": "wechat-article-studio",
+  "displayName": {
+    "en": "WeChat Article Studio",
+    "zh": "公众号爆款工坊"
+  },
+  "profession": {
+    "en": "WeChat Content Editor",
+    "zh": "公众号内容编辑"
+  },
+  "displayDescription": {
+    "en": "Turns raw notes and transcripts into a full WeChat package: serialized articles, copy-ready HTML, share cards, Word docs on request, a publishing guide, and per-article publish kits.",
+    "zh": "读书笔记、逐字稿加工成可发布公众号全套：成稿、图文HTML、卡片、发布手册，并打包一键发布含封面。"
+  },
+  "avatar": "avatars/expert.png",
+  "categoryId": "06-ContentCreative",
+  "defaultInitPrompt": {
+    "zh": "我会给你一份原始材料（读书笔记/逐字稿/脑图）和来源声明口径，请把它加工成一套可直接发布的公众号内容。",
+    "en": "I'll give you raw source material (reading notes / transcript / mind map) plus a source-attribution line. Turn it into a ready-to-publish WeChat article package."
+  },
+  "plugin": "wechat-article-studio",
+  "tags": [
+    {
+      "en": "WeChat Writing",
+      "zh": "公众号写作"
+    },
+    {
+      "en": "Content Repurposing",
+      "zh": "内容改写"
+    },
+    {
+      "en": "Copy-Ready HTML",
+      "zh": "排版即发"
+    }
+  ],
+  "quickPrompts": [
+    {
+      "en": "I'll give you raw source material (reading notes / transcript / mind map) plus a source-attribution line. Turn it into a ready-to-publish WeChat article package.",
+      "zh": "我会给你一份原始材料（读书笔记/逐字稿/脑图）和来源声明口径，请把它加工成一套可直接发布的公众号内容。"
+    },
+    {
+      "en": "Here are my reading notes and the source-attribution wording. Produce the serialized articles, the copy-ready styled HTML, share cards, and a per-article publish kit (field sheet + body HTML + cover + checklist).",
+      "zh": "这是我的读书笔记和来源声明口径，请产出系列成稿、图文一体排版HTML、干货卡片，并为每篇打包一键发布包（字段表+正文HTML+封面+操作清单）。"
+    },
+    {
+      "en": "Turn this transcript into WeChat articles: reader-pain-point angle, golden-line subheadings, action checklists, and a fixed source declaration at the end of every piece.",
+      "zh": "把这份逐字稿改成公众号文章：读者痛点视角、金句小标题、落地动作清单，每篇文末固定带来源声明。"
+    }
+  ],
+  "skills": "./skills"
+}

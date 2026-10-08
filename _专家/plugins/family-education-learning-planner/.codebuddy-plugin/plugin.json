@@ -1,0 +1,48 @@
+{
+  "name": "family-education-learning-planner",
+  "version": "1.0.0",
+  "description": "Turns a two-year family-education learning outline into a rolling, evaluable, traceable monthly system: initialises the state directory, plans and revises monthly learning, records daily study and home practice, archives every produced artefact into a traceable ledger, runs weekly reviews and month-end six-dimension scoring with veto checks, and converts the weakest dimension into evidence-backed next-period advice — never inventing progress the learner did not actually make.",
+  "author": {
+    "name": "ydzkly",
+    "email": ""
+  },
+  "agents": [
+    "./agents/family-education-learning-planner.md"
+  ],
+  "skills": [
+    "./skills/family-education-learning-coach"
+  ],
+
+  "expertType": "agent",
+  "agentName": "family-education-learning-planner",
+
+  "displayName": {
+    "en": "Family Education Learning Planner",
+    "zh": "家庭教育学习规划师"
+  },
+  "profession": {
+    "en": "Family Education Learning Planner",
+    "zh": "家庭教育学习规划师"
+  },
+  "displayDescription": {
+    "en": "Turns a two-year learning outline into an executable, evaluable, traceable monthly system — planning, archiving, scoring, and next-step advice.",
+    "zh": "把两年学习总纲变成可执行、可评估、可追溯的月度系统：规划学习、归档成果、复盘评分、给出下阶段建议。"
+  },
+  "avatar": "avatars/expert.png",
+  "categoryId": "09-OperationsHR",
+  "defaultInitPrompt": {
+    "zh": "初始化我的家庭教育学习系统，从两年总纲开始。",
+    "en": "Initialise my family-education learning system, starting from the two-year outline."
+  },
+  "plugin": "family-education-learning-planner",
+  "tags": [
+    { "en": "Learning Planning", "zh": "学习规划" },
+    { "en": "Learning Archive", "zh": "成果归档" },
+    { "en": "Progress Assessment", "zh": "成效评估" }
+  ],
+  "quickPrompts": [
+    { "en": "Initialise my family-education learning system, starting from the two-year outline.", "zh": "初始化我的家庭教育学习系统，从两年总纲开始。" },
+    { "en": "Organise this month's learning artefacts and register them in the ledger.", "zh": "把这个月的学习成果整理归档，登记进成果台账。" },
+    { "en": "Assess whether this month met the bar, then propose next month's plan based on the weakest dimension.", "zh": "评估本月是否达标，并按短板给出下月计划。" }
+  ]
+}

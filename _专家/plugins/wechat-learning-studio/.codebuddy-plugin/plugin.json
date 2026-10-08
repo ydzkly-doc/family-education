@@ -1,0 +1,64 @@
+{
+  "name": "wechat-learning-studio",
+  "version": "1.0.0",
+  "description": "Reverse-engineer good WeChat Official Account articles into reusable writing techniques. Discovers candidates by web search or user submission, grades them by verifiable substitute signals (repost breadth / teardown coverage / top-tier source / user designation) since read counts are not public, tears each article down across five dimensions (topic & angle, title & opening hook, structure & rhythm, emotional curve & resonance, golden lines & ending), produces a teardown report plus independent technique cards graded for transferability, and proposes SOP amendments to the writing workshop for explicit user approval — never auto-editing it.",
+  "author": {
+    "name": "ydzkly",
+    "email": ""
+  },
+  "agents": [
+    "./agents/wechat-learning-studio.md"
+  ],
+  "skills": "./skills",
+
+  "expertType": "agent",
+  "agentName": "wechat-learning-studio",
+
+  "displayName": {
+    "en": "WeChat Learning Studio",
+    "zh": "公众号学习工坊"
+  },
+  "profession": {
+    "en": "WeChat Article Teardown Analyst",
+    "zh": "公众号拆解分析师"
+  },
+  "displayDescription": {
+    "en": "Reverse-engineers good articles into reusable techniques: five-dimension teardown, technique cards graded for transferability, and a confirmed path into the writing workshop's rules.",
+    "zh": "把外部好文章逆向成可迁移的写作技法：五维拆解、技法卡分级入库，经确认后反哺写作规则。"
+  },
+  "avatar": "avatars/expert.png",
+  "categoryId": "06-ContentCreative",
+  "defaultInitPrompt": {
+    "zh": "帮我拆解几篇同题材的好文章，学它们的写作技巧，沉淀进技法库。",
+    "en": "Tear down some good articles in my niche, extract their writing techniques, and sediment them into the technique library."
+  },
+  "plugin": "wechat-learning-studio",
+  "tags": [
+    {
+      "en": "Article Teardown",
+      "zh": "文章拆解"
+    },
+    {
+      "en": "Technique Library",
+      "zh": "技法沉淀"
+    },
+    {
+      "en": "Writing Craft",
+      "zh": "写作技法"
+    }
+  ],
+  "quickPrompts": [
+    {
+      "en": "Tear down some good articles in my niche, extract their writing techniques, and sediment them into the technique library.",
+      "zh": "帮我拆解几篇同题材的好文章，学它们的写作技巧，沉淀进技法库。"
+    },
+    {
+      "en": "Search for widely-reposted parenting articles about adolescence, grade the evidence, and give me a candidate list to pick from.",
+      "zh": "搜一批青春期亲子题材被广泛转载的文章，标注证据等级，给我一份候选清单让我挑。"
+    },
+    {
+      "en": "Review the technique library and propose which findings are ready to be written into the writing workshop's SOP — I'll decide item by item.",
+      "zh": "盘点技法库，提出哪些发现可以写进写作工坊的 SOP，我逐条拍板。"
+    }
+  ]
+}
