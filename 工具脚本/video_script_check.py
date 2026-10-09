@@ -23,6 +23,13 @@ import unicodedata
 
 sys.stdout.reconfigure(encoding="utf-8")
 
+# ⭐ 接入「读懂重讲·防截取」检测（2026-10-09）：与字数/折行同级，有 1 处即 FAIL。
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+try:
+    import video_script_lift_check as lift
+except Exception:
+    lift = None
+
 CJK = r"\u4e00-\u9fff"
 WORD_RE = re.compile(rf"[{CJK}a-zA-Z0-9]")
 TIP_RE = re.compile(r"^【")
@@ -133,6 +140,9 @@ def main():
         #   → 所以：**遇到行内写法直接报 FAIL**（逼它改），同时把标记剥掉后照常计入（数字先算对）。
         spoken = []
         for l in raw_lines:
+            l = re.sub(r"<!--.*?-->", "", l).strip()   # HTML 注释（如 lift:ignore）不计入字数/分句
+            if not l:
+                continue
             if STRUCT_TIP_RE.match(l):
                 s = re.sub(r"^【[^】]*】\s*", "", l)
                 if s.strip():
@@ -515,6 +525,13 @@ def main():
                     if m and int(m.group(1)) > 1 and "上一条" not in f_txt:
                         warns.append("系列条的中间那段建议回收上一条的过渡语"
                                      "（用词与口播咬合），两条才串得起来")
+
+        # ⭐ 防截取（读懂重讲）：叙述句与原文 >=8 字连续重合即 FAIL。
+        if lift is not None:
+            try:
+                fails.extend(lift.list_lift_fails(path))
+            except Exception as e:
+                warns.append("防截取检测运行异常：%s" % e)
 
         for f in fails:
             print("  ❌ " + f)
