@@ -20,6 +20,8 @@ import importlib.util, io, os, sys, pathlib
 sys.stdout.reconfigure(encoding="utf-8")
 ROOT = r"D:/个人资料/家庭教育"
 BASE = os.path.join(ROOT, "公众号", "手机方案", "视频号文案")
+# 合成方案里要写的输出根目录名（随 --out-root 变化），默认旧目录
+OUT_DIRNAME = "视频号文案"
 
 
 def spoken_block(lines):
@@ -125,9 +127,9 @@ def render(it):
     L.append("```")
     L.append(r"cd C:\Users\ZhuanZ\.workbuddy\skills\ffmpeg-vertical-video-pipeline")
     L.append(r"python scripts/video_make.py ^")
-    L.append(rf'  --md "D:\个人资料\家庭教育\公众号\手机方案\视频号文案\{d}\视频号文案_{it["seq"]}_{it["fileslug"]}.md" ^')
-    L.append(rf'  --videos-dir "D:\个人资料\家庭教育\公众号\手机方案\视频号文案\{d}\_素材" ^')
-    L.append(rf'  --out "D:\个人资料\家庭教育\公众号\手机方案\视频号文案\{d}\_成品\成片_{it["seq"]}.mp4" ^')
+    L.append(rf'  --md "D:\个人资料\家庭教育\公众号\手机方案\{OUT_DIRNAME}\{d}\视频号文案_{it["seq"]}_{it["fileslug"]}.md" ^')
+    L.append(rf'  --videos-dir "D:\个人资料\家庭教育\公众号\手机方案\{OUT_DIRNAME}\{d}\_素材" ^')
+    L.append(rf'  --out "D:\个人资料\家庭教育\公众号\手机方案\{OUT_DIRNAME}\{d}\_成品\成片_{it["seq"]}.mp4" ^')
     L.append(r"  --set bitrate=10M --set zoom=0 --set preset=veryfast --set crf=21 ^")
     L.append(r"  --set visual.denoise=关闭 --set visual.xfade=0.5 --set visual.trim_tail=0.3 ^")
     L.append(r"  --set audio.preset=轻 --set audio.loudnorm.I=-14")
@@ -212,11 +214,13 @@ def render(it):
 
 
 def main():
+    global OUT_DIRNAME
     argv = sys.argv[1:]
     out_root = BASE
     if "--out-root" in argv:
         i = argv.index("--out-root")
         out_root = argv[i + 1]
+        OUT_DIRNAME = os.path.basename(os.path.normpath(out_root))
         del argv[i:i + 2]
     data_path = argv[0]
     spec = importlib.util.spec_from_file_location("v4data", data_path)
