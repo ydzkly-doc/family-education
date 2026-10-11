@@ -1,0 +1,20 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e5]:
+    - generic [ref=e6]: 视频号
+    - generic [ref=e14] [cursor=pointer]
+    - generic [ref=e16]:
+      - generic [ref=e17]:
+        - generic [ref=e18] [cursor=pointer]: 做短视频的12条谣言
+        - generic [ref=e19]: 2026年7月2日
+      - generic [ref=e21] [cursor=pointer]
+      - generic [ref=e23]:
+        - generic [ref=e24] [cursor=pointer]: 牙叔本叔
+        - generic [ref=e30]:
+          - generic [ref=e31] [cursor=pointer]: 1.0万
+          - generic [ref=e34] [cursor=pointer]: 1.7万
+          - generic [ref=e37] [cursor=pointer]: "4208"
+          - generic [ref=e40] [cursor=pointer]: "1901"
+  - generic [ref=e44]:
+    - button "关闭" [ref=e45] [cursor=pointer]
+    - img "二维码" [ref=e48]
+    - generic [ref=e49]: 可扫码前往微信观看此内容

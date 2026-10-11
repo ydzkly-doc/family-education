@@ -164,11 +164,21 @@ def render(it):
     for row in it["top"].split("\n"):
         L.append(f"> {row}")
     L.append(f"**封面大字**：{it['cover']}")
-    L.append(f"**话题标签**：" + " ".join(f"`{t}`" for t in it["tags"]))
+    # 容错：tags / moments 在数据文件里可能写成字符串（含空格 / 换行），
+    # 直接 for 会逐字符迭代 → 朋友圈文案竖排、标签拆字。统一规范成 list。
+    tags = it["tags"]
+    if isinstance(tags, str):
+        tags = tags.split()
+    moments = it["moments"]
+    if isinstance(moments, str):
+        # 空行分段（""），单换行不拆段
+        moments = [seg for seg in moments.split("\n") ]
+        # 保留段落结构：连续换行已表现为空字符串元素
+    L.append(f"**话题标签**：" + " ".join(f"`{t}`" for t in tags))
     L.append("")
     L.append("**⭐ 朋友圈转发文案（一屏内、首行独立成立）**")
     L.append("")
-    for row in it["moments"]:
+    for row in moments:
         if row == "":
             L.append(">")
         else:

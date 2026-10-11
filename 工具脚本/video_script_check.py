@@ -48,6 +48,10 @@ SPEED = 4.3          # 字/秒（全篇唯一口径）
 #   判据比"真片预计"（落点表偏乐观 5~7%，先 ×1.07 再比）→ 对应口播 ≈844 字含标点。
 #   口径变更依据见 `_资产/视频号方案改版_v1（已确认）.md`。
 MAX_SEC = 210.0
+# ⭐ 长视频（镇号长条，2026-10-11 SOP 立）：经用户拍板的 4–6 分钟深度条，
+#    MD 抬头写明「长条」或「长视频」时，时长硬上限放宽到 360 秒（6 分钟）。
+#    只扫抬头前 600 字，避免正文里出现“长条”字样误触。
+MAX_SEC_LONG = 360.0
 
 # 上屏元素：区块名关键词 → (显示名, 字数上限)
 LIMITS = [
@@ -242,9 +246,12 @@ def main():
         print(f"时长：≈ {sec:.0f} 秒 ({int(sec//60)}:{sec%60:04.1f})"
               f"　⚠️ 落点表偏乐观，真片预计 {sec*1.05:.0f}~{sec*1.07:.0f} 秒"
               f"（{sec*1.07/60:.1f} 分）")
-        if sec * 1.07 > MAX_SEC:
-            fails.append(f"真片预计 {sec*1.07:.0f} 秒 > {MAX_SEC:.0f} 秒（{MAX_SEC/60:.1f} 分钟上限）"
-                         f"—— 口播要压到 {MAX_SEC/1.07*SPEED:.0f} 字以内（含标点）")
+        is_long = ("长条" in t[:600]) or ("长视频" in t[:600])
+        max_sec = MAX_SEC_LONG if is_long else MAX_SEC
+        kind_name = f"长条（上限 {MAX_SEC_LONG/60:.0f} 分钟）" if is_long else f"短条（上限 {MAX_SEC/60:.1f} 分钟）"
+        if sec * 1.07 > max_sec:
+            fails.append(f"真片预计 {sec*1.07:.0f} 秒 > {max_sec:.0f} 秒（{kind_name}）"
+                         f"—— 口播要压到 {max_sec/1.07*SPEED:.0f} 字以内（含标点）")
         if pr:
             print(f"代词体检：他/她/它 {len(pr)} 处 —— 逐条问一句「这是谁」"
                   f"（别人的原话／当年转述可照留）")
