@@ -1,0 +1,920 @@
+{
+  "songs_total": 131,
+  "vocab_size": 3759,
+  "covered": 1816,
+  "rate": 48.3,
+  "greedy_order": [
+    {
+      "rank": 1,
+      "song": "M14_IntoTheWoodsPrologue",
+      "gain": 420,
+      "cum": 420,
+      "rate": 11.2,
+      "tokens": 2293
+    },
+    {
+      "rank": 2,
+      "song": "A7_NonStop",
+      "gain": 143,
+      "cum": 563,
+      "rate": 15.0,
+      "tokens": 1150
+    },
+    {
+      "rank": 3,
+      "song": "A2_MyShot",
+      "gain": 113,
+      "cum": 676,
+      "rate": 18.0,
+      "tokens": 1113
+    },
+    {
+      "rank": 4,
+      "song": "H07_RightHandMan",
+      "gain": 90,
+      "cum": 766,
+      "rate": 20.4,
+      "tokens": 937
+    },
+    {
+      "rank": 5,
+      "song": "M28_BeOurGuest",
+      "gain": 67,
+      "cum": 833,
+      "rate": 22.2,
+      "tokens": 438
+    },
+    {
+      "rank": 6,
+      "song": "H24_CabinetBattle1",
+      "gain": 61,
+      "cum": 894,
+      "rate": 23.8,
+      "tokens": 630
+    },
+    {
+      "rank": 7,
+      "song": "M05_MasterOfTheHouse",
+      "gain": 48,
+      "cum": 942,
+      "rate": 25.1,
+      "tokens": 497
+    },
+    {
+      "rank": 8,
+      "song": "H25_TakeABreak",
+      "gain": 44,
+      "cum": 986,
+      "rate": 26.2,
+      "tokens": 722
+    },
+    {
+      "rank": 9,
+      "song": "M22_LaVieBoheme",
+      "gain": 42,
+      "cum": 1028,
+      "rate": 27.3,
+      "tokens": 392
+    },
+    {
+      "rank": 10,
+      "song": "A3_AlexanderHamilton",
+      "gain": 39,
+      "cum": 1067,
+      "rate": 28.4,
+      "tokens": 561
+    },
+    {
+      "rank": 11,
+      "song": "H19_Yorktown",
+      "gain": 36,
+      "cum": 1103,
+      "rate": 29.3,
+      "tokens": 599
+    },
+    {
+      "rank": 12,
+      "song": "H38_BlowUsAllAway",
+      "gain": 32,
+      "cum": 1135,
+      "rate": 30.2,
+      "tokens": 549
+    },
+    {
+      "rank": 13,
+      "song": "A6_Satisfied",
+      "gain": 31,
+      "cum": 1166,
+      "rate": 31.0,
+      "tokens": 817
+    },
+    {
+      "rank": 14,
+      "song": "H27_RoomWhereItHappens",
+      "gain": 26,
+      "cum": 1192,
+      "rate": 31.7,
+      "tokens": 1002
+    },
+    {
+      "rank": 15,
+      "song": "E1_LemonTree",
+      "gain": 25,
+      "cum": 1217,
+      "rate": 32.4,
+      "tokens": 311
+    },
+    {
+      "rank": 16,
+      "song": "H13_StayAlive",
+      "gain": 22,
+      "cum": 1239,
+      "rate": 33.0,
+      "tokens": 414
+    },
+    {
+      "rank": 17,
+      "song": "M31_UnderTheSea",
+      "gain": 22,
+      "cum": 1261,
+      "rate": 33.5,
+      "tokens": 428
+    },
+    {
+      "rank": 18,
+      "song": "H44_WorldWasWideEnough",
+      "gain": 22,
+      "cum": 1283,
+      "rate": 34.1,
+      "tokens": 678
+    },
+    {
+      "rank": 19,
+      "song": "M16_DefyingGravity",
+      "gain": 21,
+      "cum": 1304,
+      "rate": 34.7,
+      "tokens": 467
+    },
+    {
+      "rank": 20,
+      "song": "B5_YouWillBeFound",
+      "gain": 18,
+      "cum": 1322,
+      "rate": 35.2,
+      "tokens": 603
+    },
+    {
+      "rank": 21,
+      "song": "P12_CastleOnTheHill",
+      "gain": 17,
+      "cum": 1339,
+      "rate": 35.6,
+      "tokens": 352
+    },
+    {
+      "rank": 22,
+      "song": "H42_YourObedientServant",
+      "gain": 16,
+      "cum": 1355,
+      "rate": 36.0,
+      "tokens": 325
+    },
+    {
+      "rank": 23,
+      "song": "H40_ItsQuietUptown",
+      "gain": 16,
+      "cum": 1371,
+      "rate": 36.5,
+      "tokens": 393
+    },
+    {
+      "rank": 24,
+      "song": "M20_LightMyCandle",
+      "gain": 16,
+      "cum": 1387,
+      "rate": 36.9,
+      "tokens": 406
+    },
+    {
+      "rank": 25,
+      "song": "H30_WashingtonOnYourSide",
+      "gain": 16,
+      "cum": 1403,
+      "rate": 37.3,
+      "tokens": 453
+    },
+    {
+      "rank": 26,
+      "song": "M17_Popular",
+      "gain": 15,
+      "cum": 1418,
+      "rate": 37.7,
+      "tokens": 369
+    },
+    {
+      "rank": 27,
+      "song": "H31_OneLastTime",
+      "gain": 13,
+      "cum": 1431,
+      "rate": 38.1,
+      "tokens": 373
+    },
+    {
+      "rank": 28,
+      "song": "D3_PianoMan",
+      "gain": 13,
+      "cum": 1444,
+      "rate": 38.4,
+      "tokens": 381
+    },
+    {
+      "rank": 29,
+      "song": "H29_CabinetBattle2",
+      "gain": 13,
+      "cum": 1457,
+      "rate": 38.8,
+      "tokens": 448
+    },
+    {
+      "rank": 30,
+      "song": "H17_GunsAndShips",
+      "gain": 11,
+      "cum": 1468,
+      "rate": 39.1,
+      "tokens": 318
+    },
+    {
+      "rank": 31,
+      "song": "H34_WeKnow",
+      "gain": 11,
+      "cum": 1479,
+      "rate": 39.3,
+      "tokens": 380
+    },
+    {
+      "rank": 32,
+      "song": "P15_Roar",
+      "gain": 11,
+      "cum": 1490,
+      "rate": 39.6,
+      "tokens": 443
+    },
+    {
+      "rank": 33,
+      "song": "M13_OnlyUs",
+      "gain": 11,
+      "cum": 1501,
+      "rate": 39.9,
+      "tokens": 449
+    },
+    {
+      "rank": 34,
+      "song": "B4_ThisIsMe",
+      "gain": 11,
+      "cum": 1512,
+      "rate": 40.2,
+      "tokens": 452
+    },
+    {
+      "rank": 35,
+      "song": "H45_WhoLivesWhoDies",
+      "gain": 10,
+      "cum": 1522,
+      "rate": 40.5,
+      "tokens": 420
+    },
+    {
+      "rank": 36,
+      "song": "C4_WeDontTalkBruno",
+      "gain": 10,
+      "cum": 1532,
+      "rate": 40.8,
+      "tokens": 515
+    },
+    {
+      "rank": 37,
+      "song": "M15_ChildrenWillListen",
+      "gain": 10,
+      "cum": 1542,
+      "rate": 41.0,
+      "tokens": 768
+    },
+    {
+      "rank": 38,
+      "song": "C6_WholeNewWorld",
+      "gain": 9,
+      "cum": 1551,
+      "rate": 41.3,
+      "tokens": 273
+    },
+    {
+      "rank": 39,
+      "song": "M11_ForForever",
+      "gain": 9,
+      "cum": 1560,
+      "rate": 41.5,
+      "tokens": 382
+    },
+    {
+      "rank": 40,
+      "song": "H01_AaronBurrSir",
+      "gain": 9,
+      "cum": 1569,
+      "rate": 41.7,
+      "tokens": 420
+    },
+    {
+      "rank": 41,
+      "song": "A5_SchuylerSisters",
+      "gain": 9,
+      "cum": 1578,
+      "rate": 42.0,
+      "tokens": 509
+    },
+    {
+      "rank": 42,
+      "song": "B6_SeasonsOfLove",
+      "gain": 8,
+      "cum": 1586,
+      "rate": 42.2,
+      "tokens": 218
+    },
+    {
+      "rank": 43,
+      "song": "H37_Burn",
+      "gain": 8,
+      "cum": 1594,
+      "rate": 42.4,
+      "tokens": 295
+    },
+    {
+      "rank": 44,
+      "song": "P18_Demons",
+      "gain": 8,
+      "cum": 1602,
+      "rate": 42.6,
+      "tokens": 309
+    },
+    {
+      "rank": 45,
+      "song": "H23_WhatdIMiss",
+      "gain": 8,
+      "cum": 1610,
+      "rate": 42.8,
+      "tokens": 500
+    },
+    {
+      "rank": 46,
+      "song": "M30_PartOfYourWorld",
+      "gain": 7,
+      "cum": 1617,
+      "rate": 43.0,
+      "tokens": 246
+    },
+    {
+      "rank": 47,
+      "song": "B2_OneDayMore",
+      "gain": 7,
+      "cum": 1624,
+      "rate": 43.2,
+      "tokens": 415
+    },
+    {
+      "rank": 48,
+      "song": "D4_CatsInCradle",
+      "gain": 7,
+      "cum": 1631,
+      "rate": 43.4,
+      "tokens": 436
+    },
+    {
+      "rank": 49,
+      "song": "C3_SurfacePressure",
+      "gain": 7,
+      "cum": 1638,
+      "rate": 43.6,
+      "tokens": 453
+    },
+    {
+      "rank": 50,
+      "song": "H41_ElectionOf1800",
+      "gain": 7,
+      "cum": 1645,
+      "rate": 43.8,
+      "tokens": 612
+    },
+    {
+      "rank": 51,
+      "song": "H33_AdamstheAdministration",
+      "gain": 6,
+      "cum": 1651,
+      "rate": 43.9,
+      "tokens": 130
+    },
+    {
+      "rank": 52,
+      "song": "P01_DriverLicense",
+      "gain": 6,
+      "cum": 1657,
+      "rate": 44.1,
+      "tokens": 368
+    },
+    {
+      "rank": 53,
+      "song": "H20_WhatComesNext",
+      "gain": 5,
+      "cum": 1662,
+      "rate": 44.2,
+      "tokens": 142
+    },
+    {
+      "rank": 54,
+      "song": "H28_SchuylerDefeated",
+      "gain": 5,
+      "cum": 1667,
+      "rate": 44.3,
+      "tokens": 181
+    },
+    {
+      "rank": 55,
+      "song": "C1_HowFarIllGo",
+      "gain": 5,
+      "cum": 1672,
+      "rate": 44.5,
+      "tokens": 266
+    },
+    {
+      "rank": 56,
+      "song": "P07_HallOfFame",
+      "gain": 5,
+      "cum": 1677,
+      "rate": 44.6,
+      "tokens": 470
+    },
+    {
+      "rank": 57,
+      "song": "H08_WinterBall",
+      "gain": 4,
+      "cum": 1681,
+      "rate": 44.7,
+      "tokens": 138
+    },
+    {
+      "rank": 58,
+      "song": "M02_OnMyOwn",
+      "gain": 4,
+      "cum": 1685,
+      "rate": 44.8,
+      "tokens": 191
+    },
+    {
+      "rank": 59,
+      "song": "D1_TheNights",
+      "gain": 4,
+      "cum": 1689,
+      "rate": 44.9,
+      "tokens": 253
+    },
+    {
+      "rank": 60,
+      "song": "H05_FarmerRefuted",
+      "gain": 4,
+      "cum": 1693,
+      "rate": 45.0,
+      "tokens": 288
+    },
+    {
+      "rank": 61,
+      "song": "H35_Hurricane",
+      "gain": 4,
+      "cum": 1697,
+      "rate": 45.1,
+      "tokens": 289
+    },
+    {
+      "rank": 62,
+      "song": "M09_RewriteTheStars",
+      "gain": 4,
+      "cum": 1701,
+      "rate": 45.3,
+      "tokens": 363
+    },
+    {
+      "rank": 63,
+      "song": "P14_Firework",
+      "gain": 4,
+      "cum": 1705,
+      "rate": 45.4,
+      "tokens": 363
+    },
+    {
+      "rank": 64,
+      "song": "M18_ForGood",
+      "gain": 4,
+      "cum": 1709,
+      "rate": 45.5,
+      "tokens": 367
+    },
+    {
+      "rank": 65,
+      "song": "P10_LoveStory",
+      "gain": 4,
+      "cum": 1713,
+      "rate": 45.6,
+      "tokens": 379
+    },
+    {
+      "rank": 66,
+      "song": "P13_LegoHouse",
+      "gain": 4,
+      "cum": 1717,
+      "rate": 45.7,
+      "tokens": 384
+    },
+    {
+      "rank": 67,
+      "song": "P05_Believer",
+      "gain": 4,
+      "cum": 1721,
+      "rate": 45.8,
+      "tokens": 411
+    },
+    {
+      "rank": 68,
+      "song": "P08_TheMan",
+      "gain": 4,
+      "cum": 1725,
+      "rate": 45.9,
+      "tokens": 422
+    },
+    {
+      "rank": 69,
+      "song": "M12_WavingThroughWindow",
+      "gain": 4,
+      "cum": 1729,
+      "rate": 46.0,
+      "tokens": 439
+    },
+    {
+      "rank": 70,
+      "song": "M27_HakunaMatata",
+      "gain": 3,
+      "cum": 1732,
+      "rate": 46.1,
+      "tokens": 211
+    },
+    {
+      "rank": 71,
+      "song": "M21_IllCoverYou",
+      "gain": 3,
+      "cum": 1735,
+      "rate": 46.2,
+      "tokens": 229
+    },
+    {
+      "rank": 72,
+      "song": "M24_TheMusicOfTheNight",
+      "gain": 3,
+      "cum": 1738,
+      "rate": 46.2,
+      "tokens": 230
+    },
+    {
+      "rank": 73,
+      "song": "M10_Tightrope",
+      "gain": 3,
+      "cum": 1741,
+      "rate": 46.3,
+      "tokens": 244
+    },
+    {
+      "rank": 74,
+      "song": "P06_Thunder",
+      "gain": 3,
+      "cum": 1744,
+      "rate": 46.4,
+      "tokens": 274
+    },
+    {
+      "rank": 75,
+      "song": "C2_LetItGo",
+      "gain": 3,
+      "cum": 1747,
+      "rate": 46.5,
+      "tokens": 276
+    },
+    {
+      "rank": 76,
+      "song": "H11_StoryTonightReprise",
+      "gain": 3,
+      "cum": 1750,
+      "rate": 46.6,
+      "tokens": 299
+    },
+    {
+      "rank": 77,
+      "song": "P17_ItsTime",
+      "gain": 3,
+      "cum": 1753,
+      "rate": 46.6,
+      "tokens": 312
+    },
+    {
+      "rank": 78,
+      "song": "H36_ReynoldsPamphlet",
+      "gain": 3,
+      "cum": 1756,
+      "rate": 46.7,
+      "tokens": 352
+    },
+    {
+      "rank": 79,
+      "song": "E10_Try",
+      "gain": 3,
+      "cum": 1759,
+      "rate": 46.8,
+      "tokens": 398
+    },
+    {
+      "rank": 80,
+      "song": "M08_FromNowOn",
+      "gain": 3,
+      "cum": 1762,
+      "rate": 46.9,
+      "tokens": 406
+    },
+    {
+      "rank": 81,
+      "song": "D2_SevenYears",
+      "gain": 3,
+      "cum": 1765,
+      "rate": 47.0,
+      "tokens": 426
+    },
+    {
+      "rank": 82,
+      "song": "P03_LostBoy",
+      "gain": 3,
+      "cum": 1768,
+      "rate": 47.0,
+      "tokens": 437
+    },
+    {
+      "rank": 83,
+      "song": "H26_SayNoToThis",
+      "gain": 3,
+      "cum": 1771,
+      "rate": 47.1,
+      "tokens": 637
+    },
+    {
+      "rank": 84,
+      "song": "A4_Helpless",
+      "gain": 3,
+      "cum": 1774,
+      "rate": 47.2,
+      "tokens": 685
+    },
+    {
+      "rank": 85,
+      "song": "H32_IKnowHim",
+      "gain": 2,
+      "cum": 1776,
+      "rate": 47.2,
+      "tokens": 138
+    },
+    {
+      "rank": 86,
+      "song": "M26_CircleOfLife",
+      "gain": 2,
+      "cum": 1778,
+      "rate": 47.3,
+      "tokens": 179
+    },
+    {
+      "rank": 87,
+      "song": "P04_SevenNationArmy",
+      "gain": 2,
+      "cum": 1780,
+      "rate": 47.4,
+      "tokens": 183
+    },
+    {
+      "rank": 88,
+      "song": "M03_Stars",
+      "gain": 2,
+      "cum": 1782,
+      "rate": 47.4,
+      "tokens": 195
+    },
+    {
+      "rank": 89,
+      "song": "M01_ICDreamedADream",
+      "gain": 2,
+      "cum": 1784,
+      "rate": 47.5,
+      "tokens": 214
+    },
+    {
+      "rank": 90,
+      "song": "E4_YesterdayOnceMore",
+      "gain": 2,
+      "cum": 1786,
+      "rate": 47.5,
+      "tokens": 243
+    },
+    {
+      "rank": 91,
+      "song": "H39_StayAliveReprise",
+      "gain": 2,
+      "cum": 1788,
+      "rate": 47.6,
+      "tokens": 252
+    },
+    {
+      "rank": 92,
+      "song": "H16_ThatWouldBeEnough",
+      "gain": 2,
+      "cum": 1790,
+      "rate": 47.6,
+      "tokens": 275
+    },
+    {
+      "rank": 93,
+      "song": "H14_TenDuelCommandments",
+      "gain": 2,
+      "cum": 1792,
+      "rate": 47.7,
+      "tokens": 281
+    },
+    {
+      "rank": 94,
+      "song": "B7_NoOneIsAlone",
+      "gain": 2,
+      "cum": 1794,
+      "rate": 47.7,
+      "tokens": 300
+    },
+    {
+      "rank": 95,
+      "song": "P16_Brave",
+      "gain": 2,
+      "cum": 1796,
+      "rate": 47.8,
+      "tokens": 379
+    },
+    {
+      "rank": 96,
+      "song": "A1_WaitForIt",
+      "gain": 2,
+      "cum": 1798,
+      "rate": 47.8,
+      "tokens": 495
+    },
+    {
+      "rank": 97,
+      "song": "C5_Reflection",
+      "gain": 1,
+      "cum": 1799,
+      "rate": 47.9,
+      "tokens": 89
+    },
+    {
+      "rank": 98,
+      "song": "M19_OneSongGlory",
+      "gain": 1,
+      "cum": 1800,
+      "rate": 47.9,
+      "tokens": 147
+    },
+    {
+      "rank": 99,
+      "song": "M06_EmptyChairs",
+      "gain": 1,
+      "cum": 1801,
+      "rate": 47.9,
+      "tokens": 164
+    },
+    {
+      "rank": 100,
+      "song": "M29_SomethingThere",
+      "gain": 1,
+      "cum": 1802,
+      "rate": 47.9,
+      "tokens": 170
+    },
+    {
+      "rank": 101,
+      "song": "M07_NeverEnough",
+      "gain": 1,
+      "cum": 1803,
+      "rate": 48.0,
+      "tokens": 186
+    },
+    {
+      "rank": 102,
+      "song": "B1_DoYouHear",
+      "gain": 1,
+      "cum": 1804,
+      "rate": 48.0,
+      "tokens": 219
+    },
+    {
+      "rank": 103,
+      "song": "P19_Home",
+      "gain": 1,
+      "cum": 1805,
+      "rate": 48.0,
+      "tokens": 246
+    },
+    {
+      "rank": 104,
+      "song": "H21_DearTheodosia",
+      "gain": 1,
+      "cum": 1806,
+      "rate": 48.0,
+      "tokens": 257
+    },
+    {
+      "rank": 105,
+      "song": "E6_LetItBe",
+      "gain": 1,
+      "cum": 1807,
+      "rate": 48.1,
+      "tokens": 269
+    },
+    {
+      "rank": 106,
+      "song": "H15_MeetMeInside",
+      "gain": 1,
+      "cum": 1808,
+      "rate": 48.1,
+      "tokens": 270
+    },
+    {
+      "rank": 107,
+      "song": "P02_Vienna",
+      "gain": 1,
+      "cum": 1809,
+      "rate": 48.1,
+      "tokens": 281
+    },
+    {
+      "rank": 108,
+      "song": "E8_CountOnMe",
+      "gain": 1,
+      "cum": 1810,
+      "rate": 48.2,
+      "tokens": 291
+    },
+    {
+      "rank": 109,
+      "song": "P11_DefaultDancing",
+      "gain": 1,
+      "cum": 1811,
+      "rate": 48.2,
+      "tokens": 312
+    },
+    {
+      "rank": 110,
+      "song": "H06_YoullBeBack",
+      "gain": 1,
+      "cum": 1812,
+      "rate": 48.2,
+      "tokens": 332
+    },
+    {
+      "rank": 111,
+      "song": "M25_ThinkOfMe",
+      "gain": 1,
+      "cum": 1813,
+      "rate": 48.2,
+      "tokens": 370
+    },
+    {
+      "rank": 112,
+      "song": "E11_TheShow",
+      "gain": 1,
+      "cum": 1814,
+      "rate": 48.3,
+      "tokens": 402
+    },
+    {
+      "rank": 113,
+      "song": "E5_HeyJude",
+      "gain": 1,
+      "cum": 1815,
+      "rate": 48.3,
+      "tokens": 522
+    },
+    {
+      "rank": 114,
+      "song": "P09_ShakeItOff",
+      "gain": 1,
+      "cum": 1816,
+      "rate": 48.3,
+      "tokens": 579
+    }
+  ]
+}

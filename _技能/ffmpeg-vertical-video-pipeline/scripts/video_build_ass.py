@@ -21,6 +21,7 @@ from __future__ import annotations
 import os
 import sys
 import io
+import re
 
 # 原地改编码，不新建 TextIOWrapper —— 否则被别的模块 import 时会双重包装，
 # 把已关闭的 buffer 再包一层，报 "I/O operation on closed file"（踩过）
@@ -139,7 +140,26 @@ STYLE_DEF = {
     "引用":   dict(size=58,  color=WARM_DEEP, align=8, margin_v=200, margin_lr=110,
                    bold=False, outline=2, shadow=0, alpha=0x70,
                    anim=""),
+
+    # ---- 常驻标题（模式②，2026-10-13 立；同日改：反转对比、字号 88 用户拍板）----
+    # 顶部安全区下、**全片常驻**的一句核心标题。
+    # ⭐⭐ 实拍目检定稿（用户反馈"看不清"+"比底部金句小、不协调"）：常驻条全片挂顶、
+    #    背景时亮时暗且常是浅色墙面/窗框 → 跟底部强调句同一对比方向：**白字 + 粗黑描边**
+    #    （亮底靠黑边、暗底靠白字）；字号 **88**（≥底部金句/强调的 82，主信息分量够）。
+    # · 主句白色；1 个系列色重点词（暖赭等）也**继承同一道黑边**；
+    # · margin_lr=140 → 内容安全宽 800px，两侧留白，短句不顶满（留白优先）；
+    # · 基准 88（TITLE_BASE_SIZE），超长在 build_ass 里按宽度降到 80；
+    # · 不做大卡片、不半透明化整句；淡入 300ms，常驻；
+    # · 与底部强调句不冲突，与顶部金句卡不同时出现（该模式金句走底部）。
+    "常驻标题": dict(size=88, color=WHITE, align=8, margin_v=206, margin_lr=140,
+                   bold=True, outline=5, shadow=2,
+                   anim=r"\fad(300,200)"),
 }
+
+# 常驻标题的留白与字号档（与 md_spec 口径一致；这里是渲染侧兜底）
+TITLE_BASE_SIZE = 88
+TITLE_SHRINK_SIZE = 80
+TITLE_MARGIN_LR = 140
 
 # ⭐ 元素 key → 该 key 下的**默认样式**（每条可用 item["style"] 换整套样式）
 #   提成常量，三处（安全区检查 / 渲染 / 自检）共用 ——
@@ -150,6 +170,7 @@ ELEMENT_KEYS = (
     ("seq", "序号条"),
     ("cards", "小卡"),
     ("punch", "金句"),
+    ("title_persist", "常驻标题"),
 )
 
 # item 上可直接给的样式覆盖（编译成 ASS 行内标签）
@@ -242,7 +263,8 @@ def _keep_ranges(text: str, marks):
     return keep
 
 
-def wrap_cjk(text: str, fontsize: float, max_width: float, keep_together=None) -> str:
+def wrap_cjk(text: str, fontsize: float, max_width: float, keep_together=None,
+             no_break_before: str = "") -> str:
     r"""折行：**先按总宽定行数，再按目标行宽均衡分配**（断点优先落在标点处）。
 
     返回用 '\n' 连接的文本（交由 _esc 转成 ASS 的 \N）。
@@ -265,6 +287,15 @@ def wrap_cjk(text: str, fontsize: float, max_width: float, keep_together=None) -
         return text
 
     keep = list(keep_together or [])
+
+    # ⭐ no_break_before 里的字符（如句末“？”）**不能成为一行的首字**（否则问号独占一行）。
+    #    实现：把"末字 + 该字符"压成一个不可拆区间，断点不许落在二者之间。
+    for ch in (no_break_before or ""):
+        idx = text.rfind(ch)
+        while idx != -1:
+            if idx > 0:
+                keep.append((idx, idx + 1))      # 断点 i 满足 s<i<e ⇒ i==idx 被禁
+            idx = text.rfind(ch, 0, idx)
 
     def _bad(i: int) -> bool:
         """断点 i（相对整句）是否落在某个不可拆区间的**内部**"""
@@ -529,11 +560,48 @@ def build_ass(spec: dict, out_path: str, wrap: bool = True) -> str:
             default_anim = sd.get("anim") if use_anim else None
             default_tag = "{" + default_anim + "}" if default_anim else ""
             txt = item["text"]
+            no_break_before = ""
+            if key == "title_persist":
+                # ⭐ 常驻标题：留白优先的自适应字号——基准 88；一行放不下先允许断两行（仍88），
+                #    两行仍超宽、或字数≥13（md_spec 同口径）才降到 80；问号不独占一行。
+                #    例：本条 11 字 → 88 号折两行但不降到 80（两行最宽仍在 800 安全宽内）。
+                no_break_before = "？?"
+                fs = TITLE_BASE_SIZE
+                mw = rx - 2 * TITLE_MARGIN_LR
+                n_chars = len(re.sub(r"[？?\s]", "", txt))
+                base_w = text_width(txt, fs)
+                if base_w > mw:
+                    two = wrap_cjk(txt, fs, mw, _keep_ranges(txt, item.get("marks")),
+                                   no_break_before)
+                    widest = max((text_width(ln, fs) for ln in two.split("\n")), default=0)
+                    if widest > mw:
+                        fs = TITLE_SHRINK_SIZE
+                        mw = rx - 2 * TITLE_MARGIN_LR
+                if n_chars >= 13:          # 与 md_spec.TITLE_WARN_CHARS 同口径
+                    fs = TITLE_SHRINK_SIZE
             if wrap:
                 # ⚠️ 折行时要告诉它"标色词不可拆"（否则「只留一个」会被换行切成两半）
-                txt = wrap_cjk(txt, fs, mw, _keep_ranges(txt, item.get("marks")))
+                txt = wrap_cjk(txt, fs, mw, _keep_ranges(txt, item.get("marks")),
+                               no_break_before)
             tag = item.get("anim", default_tag) or ""
             extra = _override_tags(item, sd)
+            # 常驻标题的字号是这里自适应算出来的（可能与样式基准不同）→ 用行内 \fs 锁定。
+            # ⭐ 颜色只应落在 marks（重点词）上：parse 给的顶层 "color" 是"系列色配置"，
+            #    不能当整行色标签（否则普通字也被染色）→ 这里临时剔除，避免 _override_tags 染整句。
+            if key == "title_persist":
+                # 字号已在下面用 \fs 显式锁定 → 从 item 覆盖里剔掉 size，避免 \fs 重复；
+                # 同时剔 color（颜色只应落在 marks 重点词，顶层 color 是系列色配置，不能染整句）。
+                item_for_override = {k: v for k, v in item.items()
+                                     if k not in ("color", "size")}
+                extra = _override_tags(item_for_override, sd)
+                fs = int(item.get("size") or fs)
+                # ⭐ \fs 必须在花括号 override 块内才生效；裸写在 {} 外会被 libass 当字面文字上屏。
+                #    anim 已带 {}（如 {\fad(300,200)}）→ 把 \fs 塞进同一个块；无 anim 则自建一块。
+                fs_tag = f"\\fs{fs}"
+                if tag.endswith("}"):
+                    tag = tag[:-1] + fs_tag + "}"
+                else:
+                    tag = "{" + fs_tag + "}"
             L.append(f"Dialogue: 0,{_ts(item['start'])},{_ts(item['end'])},"
                      f"{st},,0,0,0,,{tag}{extra}{render_line(txt, item.get('marks'))}")
             n += 1

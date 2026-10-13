@@ -1,0 +1,247 @@
+[
+  {
+    "key": "A1_WaitForIt",
+    "artist": "Leslie Odom Jr.",
+    "track": "Wait For It",
+    "chars": 2529,
+    "src": "get:Leslie Odom, Jr./Wait for It(id=2986537)"
+  },
+  {
+    "key": "A2_MyShot",
+    "artist": "Lin-Manuel Miranda",
+    "track": "My Shot",
+    "chars": 5682,
+    "src": "get:Lin-Manuel Miranda/My Shot(id=2342410)"
+  },
+  {
+    "key": "A3_AlexanderHamilton",
+    "artist": "Lin-Manuel Miranda",
+    "track": "Alexander Hamilton",
+    "chars": 2960,
+    "src": "search:Lin‐Manuel Miranda/Alexander Hamilton(id=36238833,len=2960)"
+  },
+  {
+    "key": "A4_Helpless",
+    "artist": "Phillipa Soo",
+    "track": "Helpless",
+    "chars": 3395,
+    "src": "get:Phillipa Soo/Helpless(id=3417626)"
+  },
+  {
+    "key": "A5_SchuylerSisters",
+    "artist": "Renée Elise Goldsberry",
+    "track": "The Schuyler Sisters",
+    "chars": 2690,
+    "src": "get:Renée Elise Goldsberry/The Schuyler Sisters(id=3417649)"
+  },
+  {
+    "key": "A6_Satisfied",
+    "artist": "Renée Elise Goldsberry",
+    "track": "Satisfied",
+    "chars": 4309,
+    "src": "get:Renée Elise Goldsberry/Satisfied(id=3417637)"
+  },
+  {
+    "key": "A7_NonStop",
+    "artist": "Lin-Manuel Miranda",
+    "track": "Non-Stop",
+    "chars": 6080,
+    "src": "get:Lin-Manuel Miranda/Non-Stop(id=3475484)"
+  },
+  {
+    "key": "B1_DoYouHear",
+    "artist": "Les Misérables",
+    "track": "Do You Hear the People Sing",
+    "chars": 1062,
+    "src": "get:Les Misérables/Do You Hear the People Sing?(id=3008993)"
+  },
+  {
+    "key": "B2_OneDayMore",
+    "artist": "Les Misérables",
+    "track": "One Day More",
+    "chars": 1995,
+    "src": "get:Les Misérables/One Day More!(id=3035363)"
+  },
+  {
+    "key": "B3_MillionDreams",
+    "artist": "The Greatest Showman",
+    "track": "A Million Dreams",
+    "chars": 1729,
+    "src": "get:The Greatest Showman/A Million Dreams(id=3693370)"
+  },
+  {
+    "key": "B4_ThisIsMe",
+    "artist": "The Greatest Showman",
+    "track": "This Is Me",
+    "chars": 2023,
+    "src": "search:The Greatest Showman Film Cast/This Is Me(id=21830572,len=2023)"
+  },
+  {
+    "key": "B5_YouWillBeFound",
+    "artist": "Dear Evan Hansen",
+    "track": "You Will Be Found",
+    "chars": 3208,
+    "src": "search:Dear Evan Hansen Original Broadway Cast/You Will Be Found(id=15551933,len=3208)"
+  },
+  {
+    "key": "B6_SeasonsOfLove",
+    "artist": "Rent",
+    "track": "Seasons of Love",
+    "chars": 1207,
+    "src": "get:Rent/Seasons of Love(id=1816540)"
+  },
+  {
+    "key": "B7_NoOneIsAlone",
+    "artist": "Into the Woods",
+    "track": "No One Is Alone",
+    "chars": 1730,
+    "src": "get:Into the Woods/No One Is Alone(id=31218069)"
+  },
+  {
+    "key": "C1_HowFarIllGo",
+    "artist": "Auli'i Cravalho",
+    "track": "How Far I'll Go",
+    "chars": 1220,
+    "src": "get:Auli'i Cravalho/How Far I'll Go(id=1006932)"
+  },
+  {
+    "key": "C2_LetItGo",
+    "artist": "Idina Menzel",
+    "track": "Let It Go",
+    "chars": 1310,
+    "src": "get:Idina Menzel/Let It Go(id=359727)"
+  },
+  {
+    "key": "C3_SurfacePressure",
+    "artist": "Jessica Darrow",
+    "track": "Surface Pressure",
+    "chars": 2321,
+    "src": "get:Jessica Darrow/Surface Pressure(id=1133156)"
+  },
+  {
+    "key": "C4_WeDontTalkBruno",
+    "artist": "Encanto",
+    "track": "We Don't Talk About Bruno",
+    "chars": 2627,
+    "src": "search:Gaitán, Carolina, Castillo, Mauro, Adassa, Feliz, Rhenzy, Guerrero, Diane, Stephanie Beatriz & Encanto - Cast/We Don’t Talk About Bruno(id=33844095,len=2627)"
+  },
+  {
+    "key": "C5_Reflection",
+    "artist": "Mulan",
+    "track": "Reflection",
+    "chars": 428,
+    "src": "get:Mulan/Reflection(id=21953429)"
+  },
+  {
+    "key": "C6_WholeNewWorld",
+    "artist": "Aladdin",
+    "track": "A Whole New World",
+    "chars": 1402,
+    "src": "search:Aladdin/A Whole New World(id=18664045,len=1402)"
+  },
+  {
+    "key": "D1_TheNights",
+    "artist": "Avicii",
+    "track": "The Nights",
+    "chars": 1284,
+    "src": "get:Avicii/The Nights(id=220)"
+  },
+  {
+    "key": "D2_SevenYears",
+    "artist": "Lukas Graham",
+    "track": "7 Years",
+    "chars": 2152,
+    "src": "get:Lukas Graham/7 Years(id=986343)"
+  },
+  {
+    "key": "D3_PianoMan",
+    "artist": "Billy Joel",
+    "track": "Piano Man",
+    "chars": 1797,
+    "src": "get:Billy Joel/Piano Man(id=145994)"
+  },
+  {
+    "key": "D4_CatsInCradle",
+    "artist": "Harry Chapin",
+    "track": "Cat's in the Cradle",
+    "chars": 2040,
+    "src": "get:Harry Chapin/Cats In the Cradle(id=943340)"
+  },
+  {
+    "key": "E1_LemonTree",
+    "artist": "Fools Garden",
+    "track": "Lemon Tree",
+    "chars": 1571,
+    "src": "get:Fools Garden/Lemon Tree(id=1017565)"
+  },
+  {
+    "key": "E2_TryEverything",
+    "artist": "Shakira",
+    "track": "Try Everything",
+    "chars": 1533,
+    "src": "get:Shakira/Try Everything(id=1187777)"
+  },
+  {
+    "key": "E3_BigBigWorld",
+    "artist": "Emilia",
+    "track": "Big Big World",
+    "chars": 1028,
+    "src": "get:Emilia/Big Big World(id=1003632)"
+  },
+  {
+    "key": "E4_YesterdayOnceMore",
+    "artist": "Carpenters",
+    "track": "Yesterday Once More",
+    "chars": 1188,
+    "src": "get:Carpenters/Yesterday Once More(id=1594)"
+  },
+  {
+    "key": "E5_HeyJude",
+    "artist": "The Beatles",
+    "track": "Hey Jude",
+    "chars": 2226,
+    "src": "get:The Beatles/Hey Jude(id=13781)"
+  },
+  {
+    "key": "E6_LetItBe",
+    "artist": "The Beatles",
+    "track": "Let It Be",
+    "chars": 1180,
+    "src": "get:The Beatles/Let It Be(id=14071)"
+  },
+  {
+    "key": "E7_YouRaiseMeUp",
+    "artist": "Westlife",
+    "track": "You Raise Me Up",
+    "chars": 948,
+    "src": "get:Westlife/You Raise Me Up(id=1781866)"
+  },
+  {
+    "key": "E8_CountOnMe",
+    "artist": "Bruno Mars",
+    "track": "Count On Me",
+    "chars": 1397,
+    "src": "get:Bruno Mars/Count On Me(id=1004574)"
+  },
+  {
+    "key": "E9_TroubleFriend",
+    "artist": "Lenka",
+    "track": "Trouble Is a Friend",
+    "chars": 1294,
+    "src": "get:Lenka/Trouble Is a Friend(id=16116)"
+  },
+  {
+    "key": "E10_Try",
+    "artist": "Colbie Caillat",
+    "track": "Try",
+    "chars": 1818,
+    "src": "get:Colbie Caillat/Try(id=588752)"
+  },
+  {
+    "key": "E11_TheShow",
+    "artist": "Lenka",
+    "track": "The Show",
+    "chars": 1808,
+    "src": "get:Lenka/The Show(id=16057)"
+  }
+]

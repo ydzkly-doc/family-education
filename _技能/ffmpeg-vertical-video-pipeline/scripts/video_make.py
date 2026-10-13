@@ -882,6 +882,28 @@ def strip_kind(placed: list) -> list:
     return placed
 
 
+def build_title_persist(spec: dict, total_dur: float, hook_end: float = 0.0) -> list:
+    """常驻标题（模式②）→ 一条覆盖到整片结束的顶部事件。
+
+    内容/颜色/重点词由 md_spec.parse_title_persist 产出（spec["title_persist"]），
+    这里只补时间轴与样式名。没有则返回 []。
+
+    ⭐⭐ 与开头钩子的关系（2026-10-13 用户拍板方案 A）：常驻标题与钩子文案同源
+       （都取自封面主句），若都从 0s 起 → 前 2.5s 顶部/中上部出现**两句一样的话**。
+       → 常驻标题 **start 延后到钩子结束（hook_end）再淡入**：钩子独占封面＋前 2.5s，
+         之后常驻接管到片尾。无钩子时 hook_end=0，仍从 0s 常驻。
+       钩子本身无淡入（保封面第一帧），常驻这条保留 \fad 淡入，交接不突兀。
+    """
+    tp = spec.get("title_persist")
+    if not tp or not total_dur:
+        return []
+    it = dict(tp)
+    it["start"] = float(hook_end or 0.0)
+    it["end"] = float(total_dur)
+    it.setdefault("style", "常驻标题")
+    return [it]
+
+
 def count_cards(placed: list) -> dict:
     """
     分类计数 —— hook / 金句卡 / 浅底卡 都走 punch 通道，
@@ -1101,10 +1123,17 @@ def make(spec: dict, workdir: str):
     # ⚠️ 摘要必须在 strip_kind 之前算 —— strip_kind 会原地清掉 _kind 标记，
     #    之后再计数就分不出 hook / 浅底卡了（全部会算成金句卡）
     summary = describe_cards(spec, punch, len(subs))
+    # ⭐ 常驻标题延后到钩子结束再淡入（方案 A）：从已定位的 punch 里取 hook 的 end
+    _hook = next((c for c in punch if c.get("_kind") == "hook"), None)
+    _hook_end = float(_hook["end"]) if _hook else 0.0
+    title_ev = build_title_persist(spec, _total, _hook_end)
     ass_path = os.path.join(workdir, "subs.ass")
-    build_ass({"subs": subs, "seq": seq, "punch": strip_kind(punch)}, ass_path)
-    print(f"    → {summary} / 序号条 {len(seq)}")
-    for _i in safe_check({"subs": subs, "seq": seq, "punch": punch}):
+    build_ass({"subs": subs, "seq": seq, "punch": strip_kind(punch),
+               "title_persist": title_ev}, ass_path)
+    print(f"    → {summary} / 序号条 {len(seq)}"
+          + (f" / 常驻标题 1" if title_ev else ""))
+    for _i in safe_check({"subs": subs, "seq": seq, "punch": punch,
+                          "title_persist": title_ev}):
         print(f"    ⚠️ 安全区：{_i}")
     if seg_bounds:
         print("    段边界（seg 锚点可引用）：" + "  ".join(
@@ -1597,10 +1626,16 @@ def preview_plan(spec, workdir) -> str | None:
     ass = os.path.join(workdir, "preview.ass")
     # ⚠️ 摘要必须在 strip_kind 之前算（否则 _kind 已清、分类计数全塌成"金句卡"）
     summary = describe_cards(spec, punch, len(subs))
-    build_ass({"subs": subs, "seq": seq, "punch": strip_kind(punch)}, ass)
+    # ⭐ 常驻标题延后到钩子结束再淡入（方案 A），与正式流程同一逻辑
+    _hook = next((c for c in punch if c.get("_kind") == "hook"), None)
+    _hook_end = float(_hook["end"]) if _hook else 0.0
+    title_ev = build_title_persist(spec, total, _hook_end)
+    build_ass({"subs": subs, "seq": seq, "punch": strip_kind(punch),
+               "title_persist": title_ev}, ass)
 
     # ⭐ 安全区检查（会不会被视频号 UI 压住）
-    issues = safe_check({"subs": subs, "seq": seq, "punch": punch})
+    issues = safe_check({"subs": subs, "seq": seq, "punch": punch,
+                         "title_persist": title_ev})
     if issues:
         print()
         print("  ⚠️ 安全区问题（可能被视频号 UI 压住）：")

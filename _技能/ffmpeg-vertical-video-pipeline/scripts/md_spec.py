@@ -12,10 +12,12 @@ r"""
     python md_spec.py 文案.md          # 打印解析出的片段（JSON）
     python md_spec.py --selftest       # 解析逻辑自检（不需要外部文件）
 
-支持的「版本」三选一（大小写/空格/写法差异都容错）：
+支持的「版本」（大小写/空格/写法差异都容错）：
     全字幕            → subs="all"
     金句 / 金句版      → subs=[强调句...]（只有这几句上字幕）
     全字幕 + 金句      → subs="all" + subs_emph=[强调句...]（这几句加大加粗）
+    常驻标题 / 标题常驻 → 同金句版的底部强调句；**额外**在顶部全片常驻一句核心标题
+                          （title_persist），此模式 punch 移底部、seq 不渲染。
 """
 from __future__ import annotations
 
@@ -49,8 +51,24 @@ DEFAULT_ZOOM = 0.06                     # 「画面轻微推近」的默认幅�
 END_CARD_HOLD = 2.0                     # 片尾定格卡（方便截图）
 ENLARGE_SCALE = 1.12                    # "轻微放大" 的换算值
 
-V_ALL, V_KOU, V_ALL_KOU = "all", "kou", "all_kou"
-V_LABEL = {V_ALL: "全字幕", V_KOU: "金句", V_ALL_KOU: "全字幕 + 金句"}
+V_ALL, V_KOU, V_ALL_KOU, V_TITLE = "all", "kou", "all_kou", "title"
+V_LABEL = {V_ALL: "全字幕", V_KOU: "金句", V_ALL_KOU: "全字幕 + 金句",
+           V_TITLE: "常驻标题"}
+
+# ==================== 常驻标题（模式②）规格（2026-10-13 立／同日改对比+字号） ====================
+# 视觉：纯文字——**白字主句 + 粗黑描边**（实拍亮底上近黑字会糊，反转成字幕同款强对比）
+#       + 1 个系列色重点词（继承同一道黑边）；顶部安全区下、全片常驻。
+TITLE_BASE_SIZE = 88        # 基准字号（2026-10-13 用户拍板：主信息须≥底部金句82号）
+TITLE_SHRINK_AT = 13        # ≥13 字：降一档字号（本条 11 字用 88 一行；12 字内保 88）
+TITLE_SHRINK_SIZE = 80      # 超长档字号
+TITLE_WARN_CHARS = 13       # ≥13 字同时提示：能更短更好，不靠字号硬塞
+TITLE_MAX_CHARS = 20        # 两行 80 号在安全宽 800 内的容量上限；超过强制提示缩短
+TITLE_TEXT_COLOR = "#FFFFFF"   # 主句字色（实际渲染以 video_build_ass 样式为准＝白）
+TITLE_SERIES_COLORS = {     # 系列格调重点色（取封面识别色，可在 MD 用「色：#xxxxxx」覆盖）
+    "月考": "#B0794E",
+    "手机": "#6E97C9",
+}
+TITLE_DEFAULT_COLOR = "#B0794E"
 
 
 # ==================== 区块切分 ====================
@@ -190,8 +208,11 @@ def _desc_of(head: str) -> str:
 
 # ==================== 各段解析 ====================
 def parse_version(text: str) -> str:
-    """三选一：全字幕 / 金句 / 全字幕 + 金句"""
+    """四选一：全字幕 / 金句 / 全字幕 + 金句 / 常驻标题"""
     s = re.sub(r"[\s*`_]", "", text)
+    # ⭐ 常驻标题版要先判：它不含"金句/强调"，放后面会被误判成"全字幕"
+    if ("常驻标题" in s) or ("标题常驻" in s) or ("常驻" in s and "标题" in s):
+        return V_TITLE
     if ("金句" not in s) and ("强调" not in s):
         return V_ALL
     if "全字幕" in s:
@@ -390,6 +411,82 @@ def parse_cover(block: str):
         else:
             res["anchor"] = v
     return res
+
+
+def _clean_title_text(raw: str) -> str:
+    r"""常驻标题文案清理：去句中标点（逗号/顿号等）；疑问句只在**末尾**保留一个“？”。
+
+    ⭐ 规则（2026-10-13 用户定）：
+      · 逗号、顿号、句号、冒号、分号、感叹号等一律删；
+      · 仅当原句是疑问句时，句末保留一个“？”；
+      · 清掉 markdown 标记与空白。
+    """
+    t = (raw or "").replace("**", "").strip().strip("　 ")
+    is_q = ("？" in t) or ("?" in t)
+    # 删掉所有句内/句末标点（含中英文问号，先全删，疑问句再补到末尾）
+    t = re.sub(r"[，,、。：:；;！!？?\s]+", "", t)
+    if is_q:
+        t += "？"
+    return t
+
+
+def parse_title_persist(block, cover=None, series_hint: str = ""):
+    r"""常驻标题（模式②）→ `{text, marks, color, size?}` 或 None。
+
+    MD 写法（「上屏方案」下的可选子节）：
+        ### 常驻标题
+        - 「成绩还没出我先管住嘴」重点：管住嘴
+        - 色：#B0794E            # 可选，缺省按系列识别色
+
+    · 不写该子节时，**回退用封面主句**（再做标点清理）；
+    · 重点词缺省时无标色（整句近黑）；
+    · 字数 ≥ TITLE_WARN_CHARS 给警告（建议缩短），≥ TITLE_MAX_CHARS 强提示；
+    · 返回的 text 已做“去标点／疑问留问号”清理。
+    """
+    text, focus, color = "", "", ""
+    if block and block.strip():
+        for ln in block.split("\n"):
+            s = ln.strip()
+            if not s:
+                continue
+            mc = re.search(r"色\s*[:：]\s*(#[0-9A-Fa-f]{6})", s)
+            if mc:
+                color = mc.group(1)
+            mf = re.search(r"重点(?:词)?\s*[:：]\s*([^，,（(#←]+)", s)
+            if mf and mf.group(1).strip():
+                focus = mf.group(1).strip().strip("**「」\"'“”")
+            if not text:
+                a = _anchors(s) or _quoted(s)
+                if a:
+                    text = a[0]
+    if not text and cover and cover.get("text"):
+        text = cover["text"]
+    if not text:
+        return None
+
+    text = _clean_title_text(text)
+    focus = re.sub(r"[，,、。：:；;！!？?\s**「」\"'“”]+", "", focus)
+    if not color:
+        color = TITLE_DEFAULT_COLOR
+        for k, v in TITLE_SERIES_COLORS.items():
+            if k and k in (series_hint or ""):
+                color = v
+                break
+
+    item = {"text": text, "color": color}
+    n = len(text.replace("？", ""))
+    if n >= TITLE_MAX_CHARS:
+        print(f"  ⚠️ 常驻标题 {n} 字（两行也偏挤，上限约 {TITLE_MAX_CHARS} 字）"
+              f"：建议缩短，而不是靠缩字号硬塞——「{text}」")
+    elif n >= TITLE_WARN_CHARS:
+        print(f"  · 常驻标题 {n} 字：字号将降到 {TITLE_SHRINK_SIZE} 号；"
+              f"能更短更好（基准 {TITLE_BASE_SIZE} 号、≤{TITLE_WARN_CHARS - 1} 字最稳）")
+    if focus:
+        if focus in text:
+            item["marks"] = [{"word": focus, "color": color, "bold": True}]
+        else:
+            print(f"  ⚠️ 常驻标题重点词「{focus}」不在标题里，已忽略标色（标题＝{text}）")
+    return item
 
 
 def parse_hook(block: str):
@@ -653,9 +750,16 @@ def parse_md(path: str) -> dict:
         screen = {"zoom": DEFAULT_ZOOM}
     bgm = parse_bgm(_pick(subs_blk, "背景音乐", "BGM", "配乐", "背景乐"))
 
+    # ⭐ 常驻标题（模式②）：可选子节；缺省时由封面主句兜底
+    title_persist = None
+    if ver == V_TITLE:
+        title_persist = parse_title_persist(
+            _pick(subs_blk, "常驻标题", "标题常驻", "核心标题"),
+            cover=cover, series_hint=md + path)
+
     out: dict = {}
-    if ver == V_KOU:
-        # 金句版：只有这几句上字幕
+    if ver in (V_KOU, V_TITLE):
+        # 金句版 / 常驻标题版：只有这几句上底部字幕
         rows = []
         for e in emph:
             row = {"anchor": e["anchor"]}
@@ -667,7 +771,7 @@ def parse_md(path: str) -> dict:
                 row["pad"] = e["pad"]
             rows.append(row)
         out["subs"] = rows if rows else "none"
-        # ⭐ 金句版这几句是**唯一的视觉文字**，默认用「强调」样式（更醒目）；
+        # ⭐ 这几句默认用「强调」样式（更醒目）；
         #    它们本来就在 subs 里，apply_subs_emph 会正常叠加。
         if emph:
             out["subs_emph"] = emph
@@ -677,8 +781,17 @@ def parse_md(path: str) -> dict:
             out["subs_emph"] = emph
 
     if punch:
-        out["punch"] = punch
-    if seq:
+        if ver == V_TITLE:
+            # ⭐ 常驻标题版：顶部让给常驻标题，结尾金句大字卡**改走底部**（用强调样式，
+            #    与底部强调句同一带、靠时间错开，本就不同时出现）。
+            for p in punch:
+                p = dict(p)
+                p["style"] = "强调"
+                out.setdefault("punch", []).append(p)
+        else:
+            out["punch"] = punch
+    # ⭐ 常驻标题版：序号条在顶部，会与常驻标题叠 → 该模式不渲染 seq
+    if seq and ver != V_TITLE:
         out["seq"] = seq
     if marks:
         out["marks"] = marks
@@ -688,6 +801,8 @@ def parse_md(path: str) -> dict:
         out["hook"] = hook
     if cards:
         out["cards"] = cards
+    if title_persist:
+        out["title_persist"] = title_persist
     if screen.get("zoom"):
         out["zoom"] = screen["zoom"]
     if bgm:
@@ -698,9 +813,10 @@ def parse_md(path: str) -> dict:
         "file": os.path.abspath(path),
         "version": V_LABEL[ver],
         "counts": {"强调句": len(emph), "大字卡": len(punch),
-                   "序号条": len(seq), "标色": len(marks),
+                   "序号条": 0 if ver == V_TITLE else len(seq), "标色": len(marks),
                    "封面": 1 if cover else 0,
                    "开头钩子": 1 if hook else 0,
+                   "常驻标题": 1 if title_persist else 0,
                    "浅底卡": len(cards),
                    "画面推近": 1 if screen.get("zoom") else 0,
                    "背景音乐": 1 if bgm else 0},
