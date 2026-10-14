@@ -1,0 +1,46 @@
+
+[stderr]
+Input #0, mov,mp4,m4a,3gp,3g2,mj2, from 'D:\个人资料\家庭教育\公众号\第一次月考对话方案\视频号文案\02_我不是那块料\_成品\成片_02.mp4':
+  Metadata:
+    major_brand     : isom
+    minor_version   : 512
+    compatible_brands: isomiso2avc1mp41
+    encoder         : Lavf63.7.100
+  Duration: 00:02:53.90, start: 0.000000, bitrate: 11832 kb/s
+  Stream #0:0[0x1](und): Video: h264 (High) (avc1 / 0x31637661), yuv420p(tv, bt709, progressive), 1080x1920 [SAR 1:1 DAR 9:16], 11641 kb/s, 29.98 fps, 29.98 tbr, 11992 tbn (default)
+    Metadata:
+      handler_name    : VideoHandler
+      encoder         : Lavc63.14.100 libx264
+  Stream #0:1[0x2](und): Audio: aac (LC) (mp4a / 0x6134706D), 48000 Hz, stereo, fltp, 189 kb/s (default)
+    Metadata:
+      handler_name    : SoundHandler
+Stream mapping:
+  Stream #0:0 -> #0:0 (h264 (native) -> wrapped_avframe (native))
+  Stream #0:1 -> #0:1 (aac (native) -> pcm_s16le (native))
+Press [q] to stop, [?] for help
+Output #0, null, to 'pipe:':
+  Metadata:
+    encoder         : Lavf63.7.100
+  Stream #0:0(und): Video: wrapped_avframe, yuv420p(tv, bt709, progressive), 1080x1920 [SAR 1:1 DAR 9:16], q=2-31, 200 kb/s, 29.98 fps, 29.98 tbn (default)
+    Metadata:
+      encoder         : Lavc63.14.100 wrapped_avframe
+      handler_name    : VideoHandler
+  Stream #0:1(und): Audio: pcm_s16le, 192000 Hz, stereo, s16, 6144 kb/s (default)
+    Metadata:
+      encoder         : Lavc63.14.100 pcm_s16le
+      handler_name    : SoundHandler
+[Parsed_loudnorm_0 @ 0000028543e40c40] 
+Input Integrated:    -14.5 LUFS
+Input True Peak:      -2.4 dBTP
+Input LRA:             2.7 LU
+Input Threshold:     -25.3 LUFS
+
+Output Integrated:   -14.2 LUFS
+Output True Peak:     -1.9 dBTP
+Output LRA:            2.8 LU
+Output Threshold:    -25.0 LUFS
+
+Normalization Type:   Dynamic
+Target Offset:        +0.2 LU
+[out#0/null @ 0000028545cc8b80] video:2157KiB audio:130388KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: unknown
+frame= 5210 fps=291 q=-0.0 Lsize=N/A time=00:02:53.95 bitrate=N/A speed=9.73x elapsed=0:00:17.88    

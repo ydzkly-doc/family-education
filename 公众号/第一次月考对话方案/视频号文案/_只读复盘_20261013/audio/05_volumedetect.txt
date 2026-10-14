@@ -1,0 +1,39 @@
+
+[stderr]
+Input #0, mov,mp4,m4a,3gp,3g2,mj2, from 'D:\个人资料\家庭教育\公众号\第一次月考对话方案\视频号文案\05_家长会\_成品\成片_05.mp4':
+  Metadata:
+    major_brand     : isom
+    minor_version   : 512
+    compatible_brands: isomiso2avc1mp41
+    encoder         : Lavf63.7.100
+  Duration: 00:03:15.00, start: 0.000000, bitrate: 10232 kb/s
+  Stream #0:0[0x1](und): Video: h264 (High) (avc1 / 0x31637661), yuv420p(tv, bt709/unknown/unknown, progressive), 1080x1920 [SAR 1:1 DAR 9:16], 10036 kb/s, 29.98 fps, 29.98 tbr, 11992 tbn (default)
+    Metadata:
+      handler_name    : VideoHandler
+      encoder         : Lavc63.14.100 libx264
+  Stream #0:1[0x2](und): Audio: aac (LC) (mp4a / 0x6134706D), 48000 Hz, stereo, fltp, 189 kb/s (default)
+    Metadata:
+      handler_name    : SoundHandler
+[Parsed_volumedetect_0 @ 00000258cf164a00] n_samples: 0
+Stream mapping:
+  Stream #0:0 -> #0:0 (h264 (native) -> wrapped_avframe (native))
+  Stream #0:1 -> #0:1 (aac (native) -> pcm_s16le (native))
+Press [q] to stop, [?] for help
+Output #0, null, to 'pipe:':
+  Metadata:
+    encoder         : Lavf63.7.100
+  Stream #0:0(und): Video: wrapped_avframe, yuv420p(tv, bt709/unknown/unknown, progressive), 1080x1920 [SAR 1:1 DAR 9:16], q=2-31, 200 kb/s, 29.98 fps, 29.98 tbn (default)
+    Metadata:
+      encoder         : Lavc63.14.100 wrapped_avframe
+      handler_name    : VideoHandler
+  Stream #0:1(und): Audio: pcm_s16le, 48000 Hz, stereo, s16, 1536 kb/s (default)
+    Metadata:
+      encoder         : Lavc63.14.100 pcm_s16le
+      handler_name    : SoundHandler
+[Parsed_volumedetect_0 @ 00000258cf164400] n_samples: 18716160
+[Parsed_volumedetect_0 @ 00000258cf164400] mean_volume: -17.6 dB
+[Parsed_volumedetect_0 @ 00000258cf164400] max_volume: -2.4 dB
+[Parsed_volumedetect_0 @ 00000258cf164400] histogram_2db: 6205
+[Parsed_volumedetect_0 @ 00000258cf164400] histogram_3db: 17657
+[out#0/null @ 00000258d10e09c0] video:2420KiB audio:36555KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: unknown
+frame= 5844 fps=288 q=-0.0 Lsize=N/A time=00:03:15.00 bitrate=N/A speed=9.62x elapsed=0:00:20.26    

@@ -1,0 +1,29 @@
+## 01_出分前忍住别问
+duration=181.000s size=219.0MiB bitrate=10148kbps
+V 1080x1920 h264 High level=40 fps=30/1 start=0.000 dur=180.933 end=180.933 br=9952743
+A aac 48000Hz 2ch start=0.000 dur=181.000 end=181.000 br=189855
+frames=0.1,0.3,2.2,18.1,45.25,90.5,135.75,162.9,179.5
+
+## 02_我不是那块料
+duration=173.900s size=245.3MiB bitrate=11833kbps
+V 1080x1920 h264 High level=40 fps=1499/50 start=0.000 dur=173.783 end=173.783 br=11641929
+A aac 48000Hz 2ch start=0.000 dur=173.900 end=173.900 br=189697
+frames=0.1,0.3,2.2,17.39,43.48,86.95,130.43,156.51,172.4
+
+## 03_考好别泼冷水
+duration=141.000s size=164.4MiB bitrate=9779kbps
+V 1080x1920 h264 High level=40 fps=30/1 start=0.000 dur=140.967 end=140.967 br=9582955
+A aac 48000Hz 2ch start=0.000 dur=141.000 end=141.000 br=189299
+frames=0.1,0.3,2.2,14.1,35.25,70.5,105.75,126.9,139.5
+
+## 04_火上来先离开
+duration=153.200s size=187.3MiB bitrate=10253kbps
+V 1080x1920 h264 High level=40 fps=30/1 start=0.000 dur=153.100 end=153.100 br=10061484
+A aac 48000Hz 2ch start=0.000 dur=153.200 end=153.200 br=189325
+frames=0.1,0.3,2.2,15.32,38.3,76.6,114.9,137.88,151.7
+
+## 05_家长会
+duration=195.000s size=237.9MiB bitrate=10232kbps
+V 1080x1920 h264 High level=40 fps=1499/50 start=0.000 dur=194.930 end=194.930 br=10036746
+A aac 48000Hz 2ch start=0.000 dur=195.000 end=195.000 br=189981
+frames=0.1,0.3,2.2,19.5,48.75,97.5,146.25,175.5,193.5
