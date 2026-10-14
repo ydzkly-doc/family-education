@@ -8,7 +8,7 @@ import subprocess
 
 FFMPEG = r"C:\Users\ZhuanZ\.workbuddy\binaries\ffmpeg\bin\ffmpeg.exe"
 BASE = r"D:\个人资料\家庭教育\公众号\改善你的亲子关系\视频号文案"
-OUT = r"D:\个人资料\家庭教育\_帧候选_改善"
+OUT = r"D:\个人资料\家庭教育\_过程文件\帧候选\改善"
 os.makedirs(OUT, exist_ok=True)
 
 # (编号, 目录名, 无卡版时长秒)

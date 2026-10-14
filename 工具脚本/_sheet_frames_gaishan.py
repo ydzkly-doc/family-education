@@ -3,7 +3,7 @@
 import os
 from PIL import Image
 
-D = r"D:\个人资料\家庭教育\_帧候选_改善"
+D = r"D:\个人资料\家庭教育\_过程文件\帧候选\改善"
 CW, CH = 400, 711  # 单帧缩略
 for i in range(1, 13):
     no = f"{i:02d}"

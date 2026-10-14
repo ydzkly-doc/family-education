@@ -11,7 +11,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 
 ROOT = r"D:\个人资料\家庭教育"
-FRAMEDIR = os.path.join(ROOT, "_帧候选_改善")
+FRAMEDIR = os.path.join(ROOT, "_过程文件", "帧候选", "改善")
 OUTDIR = os.path.join(ROOT, "公众号", "改善你的亲子关系", "视频号文案", "_新封面_米雾_20261011")
 os.makedirs(OUTDIR, exist_ok=True)
 

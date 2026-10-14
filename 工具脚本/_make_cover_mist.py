@@ -6,7 +6,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 ROOT = r"D:\个人资料\家庭教育"
-SRC = os.path.join(ROOT, "_帧候选", "01_a.jpg")
+SRC = os.path.join(ROOT, "_过程文件", "帧候选", "手机方案", "01_a.jpg")
 OUT = os.path.join(ROOT, "公众号", "手机方案", "视频号文案_v4", "_封面样张_A+C_20261011")
 os.makedirs(OUT, exist_ok=True)
 
