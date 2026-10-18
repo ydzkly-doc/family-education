@@ -42,6 +42,7 @@ except Exception:                       # 允许脱离管道独立运行
 
 CIRCLED = "①②③④⑤⑥⑦⑧⑨⑩"
 DEFAULT_PUNCH_HOLD = 4.5                # 金句大字卡默认停留（秒）
+PUNCH_IN_TITLE_SIZE = 104              # 常驻标题版：金句卡走底部时仍放大到的字号（>强调82，<顶部金句100档视觉同级）
 DEFAULT_SEQ_HOLD = 2.5                  # 序号条默认停留（秒）
 DEFAULT_HOOK_HOLD = 2.5                 # 开头钩子默认停留（秒）—— 与引擎侧默认一致
 DEFAULT_CARD_HOLD = 3.0                 # 浅底文字卡默认停留（秒）
@@ -311,6 +312,10 @@ def parse_punch(block: str):
             card["marks"] = mk
         card["anchor"] = anchor or txt[0]     # 没写挂句就用文字自身
         card["hold"] = _hold(head, DEFAULT_PUNCH_HOLD)
+        # ⭐ 描述里写「N号」可指定金句卡字号（常驻标题版金句走底部时用它加大）
+        msz = re.search(r"(\d{2,3})\s*号", desc)
+        if msz:
+            card["size"] = int(msz.group(1))
         out.append(card)
 
         # ⭐ 2026-09-28 改：**只认明确开关**（整行就是 `片尾定格卡：是`），不再从"回放"二字去猜
@@ -782,11 +787,15 @@ def parse_md(path: str) -> dict:
 
     if punch:
         if ver == V_TITLE:
-            # ⭐ 常驻标题版：顶部让给常驻标题，结尾金句大字卡**改走底部**（用强调样式，
-            #    与底部强调句同一带、靠时间错开，本就不同时出现）。
+            # ⭐ 常驻标题版：顶部让给常驻标题，结尾金句大字卡**改走底部**（与底部强调句
+            #    同一带、靠时间错开，本就不同时出现）。
+            # ⭐ 2026-10-17：金句卡不能跟强调句一样小（实测用户认不出是金句）→ 即便走底部，
+            #    仍保留"大字卡"分量：item 级 size 默认放大到 PUNCH_IN_TITLE_SIZE；
+            #    MD 可在金句卡描述里写「N号」覆盖（parse_punch 已读进 p["size"]）。
             for p in punch:
                 p = dict(p)
                 p["style"] = "强调"
+                p.setdefault("size", PUNCH_IN_TITLE_SIZE)
                 out.setdefault("punch", []).append(p)
         else:
             out["punch"] = punch
