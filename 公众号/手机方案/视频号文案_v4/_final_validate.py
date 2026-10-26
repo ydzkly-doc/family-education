@@ -67,12 +67,9 @@ print(f"{'目录':<34}{'结果':<5}{'口播字数':<6}问题")
 for name, st, n, msg in rows:
     print(f"{name:<34}{st:<6}{n:<7}{msg}")
 
-print("\n字数区间检查（常规360-520，00约300-340）：")
+print("\n字数区间检查（常规360-520；00 总纲 2026-10-26 起扩为完整立场条、同档）：")
 for name, st, n, msg in rows:
-    if name.startswith("00"):
-        flag = "" if 300 <= n <= 340 else "  <-- 00越界"
-    else:
-        flag = "" if 360 <= n <= 520 else "  <-- 越界"
+    flag = "" if 360 <= n <= 520 else "  <-- 越界"
     if flag:
         print(f"  {name}: {n}{flag}")
 
