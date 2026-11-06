@@ -196,6 +196,8 @@ def sync_one(pkg: str, check_only=False, do_zip=True, snapshot_only=False) -> bo
             tag = "✅" if same else "❌"
             digests = " ".join(f"{label}={str(v)[:8]}" for label, v in vals.items())
             print(f"    {tag} {name}  {digests}")
+            if check_only and not same:
+                print("      ⚠️ 不一致时禁止直接同步：源有新改动→先确认后正向同步；快照有新改动→先回收到真相源，避免覆盖丢失。")
     labels = " / ".join(targets.keys())
     print("  " + (f"✅ PASS —— {labels} 全部一致"
                   if ok else f"❌ FAIL —— {labels} 不一致，先别交付"))
