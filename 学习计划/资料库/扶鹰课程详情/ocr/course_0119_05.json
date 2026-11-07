@@ -1,0 +1,150 @@
+[
+  {
+    "text": "课程目录",
+    "confidence": 0.99992
+  },
+  {
+    "text": "01",
+    "confidence": 0.99996
+  },
+  {
+    "text": "双中点双角分模型",
+    "confidence": 0.99995
+  },
+  {
+    "text": "02",
+    "confidence": 0.99998
+  },
+  {
+    "text": "直角转动模型",
+    "confidence": 0.99996
+  },
+  {
+    "text": "03",
+    "confidence": 0.99995
+  },
+  {
+    "text": "平行线间拐点模型",
+    "confidence": 0.99994
+  },
+  {
+    "text": "04",
+    "confidence": 0.99996
+  },
+  {
+    "text": "平行角分等腰模型",
+    "confidence": 0.99997
+  },
+  {
+    "text": "05",
+    "confidence": 0.99996
+  },
+  {
+    "text": "三角形内外角计算模型",
+    "confidence": 0.99974
+  },
+  {
+    "text": "06",
+    "confidence": 0.99996
+  },
+  {
+    "text": "三角形角分线计算模型",
+    "confidence": 0.99994
+  },
+  {
+    "text": "07",
+    "confidence": 0.99996
+  },
+  {
+    "text": "轴对称中的最短路径模型",
+    "confidence": 0.99994
+  },
+  {
+    "text": "08",
+    "confidence": 0.99994
+  },
+  {
+    "text": "分解旋转模型",
+    "confidence": 0.99997
+  },
+  {
+    "text": "09",
+    "confidence": 0.99994
+  },
+  {
+    "text": "边等角补模型",
+    "confidence": 0.99976
+  },
+  {
+    "text": "10",
+    "confidence": 0.99996
+  },
+  {
+    "text": "半角模型",
+    "confidence": 0.99996
+  },
+  {
+    "text": "11",
+    "confidence": 0.99994
+  },
+  {
+    "text": "风吹树倒模型",
+    "confidence": 0.99986
+  },
+  {
+    "text": "12",
+    "confidence": 0.99999
+  },
+  {
+    "text": "单中点模型",
+    "confidence": 0.99912
+  },
+  {
+    "text": "13",
+    "confidence": 1.0
+  },
+  {
+    "text": "常见相似模型",
+    "confidence": 0.99993
+  },
+  {
+    "text": "14",
+    "confidence": 0.99998
+  },
+  {
+    "text": "多中点模型",
+    "confidence": 0.99996
+  },
+  {
+    "text": "15",
+    "confidence": 0.99998
+  },
+  {
+    "text": "一线三等角模型",
+    "confidence": 0.99987
+  },
+  {
+    "text": "16",
+    "confidence": 0.99998
+  },
+  {
+    "text": "弦图模型",
+    "confidence": 0.99994
+  },
+  {
+    "text": "17",
+    "confidence": 0.99996
+  },
+  {
+    "text": "辅助圆模型一",
+    "confidence": 0.99381
+  },
+  {
+    "text": "18",
+    "confidence": 0.99998
+  },
+  {
+    "text": "辅助圆模型二",
+    "confidence": 0.99494
+  }
+]

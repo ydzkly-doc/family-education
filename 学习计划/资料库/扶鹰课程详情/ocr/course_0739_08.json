@@ -1,0 +1,110 @@
+[
+  {
+    "text": "第一章：古城风光",
+    "confidence": 0.99993
+  },
+  {
+    "text": "(13集)",
+    "confidence": 0.99333
+  },
+  {
+    "text": "01南京",
+    "confidence": 0.99996
+  },
+  {
+    "text": "[唐]刘禹锡《乌衣巷》",
+    "confidence": 0.99901
+  },
+  {
+    "text": "02洛阳",
+    "confidence": 0.99964
+  },
+  {
+    "text": "[唐]张籍《秋思》",
+    "confidence": 0.99912
+  },
+  {
+    "text": "03西安",
+    "confidence": 0.99959
+  },
+  {
+    "text": "[唐]韩愈《早春呈水部张十八员外》",
+    "confidence": 0.99945
+  },
+  {
+    "text": "04苏州",
+    "confidence": 0.99995
+  },
+  {
+    "text": "[唐]张继《枫桥夜泊》",
+    "confidence": 0.99974
+  },
+  {
+    "text": "05扬州",
+    "confidence": 0.99993
+  },
+  {
+    "text": "[宋]王安石《泊船瓜洲》",
+    "confidence": 0.99893
+  },
+  {
+    "text": "06杭州",
+    "confidence": 0.99984
+  },
+  {
+    "text": "[宋]杨万里《晓出净慈寺送林子方》",
+    "confidence": 0.9994
+  },
+  {
+    "text": "07成都",
+    "confidence": 0.99992
+  },
+  {
+    "text": "[唐]杜甫《春夜喜雨》",
+    "confidence": 0.99951
+  },
+  {
+    "text": "08宣城",
+    "confidence": 0.99995
+  },
+  {
+    "text": "[唐]李白《独坐敬亭山》",
+    "confidence": 0.99944
+  },
+  {
+    "text": "[唐]张志和《渔歌子》",
+    "confidence": 0.95742
+  },
+  {
+    "text": "09湖州",
+    "confidence": 0.99987
+  },
+  {
+    "text": "(西塞山前白鹭飞)",
+    "confidence": 0.97349
+  },
+  {
+    "text": "10绍兴",
+    "confidence": 0.9991
+  },
+  {
+    "text": "[宋]陆游《游山西村》",
+    "confidence": 0.99979
+  },
+  {
+    "text": "11黄冈",
+    "confidence": 0.99798
+  },
+  {
+    "text": "[宋]苏轼《念奴娇·赤壁怀古》",
+    "confidence": 0.98306
+  },
+  {
+    "text": "12武汉",
+    "confidence": 0.99565
+  },
+  {
+    "text": "[唐]崔题《黄鹤楼》",
+    "confidence": 0.91217
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "code": 200,
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "content": "<p><img src=\"https://public.fuyingy.com/79569202403242121022790.jpg\" title=\"未标题-1.jpg\" alt=\"未标题-1.jpg\"/></p>",
+      "type": 2
+    }
+  ]
+}

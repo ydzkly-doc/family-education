@@ -1,0 +1,318 @@
+[
+  {
+    "text": "音频课程",
+    "confidence": 0.99557
+  },
+  {
+    "text": "建筑材料篇",
+    "confidence": 0.99996
+  },
+  {
+    "text": "1",
+    "confidence": 0.99983
+  },
+  {
+    "text": "木构建筑",
+    "confidence": 0.99985
+  },
+  {
+    "text": "为什么中国古代建筑都喜欢用木头呢？",
+    "confidence": 0.99392
+  },
+  {
+    "text": "2",
+    "confidence": 0.99978
+  },
+  {
+    "text": "琉璃瓦",
+    "confidence": 0.99125
+  },
+  {
+    "text": "灰溜溜的粘土是怎么变成奢华的建筑装饰呢？",
+    "confidence": 0.95503
+  },
+  {
+    "text": "3",
+    "confidence": 0.99992
+  },
+  {
+    "text": "金砖",
+    "confidence": 0.99993
+  },
+  {
+    "text": "故宫的地面都是金子做的吗？",
+    "confidence": 0.95924
+  },
+  {
+    "text": "4",
+    "confidence": 0.99999
+  },
+  {
+    "text": "土遗址",
+    "confidence": 0.99627
+  },
+  {
+    "text": "面对风沙，这座古城到底是如何保存下来的？",
+    "confidence": 0.99001
+  },
+  {
+    "text": "5",
+    "confidence": 0.99999
+  },
+  {
+    "text": "石雕",
+    "confidence": 0.99763
+  },
+  {
+    "text": "一块石头是如何变成精致雅望的？",
+    "confidence": 0.95022
+  },
+  {
+    "text": "建筑技法篇",
+    "confidence": 0.99991
+  },
+  {
+    "text": "6",
+    "confidence": 0.99995
+  },
+  {
+    "text": "故宫角楼",
+    "confidence": 0.91184
+  },
+  {
+    "text": "不用一根钉子就能造出一座角楼？",
+    "confidence": 0.99124
+  },
+  {
+    "text": "7",
+    "confidence": 0.99956
+  },
+  {
+    "text": "赵州桥",
+    "confidence": 0.99965
+  },
+  {
+    "text": "如何只用石头砌成一座桥？",
+    "confidence": 0.95619
+  },
+  {
+    "text": "8",
+    "confidence": 0.99999
+  },
+  {
+    "text": "烫样、样式雷",
+    "confidence": 0.99786
+  },
+  {
+    "text": "高大精巧的建筑如何“打样”？",
+    "confidence": 0.98971
+  },
+  {
+    "text": "建筑巧思篇",
+    "confidence": 0.99982
+  },
+  {
+    "text": "9",
+    "confidence": 0.99896
+  },
+  {
+    "text": "乔家大院",
+    "confidence": 0.99988
+  },
+  {
+    "text": "超级讲究的大院设计？",
+    "confidence": 0.99619
+  },
+  {
+    "text": "10",
+    "confidence": 0.99996
+  },
+  {
+    "text": "苏州古典园林",
+    "confidence": 0.99995
+  },
+  {
+    "text": "绝不讲究对称的建筑？",
+    "confidence": 0.98744
+  },
+  {
+    "text": "11",
+    "confidence": 0.99992
+  },
+  {
+    "text": "安徽宏村",
+    "confidence": 0.99911
+  },
+  {
+    "text": "睡在水边的建筑？",
+    "confidence": 0.97939
+  },
+  {
+    "text": "12",
+    "confidence": 0.99998
+  },
+  {
+    "text": "恒山悬空寺",
+    "confidence": 0.99817
+  },
+  {
+    "text": "“几根柱子”竞能支撑起悬在山崖上的寺庙？",
+    "confidence": 0.96439
+  },
+  {
+    "text": "13",
+    "confidence": 0.99998
+  },
+  {
+    "text": "湘西吊脚楼",
+    "confidence": 0.99913
+  },
+  {
+    "text": "山坡水边的“危楼”？",
+    "confidence": 0.99519
+  },
+  {
+    "text": "建筑仪式篇",
+    "confidence": 0.99997
+  },
+  {
+    "text": "14",
+    "confidence": 0.99997
+  },
+  {
+    "text": "布达拉宫",
+    "confidence": 0.99897
+  },
+  {
+    "text": "为什么要在海拔3700米的地方建造一座宫殿？",
+    "confidence": 0.981
+  },
+  {
+    "text": "15",
+    "confidence": 0.99998
+  },
+  {
+    "text": "乐山大佛",
+    "confidence": 0.99978
+  },
+  {
+    "text": "是什么原因，让一尊大佛在山水间坐了千年？",
+    "confidence": 0.99074
+  },
+  {
+    "text": "16",
+    "confidence": 0.99999
+  },
+  {
+    "text": "孔庙",
+    "confidence": 0.9999
+  },
+  {
+    "text": "孔庙的房顶为何与故宫太和殿一个等级？",
+    "confidence": 0.98263
+  },
+  {
+    "text": "建筑传奇篇",
+    "confidence": 0.99994
+  },
+  {
+    "text": "17",
+    "confidence": 0.99998
+  },
+  {
+    "text": "莫高窟",
+    "confidence": 0.98977
+  },
+  {
+    "text": "是谁在墙壁上建起了一座博物馆？",
+    "confidence": 0.98746
+  },
+  {
+    "text": "18",
+    "confidence": 0.99999
+  },
+  {
+    "text": "应县木塔",
+    "confidence": 0.99976
+  },
+  {
+    "text": "一座木塔为何经历了上千年都不会倒？",
+    "confidence": 0.99565
+  },
+  {
+    "text": "19",
+    "confidence": 0.99998
+  },
+  {
+    "text": "岳阳楼",
+    "confidence": 0.99997
+  },
+  {
+    "text": "没有见过名楼，他却为名楼写下了传世名作？",
+    "confidence": 0.99276
+  },
+  {
+    "text": "20",
+    "confidence": 0.99998
+  },
+  {
+    "text": "秦始皇陵",
+    "confidence": 0.9832
+  },
+  {
+    "text": "需惊世界的地下宫殿究竞什么样？",
+    "confidence": 0.96006
+  },
+  {
+    "text": "建筑功能篇",
+    "confidence": 0.99999
+  },
+  {
+    "text": "21",
+    "confidence": 0.99998
+  },
+  {
+    "text": "藻井、防火墙和太平缸",
+    "confidence": 0.99907
+  },
+  {
+    "text": "用建筑防火靠潜吗？",
+    "confidence": 0.96235
+  },
+  {
+    "text": "22",
+    "confidence": 0.99999
+  },
+  {
+    "text": "开平碉堡",
+    "confidence": 0.89628
+  },
+  {
+    "text": "是什么楼可以防火、防盗、防野兽？",
+    "confidence": 0.99003
+  },
+  {
+    "text": "23",
+    "confidence": 0.99998
+  },
+  {
+    "text": "冰窖和火地",
+    "confidence": 0.99992
+  },
+  {
+    "text": "故宫是如何让建筑冬暖夏凉的？",
+    "confidence": 0.99216
+  },
+  {
+    "text": "24",
+    "confidence": 1.0
+  },
+  {
+    "text": "鼓楼/间中华光楼",
+    "confidence": 0.97129
+  },
+  {
+    "text": "没有手机，古代是什么在传递消息？",
+    "confidence": 0.99582
+  }
+]

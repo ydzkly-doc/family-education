@@ -1,0 +1,558 @@
+[
+  {
+    "text": "剧目大纲：",
+    "confidence": 0.9701
+  },
+  {
+    "text": "序号",
+    "confidence": 0.99997
+  },
+  {
+    "text": "剧目名称-科学家",
+    "confidence": 0.99987
+  },
+  {
+    "text": "所属类别",
+    "confidence": 0.99703
+  },
+  {
+    "text": "1",
+    "confidence": 0.99958
+  },
+  {
+    "text": "想撬起地球的人——阿基米德(上)",
+    "confidence": 0.98538
+  },
+  {
+    "text": "物理",
+    "confidence": 0.99991
+  },
+  {
+    "text": "2",
+    "confidence": 0.99999
+  },
+  {
+    "text": "想撬起地球的人——阿基米德(下)",
+    "confidence": 0.98563
+  },
+  {
+    "text": "物理",
+    "confidence": 0.99985
+  },
+  {
+    "text": "3",
+    "confidence": 0.99991
+  },
+  {
+    "text": "月球上有他的名字——祖冲之(上)",
+    "confidence": 0.9725
+  },
+  {
+    "text": "数学",
+    "confidence": 0.9998
+  },
+  {
+    "text": "4",
+    "confidence": 0.99987
+  },
+  {
+    "text": "月球上有他的名字——祖冲之(下)",
+    "confidence": 0.97727
+  },
+  {
+    "text": "数学",
+    "confidence": 0.99966
+  },
+  {
+    "text": "5",
+    "confidence": 0.99683
+  },
+  {
+    "text": "第一个获得诺贝尔的女性——居里夫人(上)",
+    "confidence": 0.98983
+  },
+  {
+    "text": "化学",
+    "confidence": 0.9999
+  },
+  {
+    "text": "6",
+    "confidence": 0.84625
+  },
+  {
+    "text": "第一个获得诺贝尔的女性——居里夫人(下)",
+    "confidence": 0.98681
+  },
+  {
+    "text": "化学",
+    "confidence": 0.99992
+  },
+  {
+    "text": "7",
+    "confidence": 0.89862
+  },
+  {
+    "text": "日心说创始人——哥白尼(上)",
+    "confidence": 0.95808
+  },
+  {
+    "text": "天文",
+    "confidence": 0.99984
+  },
+  {
+    "text": "8",
+    "confidence": 0.99595
+  },
+  {
+    "text": "日心说创始人——哥白尼(下)",
+    "confidence": 0.95845
+  },
+  {
+    "text": "天文",
+    "confidence": 0.99986
+  },
+  {
+    "text": "9",
+    "confidence": 0.91894
+  },
+  {
+    "text": "相对论的创始人——爱因斯坦(上)",
+    "confidence": 0.98526
+  },
+  {
+    "text": "物理",
+    "confidence": 0.99977
+  },
+  {
+    "text": "10",
+    "confidence": 0.99986
+  },
+  {
+    "text": "相对论的创始人——爱因斯坦(下)",
+    "confidence": 0.98266
+  },
+  {
+    "text": "物理",
+    "confidence": 0.99995
+  },
+  {
+    "text": "11",
+    "confidence": 0.99918
+  },
+  {
+    "text": "解剖学之父——维萨里(上)",
+    "confidence": 0.98587
+  },
+  {
+    "text": "医学",
+    "confidence": 0.99997
+  },
+  {
+    "text": "12",
+    "confidence": 0.99991
+  },
+  {
+    "text": "解剖学之父——维萨里(下)",
+    "confidence": 0.97097
+  },
+  {
+    "text": "医学",
+    "confidence": 0.99995
+  },
+  {
+    "text": "13",
+    "confidence": 0.99998
+  },
+  {
+    "text": "勇敢的科学斗士——布鲁诺(上)",
+    "confidence": 0.9878
+  },
+  {
+    "text": "天文",
+    "confidence": 0.99996
+  },
+  {
+    "text": "14",
+    "confidence": 0.99989
+  },
+  {
+    "text": "勇敢的科学斗士——布鲁诺(下)",
+    "confidence": 0.95224
+  },
+  {
+    "text": "天文",
+    "confidence": 0.99996
+  },
+  {
+    "text": "15",
+    "confidence": 0.99996
+  },
+  {
+    "text": "总是仰望星空的人——布拉赫(上)",
+    "confidence": 0.98736
+  },
+  {
+    "text": "天文",
+    "confidence": 0.99992
+  },
+  {
+    "text": "16",
+    "confidence": 0.99996
+  },
+  {
+    "text": "总是仰望星空的人——布拉赫(下)",
+    "confidence": 0.96632
+  },
+  {
+    "text": "天文",
+    "confidence": 0.99988
+  },
+  {
+    "text": "17",
+    "confidence": 0.99996
+  },
+  {
+    "text": "三百年终于沉冤得雪——伽利略(上)",
+    "confidence": 0.9856
+  },
+  {
+    "text": "天文",
+    "confidence": 0.99993
+  },
+  {
+    "text": "18",
+    "confidence": 0.99915
+  },
+  {
+    "text": "三百年终于沉冤得雪——伽利略(下)",
+    "confidence": 0.96508
+  },
+  {
+    "text": "天文",
+    "confidence": 0.99991
+  },
+  {
+    "text": "19",
+    "confidence": 0.99999
+  },
+  {
+    "text": "盲文的创造——布莱叶(上)",
+    "confidence": 0.98816
+  },
+  {
+    "text": "实用百科",
+    "confidence": 0.99992
+  },
+  {
+    "text": "20",
+    "confidence": 0.99999
+  },
+  {
+    "text": "盲文的创造——布莱叶(下)",
+    "confidence": 0.97057
+  },
+  {
+    "text": "实用百科",
+    "confidence": 0.99994
+  },
+  {
+    "text": "21",
+    "confidence": 0.99991
+  },
+  {
+    "text": "成功预言彗星的人——哈雷(上)",
+    "confidence": 0.98798
+  },
+  {
+    "text": "天文",
+    "confidence": 0.99994
+  },
+  {
+    "text": "22",
+    "confidence": 0.99995
+  },
+  {
+    "text": "成功预言彗星的人——哈雷(下)",
+    "confidence": 0.95373
+  },
+  {
+    "text": "天文",
+    "confidence": 0.9999
+  },
+  {
+    "text": "23",
+    "confidence": 0.99998
+  },
+  {
+    "text": "天不生牛顿，万古如长夜——牛顿(上)",
+    "confidence": 0.98469
+  },
+  {
+    "text": "物理",
+    "confidence": 0.99995
+  },
+  {
+    "text": "24",
+    "confidence": 0.99998
+  },
+  {
+    "text": "天不生牛顿，万古如长夜——牛顿(下)",
+    "confidence": 0.9665
+  },
+  {
+    "text": "物理",
+    "confidence": 0.9999
+  },
+  {
+    "text": "25",
+    "confidence": 0.99999
+  },
+  {
+    "text": "揭开雷电之迷的开国之父——富兰克林(上)",
+    "confidence": 0.98604
+  },
+  {
+    "text": "实用百科",
+    "confidence": 0.99997
+  },
+  {
+    "text": "26",
+    "confidence": 0.99998
+  },
+  {
+    "text": "揭开雷电之迷的开国之父——富兰克林(下)",
+    "confidence": 0.98441
+  },
+  {
+    "text": "实用百科",
+    "confidence": 0.99991
+  },
+  {
+    "text": "27",
+    "confidence": 0.99998
+  },
+  {
+    "text": "看门人发现“小人国”——列文虎克(上)",
+    "confidence": 0.98595
+  },
+  {
+    "text": "实用百科",
+    "confidence": 0.99994
+  },
+  {
+    "text": "28",
+    "confidence": 1.0
+  },
+  {
+    "text": "看门人发现“小人国”——列文虎克(下)",
+    "confidence": 0.97935
+  },
+  {
+    "text": "实用百科",
+    "confidence": 0.99997
+  },
+  {
+    "text": "29",
+    "confidence": 0.99999
+  },
+  {
+    "text": "推动工业革命的人——瓦特(上)",
+    "confidence": 0.98052
+  },
+  {
+    "text": "实用百科",
+    "confidence": 0.99995
+  },
+  {
+    "text": "30",
+    "confidence": 0.99999
+  },
+  {
+    "text": "推动工业革命的人——瓦特(下)",
+    "confidence": 0.97557
+  },
+  {
+    "text": "实用百科",
+    "confidence": 0.99995
+  },
+  {
+    "text": "31",
+    "confidence": 0.9999
+  },
+  {
+    "text": "发现燃烧的秘密——拉瓦锡(上)",
+    "confidence": 0.9792
+  },
+  {
+    "text": "化学",
+    "confidence": 0.99982
+  },
+  {
+    "text": "32",
+    "confidence": 0.99999
+  },
+  {
+    "text": "发现燃烧的秘密——拉瓦锡(下)",
+    "confidence": 0.96615
+  },
+  {
+    "text": "化学",
+    "confidence": 0.9999
+  },
+  {
+    "text": "33",
+    "confidence": 0.99999
+  },
+  {
+    "text": "进化论的奠基人——达尔文(上)",
+    "confidence": 0.98844
+  },
+  {
+    "text": "生物",
+    "confidence": 0.99987
+  },
+  {
+    "text": "34",
+    "confidence": 0.99999
+  },
+  {
+    "text": "进化论的奠基人——达尔文(下)",
+    "confidence": 0.98716
+  },
+  {
+    "text": "生物",
+    "confidence": 0.99993
+  },
+  {
+    "text": "35",
+    "confidence": 0.99999
+  },
+  {
+    "text": "从“朝三暮四”到“专心致志”——拉马克(上)",
+    "confidence": 0.98694
+  },
+  {
+    "text": "生物",
+    "confidence": 0.99988
+  },
+  {
+    "text": "36",
+    "confidence": 0.99998
+  },
+  {
+    "text": "从“朝三暮四”到“专心致志”——拉马克(下)",
+    "confidence": 0.97972
+  },
+  {
+    "text": "生物",
+    "confidence": 0.99996
+  },
+  {
+    "text": "37",
+    "confidence": 0.99995
+  },
+  {
+    "text": "带领人类战胜“天花”——琴纳(上)",
+    "confidence": 0.97905
+  },
+  {
+    "text": "医学",
+    "confidence": 0.99996
+  },
+  {
+    "text": "38",
+    "confidence": 0.99999
+  },
+  {
+    "text": "带领人类战胜“天花”——琴纳(下)",
+    "confidence": 0.97591
+  },
+  {
+    "text": "医学",
+    "confidence": 1.0
+  },
+  {
+    "text": "39",
+    "confidence": 1.0
+  },
+  {
+    "text": "十足的“昆虫迷”——法布尔(上)",
+    "confidence": 0.98212
+  },
+  {
+    "text": "生物",
+    "confidence": 0.99993
+  },
+  {
+    "text": "40",
+    "confidence": 0.99999
+  },
+  {
+    "text": "十足的“昆虫迷”——法布尔(下)",
+    "confidence": 0.98266
+  },
+  {
+    "text": "生物",
+    "confidence": 0.99995
+  },
+  {
+    "text": "41",
+    "confidence": 0.99982
+  },
+  {
+    "text": "让蒸汽火车跑起来的人——斯蒂芬逊(上)",
+    "confidence": 0.98029
+  },
+  {
+    "text": "实用百科",
+    "confidence": 0.99994
+  },
+  {
+    "text": "42",
+    "confidence": 1.0
+  },
+  {
+    "text": "让蒸汽火车跑起来的人——斯蒂芬逊(下)",
+    "confidence": 0.97865
+  },
+  {
+    "text": "实用百科",
+    "confidence": 0.99996
+  },
+  {
+    "text": "43",
+    "confidence": 1.0
+  },
+  {
+    "text": "在修道院做豌豆实验的神父——孟德尔(上)",
+    "confidence": 0.98972
+  },
+  {
+    "text": "生物",
+    "confidence": 0.99994
+  },
+  {
+    "text": "44",
+    "confidence": 1.0
+  },
+  {
+    "text": "在修道院做豌豆实验的神父——孟德尔(下)",
+    "confidence": 0.97992
+  },
+  {
+    "text": "生物",
+    "confidence": 0.99988
+  },
+  {
+    "text": "45",
+    "confidence": 1.0
+  },
+  {
+    "text": "珍贵的友谊——华莱士(上)",
+    "confidence": 0.98336
+  },
+  {
+    "text": "生物",
+    "confidence": 0.9999
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "code": 200,
+  "success": true,
+  "data": [
+    {
+      "id": 64,
+      "content": "<p><img title=\"1566540444839550.png\" alt=\"身高课详情_01.png\" src=\"http://edu.fuyingy.com/public/uploads/images/20190823/1566540444839550.png\"/></p><p><img title=\"1566540449122124.png\" alt=\"身高课详情_03.png\" src=\"http://edu.fuyingy.com/public/uploads/images/20190823/1566540449122124.png\"/></p><p><img title=\"1566540454364909.png\" alt=\"身高课详情_05.png\" src=\"http://edu.fuyingy.com/public/uploads/images/20190823/1566540454364909.png\"/></p>",
+      "type": 2
+    }
+  ]
+}

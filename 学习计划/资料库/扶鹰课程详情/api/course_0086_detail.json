@@ -1,0 +1,11 @@
+{
+  "code": 200,
+  "success": true,
+  "data": [
+    {
+      "id": 86,
+      "content": "<p><img title=\"1574739274965245.jpg\" alt=\"动物详情页_01.jpg\" src=\"http://edu.fuyingy.com/public/uploads/images/20191126/1574739274965245.jpg\"/><img title=\"1574739278888977.jpg\" alt=\"动物详情页_02.jpg\" src=\"http://edu.fuyingy.com/public/uploads/images/20191126/1574739278888977.jpg\"/><img title=\"1574739282451039.jpg\" alt=\"动物详情页_03.jpg\" src=\"http://edu.fuyingy.com/public/uploads/images/20191126/1574739282451039.jpg\"/><img title=\"1574739285626851.jpg\" alt=\"动物详情页_04.jpg\" src=\"http://edu.fuyingy.com/public/uploads/images/20191126/1574739285626851.jpg\"/></p>",
+      "type": 2
+    }
+  ]
+}

@@ -1,0 +1,350 @@
+[
+  {
+    "text": "46",
+    "confidence": 0.99999
+  },
+  {
+    "text": "珍贵的友谊——华莱士(下)",
+    "confidence": 0.98334
+  },
+  {
+    "text": "生物",
+    "confidence": 0.99988
+  },
+  {
+    "text": "47",
+    "confidence": 1.0
+  },
+  {
+    "text": "炸药大王——诺贝尔(上)",
+    "confidence": 0.99215
+  },
+  {
+    "text": "实用百科",
+    "confidence": 0.99992
+  },
+  {
+    "text": "48",
+    "confidence": 1.0
+  },
+  {
+    "text": "炸药大王——诺贝尔(下)",
+    "confidence": 0.98939
+  },
+  {
+    "text": "实用百科",
+    "confidence": 0.99992
+  },
+  {
+    "text": "49",
+    "confidence": 1.0
+  },
+  {
+    "text": "马车上做的梦——凯库勒(上)",
+    "confidence": 0.98554
+  },
+  {
+    "text": "化学",
+    "confidence": 0.9999
+  },
+  {
+    "text": "50",
+    "confidence": 0.99998
+  },
+  {
+    "text": "马车上做的梦——凯库勒(下)",
+    "confidence": 0.96979
+  },
+  {
+    "text": "化学",
+    "confidence": 0.99992
+  },
+  {
+    "text": "51",
+    "confidence": 0.99996
+  },
+  {
+    "text": "用卡片预测元素的人——门捷列夫(上)",
+    "confidence": 0.9785
+  },
+  {
+    "text": "化学",
+    "confidence": 0.99994
+  },
+  {
+    "text": "52",
+    "confidence": 0.99999
+  },
+  {
+    "text": "用卡片预测元素的人——门捷列夫(下)",
+    "confidence": 0.95584
+  },
+  {
+    "text": "化学",
+    "confidence": 0.99998
+  },
+  {
+    "text": "53",
+    "confidence": 1.0
+  },
+  {
+    "text": "为了证明而登上阿尔卑斯山的人——巴斯德(上)",
+    "confidence": 0.9863
+  },
+  {
+    "text": "医学",
+    "confidence": 0.99996
+  },
+  {
+    "text": "54",
+    "confidence": 0.99999
+  },
+  {
+    "text": "为了证明而登上阿尔卑斯山的人——巴斯德(下)",
+    "confidence": 0.98963
+  },
+  {
+    "text": "医学",
+    "confidence": 0.99993
+  },
+  {
+    "text": "55",
+    "confidence": 1.0
+  },
+  {
+    "text": "发现X射线的人——伦琴(上)",
+    "confidence": 0.97497
+  },
+  {
+    "text": "医学",
+    "confidence": 0.99997
+  },
+  {
+    "text": "56",
+    "confidence": 0.99998
+  },
+  {
+    "text": "发现X射线的人——伦琴(下)",
+    "confidence": 0.96869
+  },
+  {
+    "text": "医学",
+    "confidence": 0.99998
+  },
+  {
+    "text": "57",
+    "confidence": 0.99998
+  },
+  {
+    "text": "从失误中吸取教训——李比希(上)",
+    "confidence": 0.98304
+  },
+  {
+    "text": "化学",
+    "confidence": 0.99993
+  },
+  {
+    "text": "58",
+    "confidence": 0.99999
+  },
+  {
+    "text": "从失误中吸取教训——李比希(下)",
+    "confidence": 0.97334
+  },
+  {
+    "text": "化学",
+    "confidence": 0.99994
+  },
+  {
+    "text": "59",
+    "confidence": 1.0
+  },
+  {
+    "text": "从徒工到科学家——法拉第(上)",
+    "confidence": 0.97639
+  },
+  {
+    "text": "物理",
+    "confidence": 0.99994
+  },
+  {
+    "text": "60",
+    "confidence": 0.99999
+  },
+  {
+    "text": "从徒工到科学家——法拉第(下)",
+    "confidence": 0.97101
+  },
+  {
+    "text": "物理",
+    "confidence": 0.99988
+  },
+  {
+    "text": "61",
+    "confidence": 0.99998
+  },
+  {
+    "text": "电话之父——贝尔(上)",
+    "confidence": 0.98668
+  },
+  {
+    "text": "实用百科",
+    "confidence": 0.99988
+  },
+  {
+    "text": "62",
+    "confidence": 0.99998
+  },
+  {
+    "text": "电话之父——贝尔(下)",
+    "confidence": 0.98176
+  },
+  {
+    "text": "实用百科",
+    "confidence": 0.99991
+  },
+  {
+    "text": "63",
+    "confidence": 1.0
+  },
+  {
+    "text": "发明大王——爱迪生(上)",
+    "confidence": 0.97719
+  },
+  {
+    "text": "实用百科",
+    "confidence": 0.99993
+  },
+  {
+    "text": "64",
+    "confidence": 0.99999
+  },
+  {
+    "text": "发明大王——爱迪生(下)",
+    "confidence": 0.96542
+  },
+  {
+    "text": "实用百科",
+    "confidence": 0.99988
+  },
+  {
+    "text": "65",
+    "confidence": 1.0
+  },
+  {
+    "text": "第一个发现色盲的人——道尔顿(上)",
+    "confidence": 0.97374
+  },
+  {
+    "text": "医学",
+    "confidence": 0.99998
+  },
+  {
+    "text": "66",
+    "confidence": 0.99998
+  },
+  {
+    "text": "第一个发现色盲的人——道尔顿(下)",
+    "confidence": 0.98196
+  },
+  {
+    "text": "医学",
+    "confidence": 0.99996
+  },
+  {
+    "text": "67",
+    "confidence": 0.99998
+  },
+  {
+    "text": "发霉带来的惊喜——弗莱明(上)",
+    "confidence": 0.9572
+  },
+  {
+    "text": "医学",
+    "confidence": 0.99998
+  },
+  {
+    "text": "68",
+    "confidence": 0.99999
+  },
+  {
+    "text": "发霉带来的惊喜——弗莱明(下)",
+    "confidence": 0.9785
+  },
+  {
+    "text": "医学",
+    "confidence": 0.99996
+  },
+  {
+    "text": "69",
+    "confidence": 0.99999
+  },
+  {
+    "text": "飞行者的先驱——莱特兄弟(上)",
+    "confidence": 0.99021
+  },
+  {
+    "text": "实用百科",
+    "confidence": 0.9999
+  },
+  {
+    "text": "70 71 72 73",
+    "confidence": 0.89049
+  },
+  {
+    "text": "飞行者的先驱——莱特兄弟(下)",
+    "confidence": 0.97793
+  },
+  {
+    "text": "实用百科",
+    "confidence": 0.99987
+  },
+  {
+    "text": "中国飞行第一人——冯如(上)",
+    "confidence": 0.98321
+  },
+  {
+    "text": "实用百科",
+    "confidence": 0.99988
+  },
+  {
+    "text": "中国飞行第一人——冯如(下)",
+    "confidence": 0.96071
+  },
+  {
+    "text": "实用百科",
+    "confidence": 0.99986
+  },
+  {
+    "text": "解开胰岛素的秘密——班亭(上)",
+    "confidence": 0.9884
+  },
+  {
+    "text": "医学",
+    "confidence": 0.99997
+  },
+  {
+    "text": "74",
+    "confidence": 1.0
+  },
+  {
+    "text": "解开胰岛素的秘密——班亭(下)",
+    "confidence": 0.98302
+  },
+  {
+    "text": "医学",
+    "confidence": 0.99997
+  },
+  {
+    "text": "75",
+    "confidence": 1.0
+  },
+  {
+    "text": "科学“驯狗”第一人——巴甫洛夫(上)",
+    "confidence": 0.98135
+  },
+  {
+    "text": "实用百科",
+    "confidence": 0.9999
+  }
+]

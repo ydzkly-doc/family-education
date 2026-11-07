@@ -1,0 +1,11 @@
+{
+  "code": 200,
+  "success": true,
+  "data": [
+    {
+      "id": 66,
+      "content": "<p><img title=\"1566629338100307.jpg\" alt=\"少年动画世界史详情页_01.jpg\" src=\"http://edu.fuyingy.com/public/uploads/images/20190824/1566629338100307.jpg\"/></p><p><img title=\"1566629343107041.jpg\" alt=\"少年动画世界史详情页_03.jpg\" src=\"http://edu.fuyingy.com/public/uploads/images/20190824/1566629343107041.jpg\"/></p><p><img title=\"1566629355100844.jpg\" alt=\"少年动画世界史详情页_05.jpg\" src=\"http://edu.fuyingy.com/public/uploads/images/20190824/1566629355100844.jpg\"/></p><p><img title=\"1566629362691864.jpg\" alt=\"少年动画世界史详情页_07.jpg\" src=\"http://edu.fuyingy.com/public/uploads/images/20190824/1566629362691864.jpg\"/></p>",
+      "type": 2
+    }
+  ]
+}

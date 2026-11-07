@@ -1,0 +1,74 @@
+[
+  {
+    "text": "工具使用敏感",
+    "confidence": 0.99977
+  },
+  {
+    "text": "安全敏感",
+    "confidence": 0.99998
+  },
+  {
+    "text": "《这是扳手》",
+    "confidence": 0.99938
+  },
+  {
+    "text": "《这是危险》",
+    "confidence": 0.99996
+  },
+  {
+    "text": "《这是标本》",
+    "confidence": 0.99979
+  },
+  {
+    "text": "《这是伤害》",
+    "confidence": 0.99939
+  },
+  {
+    "text": "《这是显微镜》",
+    "confidence": 0.99947
+  },
+  {
+    "text": "《这是争执》",
+    "confidence": 0.99929
+  },
+  {
+    "text": "《这是摩擦力》",
+    "confidence": 0.99978
+  },
+  {
+    "text": "《这是告别》",
+    "confidence": 0.99631
+  },
+  {
+    "text": "《这是动画》",
+    "confidence": 0.99993
+  },
+  {
+    "text": "《这是电梯》",
+    "confidence": 0.99994
+  },
+  {
+    "text": "《这是窨井盖》",
+    "confidence": 0.92411
+  },
+  {
+    "text": "《这是情绪》",
+    "confidence": 0.9823
+  },
+  {
+    "text": "《这是船舶》",
+    "confidence": 0.99963
+  },
+  {
+    "text": "《这是痛》",
+    "confidence": 0.99922
+  },
+  {
+    "text": "《这是压路机》",
+    "confidence": 0.99996
+  },
+  {
+    "text": "《这是陌生人》",
+    "confidence": 0.99985
+  }
+]

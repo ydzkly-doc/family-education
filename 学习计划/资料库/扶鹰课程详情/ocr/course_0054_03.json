@@ -1,0 +1,590 @@
+[
+  {
+    "text": "课·程·表",
+    "confidence": 0.99381
+  },
+  {
+    "text": "学习计划",
+    "confidence": 0.99998
+  },
+  {
+    "text": "课程内容",
+    "confidence": 0.99972
+  },
+  {
+    "text": "核心知识",
+    "confidence": 0.99998
+  },
+  {
+    "text": "发刊词",
+    "confidence": 0.99987
+  },
+  {
+    "text": "富爸爸穷爸爸，不如一个会理财的好妈妈",
+    "confidence": 0.99834
+  },
+  {
+    "text": "理财框架",
+    "confidence": 0.99974
+  },
+  {
+    "text": "第1周",
+    "confidence": 0.99996
+  },
+  {
+    "text": "理财，幸福人生的基石",
+    "confidence": 0.99589
+  },
+  {
+    "text": "理财准备",
+    "confidence": 0.99992
+  },
+  {
+    "text": "周",
+    "confidence": 0.99993
+  },
+  {
+    "text": "理财和不理财的人生，有多大区别",
+    "confidence": 0.99971
+  },
+  {
+    "text": "财务觉醒",
+    "confidence": 0.99957
+  },
+  {
+    "text": "周二",
+    "confidence": 0.99962
+  },
+  {
+    "text": "储蓄，受益一生的好习惯",
+    "confidence": 0.96956
+  },
+  {
+    "text": "储蓄技巧",
+    "confidence": 0.9994
+  },
+  {
+    "text": "周三",
+    "confidence": 0.99996
+  },
+  {
+    "text": "1个水池，让你的钱井井有条",
+    "confidence": 0.95394
+  },
+  {
+    "text": "财富水池",
+    "confidence": 0.99975
+  },
+  {
+    "text": "周四",
+    "confidence": 0.99988
+  },
+  {
+    "text": "告别月光的懒人记账法",
+    "confidence": 0.99762
+  },
+  {
+    "text": "资产记账法",
+    "confidence": 0.99999
+  },
+  {
+    "text": "周五",
+    "confidence": 0.99996
+  },
+  {
+    "text": "做个有钱人之富人思维",
+    "confidence": 0.99982
+  },
+  {
+    "text": "富人思维",
+    "confidence": 0.9993
+  },
+  {
+    "text": "周末加餐",
+    "confidence": 0.99998
+  },
+  {
+    "text": "物价上涨，吞噬资产的沉默杀手",
+    "confidence": 0.99486
+  },
+  {
+    "text": "第2周",
+    "confidence": 0.99999
+  },
+  {
+    "text": "聪明的女人会赚也会花",
+    "confidence": 0.9829
+  },
+  {
+    "text": "职场理财",
+    "confidence": 0.99992
+  },
+  {
+    "text": "周",
+    "confidence": 0.99997
+  },
+  {
+    "text": "不一样的升值法则，给你加薪新思路",
+    "confidence": 0.99912
+  },
+  {
+    "text": "职场晋升",
+    "confidence": 0.9997
+  },
+  {
+    "text": "周二",
+    "confidence": 0.99962
+  },
+  {
+    "text": "隐形工资，不会用就太浪费了",
+    "confidence": 0.99433
+  },
+  {
+    "text": "五险一金",
+    "confidence": 0.99947
+  },
+  {
+    "text": "周三",
+    "confidence": 0.99996
+  },
+  {
+    "text": "谁说女孩子就不能买房？",
+    "confidence": 0.98958
+  },
+  {
+    "text": "买房决策",
+    "confidence": 0.99932
+  },
+  {
+    "text": "周四",
+    "confidence": 0.99993
+  },
+  {
+    "text": "一张好的信用卡，让花钱变成赚钱",
+    "confidence": 0.98879
+  },
+  {
+    "text": "信用卡",
+    "confidence": 0.99995
+  },
+  {
+    "text": "周五",
+    "confidence": 0.99998
+  },
+  {
+    "text": "管好房贷、车贷，告别负债压力",
+    "confidence": 0.99846
+  },
+  {
+    "text": "负债管理",
+    "confidence": 0.99998
+  },
+  {
+    "text": "周末加餐",
+    "confidence": 0.99998
+  },
+  {
+    "text": "“好东西”公式，你值得更精致的生活",
+    "confidence": 0.99315
+  },
+  {
+    "text": "第3周",
+    "confidence": 0.99999
+  },
+  {
+    "text": "夫妻间如何越谈钱越亲密",
+    "confidence": 0.99965
+  },
+  {
+    "text": "夫妻理财",
+    "confidence": 0.99871
+  },
+  {
+    "text": "周",
+    "confidence": 0.99994
+  },
+  {
+    "text": "房产证上写你名，房子也未必归你",
+    "confidence": 0.99797
+  },
+  {
+    "text": "婚前财产",
+    "confidence": 0.99968
+  },
+  {
+    "text": "周二",
+    "confidence": 0.99975
+  },
+  {
+    "text": "不花冤枉钱，第一次买保险就买对",
+    "confidence": 0.99783
+  },
+  {
+    "text": "家庭保障",
+    "confidence": 1.0
+  },
+  {
+    "text": "周三",
+    "confidence": 0.99995
+  },
+  {
+    "text": "月入1万、3万的家庭，买什么车合适",
+    "confidence": 0.99948
+  },
+  {
+    "text": "买车决策",
+    "confidence": 0.99972
+  },
+  {
+    "text": "周四",
+    "confidence": 0.99995
+  },
+  {
+    "text": "一个人赚钱养家，合理吗",
+    "confidence": 0.98366
+  },
+  {
+    "text": "收入结构",
+    "confidence": 0.99972
+  },
+  {
+    "text": "周五",
+    "confidence": 0.99998
+  },
+  {
+    "text": "离婚时，我该如何保障自己的权益最大化",
+    "confidence": 0.99905
+  },
+  {
+    "text": "婚姻法规",
+    "confidence": 0.99993
+  },
+  {
+    "text": "周末加餐",
+    "confidence": 0.99998
+  },
+  {
+    "text": "家中谁管钱，才能拥有稳稳的幸福",
+    "confidence": 0.99425
+  },
+  {
+    "text": "第4周",
+    "confidence": 1.0
+  },
+  {
+    "text": "爱孩子，只有钱是不够的",
+    "confidence": 0.98937
+  },
+  {
+    "text": "亲子理财",
+    "confidence": 0.99878
+  },
+  {
+    "text": "周",
+    "confidence": 0.99994
+  },
+  {
+    "text": "学区房买还是不买，怎么买",
+    "confidence": 0.99958
+  },
+  {
+    "text": "学区房",
+    "confidence": 0.99994
+  },
+  {
+    "text": "周二",
+    "confidence": 0.99966
+  },
+  {
+    "text": "从早教到大学，如何规划子女学费",
+    "confidence": 0.98238
+  },
+  {
+    "text": "教育金",
+    "confidence": 0.99959
+  },
+  {
+    "text": "周三",
+    "confidence": 0.99996
+  },
+  {
+    "text": "把孩子送出国，到底值不值",
+    "confidence": 0.99936
+  },
+  {
+    "text": "留学决策",
+    "confidence": 0.99981
+  },
+  {
+    "text": "周四",
+    "confidence": 0.99994
+  },
+  {
+    "text": "如何用一两千块，给孩子充足的保障",
+    "confidence": 0.9811
+  },
+  {
+    "text": "少儿保险",
+    "confidence": 0.99709
+  },
+  {
+    "text": "周五",
+    "confidence": 0.99998
+  },
+  {
+    "text": "你为什么不敢跟孩子谈钱",
+    "confidence": 0.99948
+  },
+  {
+    "text": "少儿财商",
+    "confidence": 0.99107
+  },
+  {
+    "text": "周末加餐",
+    "confidence": 0.99998
+  },
+  {
+    "text": "要不要生二胎，先算好这笔账",
+    "confidence": 0.99382
+  },
+  {
+    "text": "第5周",
+    "confidence": 1.0
+  },
+  {
+    "text": "我们这代人，是亏欠父母最多的",
+    "confidence": 0.98114
+  },
+  {
+    "text": "父母理财",
+    "confidence": 0.99993
+  },
+  {
+    "text": "周",
+    "confidence": 0.99999
+  },
+  {
+    "text": "爸妈，我想为你们守护财富",
+    "confidence": 0.99889
+  },
+  {
+    "text": "防骗指南",
+    "confidence": 0.99899
+  },
+  {
+    "text": "周二",
+    "confidence": 0.9997
+  },
+  {
+    "text": "如何打理养老金，让他们养老更安心",
+    "confidence": 0.98975
+  },
+  {
+    "text": "老人理财",
+    "confidence": 0.99957
+  },
+  {
+    "text": "周三",
+    "confidence": 0.99998
+  },
+  {
+    "text": "给爸妈的保障，要做足这3层",
+    "confidence": 0.99006
+  },
+  {
+    "text": "老人保险",
+    "confidence": 0.99993
+  },
+  {
+    "text": "周四",
+    "confidence": 0.99994
+  },
+  {
+    "text": "父母跨省就医，异地医保怎么报",
+    "confidence": 0.99264
+  },
+  {
+    "text": "医疗保险",
+    "confidence": 0.99996
+  },
+  {
+    "text": "周五",
+    "confidence": 0.99999
+  },
+  {
+    "text": "让父母退休后，也能过上体面的生活",
+    "confidence": 0.99966
+  },
+  {
+    "text": "赡养规划",
+    "confidence": 0.87568
+  },
+  {
+    "text": "周末加餐",
+    "confidence": 0.99998
+  },
+  {
+    "text": "最好的孝敬，是让他们跟上这个时代",
+    "confidence": 0.99349
+  },
+  {
+    "text": "第6周",
+    "confidence": 0.99999
+  },
+  {
+    "text": "通向家庭财务自由之路",
+    "confidence": 0.99962
+  },
+  {
+    "text": "投资增值",
+    "confidence": 0.9989
+  },
+  {
+    "text": "周",
+    "confidence": 0.99996
+  },
+  {
+    "text": "投资前，你必须知道的3件事",
+    "confidence": 0.99911
+  },
+  {
+    "text": "入门基础",
+    "confidence": 0.99985
+  },
+  {
+    "text": "周二",
+    "confidence": 0.99956
+  },
+  {
+    "text": "最适合普通家庭的投资方式",
+    "confidence": 0.99935
+  },
+  {
+    "text": "基金定投",
+    "confidence": 0.99994
+  },
+  {
+    "text": "周三",
+    "confidence": 0.99996
+  },
+  {
+    "text": "为什么中产家庭偏爱这类理财产品",
+    "confidence": 0.99995
+  },
+  {
+    "text": "银行理财",
+    "confidence": 0.99986
+  },
+  {
+    "text": "周四",
+    "confidence": 0.99991
+  },
+  {
+    "text": "买房不踩坑，招招省下几万块",
+    "confidence": 0.97647
+  },
+  {
+    "text": "买房决策",
+    "confidence": 0.99818
+  },
+  {
+    "text": "周五",
+    "confidence": 0.99997
+  },
+  {
+    "text": "手上有1万、5万、10万，怎么投资最省心",
+    "confidence": 0.99969
+  },
+  {
+    "text": "资产配置",
+    "confidence": 0.99999
+  },
+  {
+    "text": "周末加餐",
+    "confidence": 0.99993
+  },
+  {
+    "text": "复利：让财富滚雪球式地增长",
+    "confidence": 0.98669
+  },
+  {
+    "text": "第7周",
+    "confidence": 0.99997
+  },
+  {
+    "text": "经济环境如何影响你的家庭财富",
+    "confidence": 0.99208
+  },
+  {
+    "text": "读懂财经",
+    "confidence": 0.99958
+  },
+  {
+    "text": "周一",
+    "confidence": 0.7407
+  },
+  {
+    "text": "都说黄金能保值，真是这样吗",
+    "confidence": 0.99781
+  },
+  {
+    "text": "黄金投资",
+    "confidence": 0.99966
+  },
+  {
+    "text": "周二",
+    "confidence": 0.99972
+  },
+  {
+    "text": "都说人民币贬值，我该不该换点美元",
+    "confidence": 0.99862
+  },
+  {
+    "text": "汇率波动",
+    "confidence": 0.9999
+  },
+  {
+    "text": "周三",
+    "confidence": 0.99996
+  },
+  {
+    "text": "都说钱不值钱了，该怎么办",
+    "confidence": 0.99913
+  },
+  {
+    "text": "通货膨胀",
+    "confidence": 0.99948
+  },
+  {
+    "text": "周四",
+    "confidence": 0.99998
+  },
+  {
+    "text": "都说投资要保本，但最大的风险不是亏钱",
+    "confidence": 0.99664
+  },
+  {
+    "text": "风险管理",
+    "confidence": 0.99984
+  },
+  {
+    "text": "周五",
+    "confidence": 0.99998
+  },
+  {
+    "text": "都说顺势而为才能赚到钱，如何把握",
+    "confidence": 0.99905
+  },
+  {
+    "text": "经济周期",
+    "confidence": 0.99999
+  },
+  {
+    "text": "周末加餐",
+    "confidence": 0.99988
+  },
+  {
+    "text": "“财务自由”终极书单：从入门到进阶",
+    "confidence": 0.98705
+  }
+]

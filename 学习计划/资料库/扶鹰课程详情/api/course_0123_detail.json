@@ -1,0 +1,11 @@
+{
+  "code": 200,
+  "success": true,
+  "data": [
+    {
+      "id": 123,
+      "content": "<p><img src=\"http://edu.fuyingy.com/public/uploads/images/20200408/1586336153256427.jpg\" title=\"1586336153256427.jpg\"/></p><p><img src=\"http://edu.fuyingy.com/public/uploads/images/20200408/1586336153374910.jpg\" title=\"1586336153374910.jpg\"/></p><p><img src=\"http://edu.fuyingy.com/public/uploads/images/20200408/1586336153716071.jpg\" title=\"1586336153716071.jpg\"/></p><p><img src=\"http://edu.fuyingy.com/public/uploads/images/20200408/1586336153554238.jpg\" title=\"1586336153554238.jpg\"/></p><p><br/></p>",
+      "type": 2
+    }
+  ]
+}

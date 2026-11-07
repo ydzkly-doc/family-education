@@ -1,0 +1,11 @@
+{
+  "code": 200,
+  "success": true,
+  "data": [
+    {
+      "id": 54,
+      "content": "<p><img title=\"1566440830744234.jpg\" alt=\"简七理财_01.jpg\" src=\"http://edu.fuyingy.com/public/uploads/images/20190822/1566440830744234.jpg\"/></p><p><img title=\"1566440836137830.jpg\" alt=\"简七理财_03.jpg\" src=\"http://edu.fuyingy.com/public/uploads/images/20190822/1566440836137830.jpg\"/></p><p><img title=\"1566440842113375.jpg\" alt=\"简七理财_05.jpg\" src=\"http://edu.fuyingy.com/public/uploads/images/20190822/1566440842113375.jpg\"/></p>",
+      "type": 2
+    }
+  ]
+}

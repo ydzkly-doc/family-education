@@ -1,0 +1,11 @@
+{
+  "code": 200,
+  "success": true,
+  "data": [
+    {
+      "id": 92,
+      "content": "<p><img title=\"1575878469729707.jpg\" alt=\"36天读懂《36计》详情页_01.jpg\" src=\"http://edu.fuyingy.com/public/uploads/images/20191209/1575878469729707.jpg\"/><img title=\"1575878474360947.jpg\" alt=\"36天读懂《36计》详情页_02.jpg\" src=\"http://edu.fuyingy.com/public/uploads/images/20191209/1575878474360947.jpg\"/><img title=\"1575878477375112.jpg\" alt=\"36天读懂《36计》详情页_03.jpg\" src=\"http://edu.fuyingy.com/public/uploads/images/20191209/1575878477375112.jpg\"/></p>",
+      "type": 2
+    }
+  ]
+}

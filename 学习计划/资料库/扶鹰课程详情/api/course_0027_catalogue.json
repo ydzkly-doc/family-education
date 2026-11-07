@@ -1,0 +1,19 @@
+{
+  "code": 200,
+  "success": true,
+  "data": {
+    "List": [
+      {
+        "id": 514,
+        "title": "《经典分享》从“黑社会老大”到985名校的逆袭故事",
+        "sourceTotalSecond": "543"
+      },
+      {
+        "id": 675,
+        "title": "5.3 孩子不够优秀，是因为家中缺少这样一个角色",
+        "sourceTotalSecond": "520"
+      }
+    ],
+    "totalCount": 2
+  }
+}

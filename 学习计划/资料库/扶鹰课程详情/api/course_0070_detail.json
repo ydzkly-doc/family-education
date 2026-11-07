@@ -1,0 +1,11 @@
+{
+  "code": 200,
+  "success": true,
+  "data": [
+    {
+      "id": 70,
+      "content": "<p><img src=\"http://edu.fuyingy.com/public/uploads/images/20191018/1571383614472876.jpg\" title=\"1571383614472876.jpg\" alt=\"详情页.jpg\"/></p>",
+      "type": 2
+    }
+  ]
+}

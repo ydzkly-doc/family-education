@@ -1,0 +1,110 @@
+[
+  {
+    "text": "身体敏感",
+    "confidence": 0.9999
+  },
+  {
+    "text": "细小事物敏感",
+    "confidence": 0.99874
+  },
+  {
+    "text": "《这是眼睛》",
+    "confidence": 0.99896
+  },
+  {
+    "text": "《这是蚂蚁》",
+    "confidence": 0.9998
+  },
+  {
+    "text": "《这是大脑》",
+    "confidence": 0.99985
+  },
+  {
+    "text": "《这是豆子》",
+    "confidence": 0.99989
+  },
+  {
+    "text": "《这是细胞》",
+    "confidence": 0.9999
+  },
+  {
+    "text": "《这是蒲公英》",
+    "confidence": 0.99987
+  },
+  {
+    "text": "《这是牙齿》",
+    "confidence": 0.99997
+  },
+  {
+    "text": "《这是细菌》",
+    "confidence": 0.99984
+  },
+  {
+    "text": "《这是膝盖》",
+    "confidence": 0.99987
+  },
+  {
+    "text": "《这是甲壳虫》",
+    "confidence": 0.99926
+  },
+  {
+    "text": "《这是伤疤》",
+    "confidence": 0.99985
+  },
+  {
+    "text": "《这是蚯蚓》",
+    "confidence": 0.98837
+  },
+  {
+    "text": "《这是后脑勺》",
+    "confidence": 0.99902
+  },
+  {
+    "text": "《这是橄榄枝》",
+    "confidence": 0.99973
+  },
+  {
+    "text": "《这是睡觉》",
+    "confidence": 0.99983
+  },
+  {
+    "text": "《这是蝴蝶》",
+    "confidence": 0.99898
+  },
+  {
+    "text": "榜样敏感",
+    "confidence": 0.99836
+  },
+  {
+    "text": "《这是牛顿》",
+    "confidence": 0.97805
+  },
+  {
+    "text": "《这是达芬奇》",
+    "confidence": 0.99993
+  },
+  {
+    "text": "《这是爱因斯坦》",
+    "confidence": 0.99971
+  },
+  {
+    "text": "《这是伽利略》",
+    "confidence": 0.99989
+  },
+  {
+    "text": "《这是高斯》",
+    "confidence": 0.99995
+  },
+  {
+    "text": "《这是居里夫人》",
+    "confidence": 0.99992
+  },
+  {
+    "text": "《这是普朗克》",
+    "confidence": 0.99981
+  },
+  {
+    "text": "《这是费米》",
+    "confidence": 0.98036
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "code": 200,
+  "success": true,
+  "data": [
+    {
+      "id": 72,
+      "content": "<p><img class=\"loadingclass\" id=\"loading_lu5o4vht\" src=\"https://manage.fuyingy.com/public/static/js/ueditor/themes/default/images/spacer.gif\" title=\"正在上传...\"/></p>",
+      "type": 2
+    }
+  ]
+}

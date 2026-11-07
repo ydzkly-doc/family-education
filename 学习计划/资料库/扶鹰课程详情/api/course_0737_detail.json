@@ -1,0 +1,11 @@
+{
+  "code": 200,
+  "success": true,
+  "data": [
+    {
+      "id": 703,
+      "content": "<p><img src=\"https://public.fuyingy.com/e2f44202211141010129021.jpg\" title=\"详情_01_01.jpg\"/></p><p><img src=\"https://public.fuyingy.com/c696a202211141010127771.jpg\" title=\"详情_01_02.jpg\"/></p><p><img src=\"https://public.fuyingy.com/8880f202211141010155813.jpg\" title=\"详情_01_03.jpg\"/></p><p><img src=\"https://public.fuyingy.com/e41bf202211141010179339.jpg\" title=\"详情_01_04.jpg\"/></p><p><img src=\"https://public.fuyingy.com/c1c68202211141010194443.jpg\" title=\"详情_01_05.jpg\"/></p><p><img src=\"https://public.fuyingy.com/61871202211141010217964.jpg\" title=\"详情_01_06.jpg\"/></p><p><img src=\"https://public.fuyingy.com/ae1e7202211141010248785.jpg\" title=\"详情_01_07.jpg\"/></p><p><img src=\"https://public.fuyingy.com/921e7202211141021056264.jpg\" title=\"详情_01_08.jpg\"/></p><p><img src=\"https://public.fuyingy.com/488fa202211141021086371.jpg\" title=\"详情_01_09.jpg\"/></p><p><br/></p>",
+      "type": 2
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "code": 200,
+  "success": true,
+  "data": [
+    {
+      "id": 4,
+      "content": "<p><img src=\"http://edu.fuyingy.com/public/uploads/images/20200317/1584415102565713.jpg\" title=\"1584415102565713.jpg\" alt=\"3分钟教子新目录.jpg\"/></p>",
+      "type": 2
+    }
+  ]
+}

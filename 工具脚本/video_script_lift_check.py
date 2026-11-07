@@ -16,6 +16,18 @@ video_script_lift_check.py  —— 口播「读懂重讲 / 不许截取」检测
 """
 import sys, os, re, glob, argparse
 
+
+def _force_utf8_streams():
+    """Windows 控制台默认 GBK（cp936）时，打印 ⚠️/❌/✅ 会抛 UnicodeEncodeError。
+    统一把 stdout/stderr 切到 UTF-8，并对无法编码的字符降级替换，保证不崩。
+    （Python 3.7+ 的 TextIOWrapper.reconfigure；管道/重定向同样适用）"""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
+
+
 THRESH = 8          # 连续重合汉字数阈值（>= 判截取；6~7字多为口语自然撞车）
 CJK = re.compile(r"[\u4e00-\u9fff]+")
 
@@ -38,10 +50,16 @@ def cjk_only(s):
 
 
 def load_source_text(md_path, md_text):
-    """根据 md 头部“第N篇”定位公众号正文 html，提取纯汉字序列。"""
-    m = re.search(r"素材来源：\*\*公众号第(\d+)篇", md_text)
+    """根据 md 头部“第N篇”定位公众号正文 html，提取纯汉字序列。
+
+    兼容两种历史写法：
+      · 旧：`素材来源：**公众号第8篇…`
+      · 现行：`素材来源：**第8篇《…》`
+    `素材来源：**编辑原创**`（开头条等不指向单篇的）返回 (None, None)。
+    """
+    m = re.search(r"素材来源：\*\*(?:公众号)?第(\d+)篇", md_text)
     if not m:
-        return None, None
+        return None, None, None
     n = int(m.group(1))
     # 从 视频号文案/0X_xxx/ 向上两级到系列根，再找 公众号文章/发布包_第N篇_*/长图文发布包/正文_*.html
     series_root = os.path.abspath(os.path.join(os.path.dirname(md_path), "..", ".."))
@@ -49,11 +67,11 @@ def load_source_text(md_path, md_text):
                        "长图文发布包", "正文_*.html")
     hits = glob.glob(pat)
     if not hits:
-        return n, None
+        return n, None, None
     html = open(hits[0], encoding="utf-8").read()
     html = re.sub(r"</p>", "\n", html)
     txt = re.sub(r"<[^>]+>", "", html)
-    return n, cjk_only(txt)
+    return n, cjk_only(txt), split_clauses(txt)
 
 
 def strip_quotes(line):
@@ -84,15 +102,31 @@ def explained_by_common(seg):
     return False
 
 
-def longest_common_run(a, b):
-    """返回 a 中与 b 的最长连续重合片段（汉字），已剔除白名单假阳性。"""
-    L = len(a)
+def longest_common_run(clause, src_clauses):
+    """在【单个源分句】内找最长连续重合片段（汉字），已剔除白名单假阳性。
+
+    ⚠️ 为什么必须「分句对分句」（2026-11-06 修）：
+      早期把整行与整篇都剥成纯汉字串再比，标点一剥就跨句粘连——
+      实测「手机放回固定位置，站起来接水、洗漱、收书包，」被拼成
+      「手机放回固定位置站起来接水洗漱」15 字，误报为截取。
+      「连续重合」按定义不可能跨标点，所以两侧都按分句比对。
+    """
+    L = len(clause)
     for size in range(L, THRESH - 1, -1):
         for i in range(0, L - size + 1):
-            seg = a[i:i + size]
-            if seg in b and not explained_by_common(seg):
-                return seg
+            seg = clause[i:i + size]
+            if explained_by_common(seg):
+                continue
+            for sc in src_clauses:
+                if seg in sc:
+                    return seg
     return ""
+
+
+def split_clauses(text):
+    """把文本切成「分句」级的纯汉字串：标点、数字、拉丁字母都是边界。
+    CJK.findall 天然按非汉字断开，正好就是分句边界。"""
+    return CJK.findall(text)
 
 
 def parse_koubo(md_text):
@@ -113,28 +147,32 @@ def list_lift_fails(md_path):
     """供 video_script_check 调用：返回该文件叙述句截取违规的描述列表（静默）。"""
     out = []
     md_text = open(md_path, encoding="utf-8").read()
-    n, src = load_source_text(md_path, md_text)
-    if src is None:
+    n, _src, src_clauses = load_source_text(md_path, md_text)
+    if src_clauses is None:
         return out          # 定位不到原文时不阻塞主校验
     for idx, line in enumerate(parse_koubo(md_text), 1):
         if "lift:ignore" in line:
             continue
-        narr = cjk_only(strip_quotes(line))
-        if len(narr) < THRESH:
-            continue
-        hit = longest_common_run(narr, src)
-        if hit:
-            out.append("[防截取] 第%d行连续重合%d字：%s" % (idx, len(hit), hit))
+        for clause in split_clauses(strip_quotes(line)):
+            if len(clause) < THRESH:
+                continue
+            hit = longest_common_run(clause, src_clauses)
+            if hit:
+                out.append("[防截取] 第%d行连续重合%d字：%s" % (idx, len(hit), hit))
+                break
     return out
 
 
 def check_file(md_path):
     md_text = open(md_path, encoding="utf-8").read()
-    n, src = load_source_text(md_path, md_text)
+    n, _src, src_clauses = load_source_text(md_path, md_text)
     print("=== %s ===" % os.path.basename(md_path))
-    if src is None:
+    if src_clauses is None:
         if n is None:
-            print("  ⚠️ 未找到“素材来源：公众号第N篇”，跳过。")
+            if "编辑原创" in md_text:
+                print("  · 编辑原创条（不指向单篇原文），跳过截取检测。")
+            else:
+                print("  ⚠️ 未找到「素材来源：…第N篇」，跳过。")
         else:
             print("  ⚠️ 定位不到第%d篇正文 html，跳过。" % n)
         return 0
@@ -142,14 +180,15 @@ def check_file(md_path):
     for idx, line in enumerate(parse_koubo(md_text), 1):
         if "lift:ignore" in line:
             continue
-        narr = cjk_only(strip_quotes(line))
-        if len(narr) < THRESH:
-            continue
-        hit = longest_common_run(narr, src)
-        if hit:
-            bad += 1
-            print("  ❌ 第%2d 行 连续重合 %d 字：%s" % (idx, len(hit), hit))
-            print("       原行：%s" % line)
+        for clause in split_clauses(strip_quotes(line)):
+            if len(clause) < THRESH:
+                continue
+            hit = longest_common_run(clause, src_clauses)
+            if hit:
+                bad += 1
+                print("  ❌ 第%2d 行 连续重合 %d 字：%s" % (idx, len(hit), hit))
+                print("       原行：%s" % line)
+                break
     if bad == 0:
         print("  ✅ 叙述句无 >=%d 字截取重合（台词/引语已豁免）。" % THRESH)
     else:
@@ -159,6 +198,7 @@ def check_file(md_path):
 
 def main():
     global THRESH
+    _force_utf8_streams()
     ap = argparse.ArgumentParser()
     ap.add_argument("target")
     ap.add_argument("--thresh", type=int, default=THRESH)

@@ -1,0 +1,11 @@
+{
+  "code": 200,
+  "success": true,
+  "data": [
+    {
+      "id": 13,
+      "content": "<p><img title=\"1535014127249154.jpg\" alt=\"1.jpg\" src=\"http://edu.fuyingy.com/public/uploads/images/20180823/1535014127249154.jpg\"/></p><p style=\"text-align: center;\"><img title=\"1535014218967913.png\" alt=\"5.png\" src=\"http://edu.fuyingy.com/public/uploads/images/20180823/1535014218967913.png\"/></p><p style=\"text-align: center;\"><img title=\"1535014296116000.jpg\" alt=\"2.jpg\" src=\"http://edu.fuyingy.com/public/uploads/images/20180823/1535014296116000.jpg\"/></p><p style=\"text-align: center;\"><img title=\"1535014313140034.png\" alt=\"6.png\" src=\"http://edu.fuyingy.com/public/uploads/images/20180823/1535014313140034.png\"/></p><p style=\"text-align: center;\"><img title=\"1535014331458632.jpg\" alt=\"3.jpg\" src=\"http://edu.fuyingy.com/public/uploads/images/20180823/1535014331458632.jpg\"/></p><p style=\"text-align: center;\"><img title=\"1535014341722460.png\" alt=\"7.png\" src=\"http://edu.fuyingy.com/public/uploads/images/20180823/1535014341722460.png\"/></p><p style=\"text-align: center;\"><img title=\"1535014359120747.jpg\" alt=\"4.jpg\" src=\"http://edu.fuyingy.com/public/uploads/images/20180823/1535014359120747.jpg\"/></p><p><img title=\"1555493976627833.jpg\" alt=\"Z订阅须知2栏.jpg\" src=\"http://edu.fuyingy.com/public/uploads/images/20190417/1555493976627833.jpg\"/></p>",
+      "type": 2
+    }
+  ]
+}
